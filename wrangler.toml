@@ -9,6 +9,8 @@ compatibility_flags = ["nodejs_compat"]
 
 [env.production]
 name = "resonatale-app"
+vars = { ENVIRONMENT = "production" }
 
 [env.development]
 name = "resonatale-app-dev"
+vars = { ENVIRONMENT = "development" }

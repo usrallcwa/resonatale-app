@@ -8,6 +8,7 @@
 export interface Env {
   // Add environment variables and bindings here as needed
   // Example: DATABASE: D1Database;
+  ENVIRONMENT?: string; // Optional environment name (development, staging, production)
 }
 
 /**
@@ -114,7 +115,7 @@ function handleStatus(env: Env): Response {
     JSON.stringify({
       application: 'ResonaTale',
       version: '1.0.0',
-      environment: 'production',
+      environment: env.ENVIRONMENT || 'development',
       timestamp: new Date().toISOString(),
     }),
     {

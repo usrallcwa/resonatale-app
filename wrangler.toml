@@ -1,0 +1,14 @@
+name = "resonatale-app"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Cost-efficient settings
+# Workers run on Cloudflare's edge network with minimal cold start times
+# Free tier: 100,000 requests/day
+
+[env.production]
+name = "resonatale-app"
+
+[env.development]
+name = "resonatale-app-dev"

@@ -866,7 +866,7 @@ select#lang-select:focus {
 /* AVATAR */
 .av-drop{
   width:100%;
-  aspect-ratio:1;
+  aspect-ratio:1/1;
   max-width:250px;
   margin:0 auto 18px;
   border-radius:20px;

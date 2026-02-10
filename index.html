@@ -1,10 +1,347 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>ResonaTale</title>
-  </head>
-  <body>
-    <h1>ResonaTale is alive 🚀</h1>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+  />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#0b0b1a" />
+  <meta name="format-detection" content="telephone=no" />
+  <title>ResonaTale</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="app.css" />
+  <!-- Cloudflare Turnstile -->
+<script
+  src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+  defer
+  crossorigin="anonymous"
+></script>
+</head>
+<body>
+  <div id="app">
+    <div class="safe-top"></div>
+<!-- ===== HOME ===== -->
+<div id="layer-home" class="layer active" data-layer="home">
+<header class="hdr">
+  <div class="hdr-l">
+    <svg class="logo-svg" viewBox="0 0 36 36" width="30" height="30" fill="none">
+      <circle cx="18" cy="18" r="16" fill="#7C4DFF" opacity=".12"/>
+      <path d="M18 5c-4.5 0-8 3.5-8 8 0 3 1.8 5.5 4 6.8L13 27h10l-1-7.2c2.2-1.3 4-3.8 4-6.8 0-4.5-3.5-8-8-8z" fill="#7C4DFF"/>
+      <circle cx="15" cy="14" r="1.6" fill="#fff"/><circle cx="21" cy="14" r="1.6" fill="#fff"/>
+      <circle cx="15" cy="13.6" r=".6" fill="#0b0b1a"/><circle cx="21" cy="13.6" r=".6" fill="#0b0b1a"/>
+      <path d="M15.5 19.5s1.2 2 2.5 2 2.5-2 2.5-2" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/>
+      <path d="M11 9.5L8.8 7.3M25 9.5l2.2-2.2M18 5V2.5" stroke="#FFD54F" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>
+    <span class="hdr-name">ResonaTale</span>
+  </div>
+  <button class="bal-btn" type="button" id="bal-btn" aria-label="Balance">
+    <span class="bal-lbl">Balance</span>
+    <span class="bal-val" id="bal-hdr">—</span>
+  </button>
+</header>
+<div class="home-scroll" id="home-scroll">
+  <!-- Status -->
+  <div class="scard" id="scard">
+    <div class="scard-bg"><div class="orb orb-a"></div><div class="orb orb-b"></div></div>
+    <div class="scard-body">
+      <div class="scard-top">
+        <span class="scard-label" id="scard-label">Balance</span>
+        <span class="scard-badge" id="scard-badge">Checking…</span>
+      </div>
+      <div class="scard-amount" id="bal-main">—</div>
+      <div class="scard-dots">
+        <span class="sdot" id="sdot-voice"><span class="sdot-c sdot-voice"></span><span id="sdot-voice-t">Voice</span></span>
+        <span class="sdot" id="sdot-avatar"><span class="sdot-c sdot-avatar"></span><span id="sdot-avatar-t">Avatar</span></span>
+      </div>
+    </div>
+  </div>
+  <!-- Setup -->
+  <h3 class="sec">Setup</h3>
+  <div class="setup-list">
+    <button class="setup-item" type="button" id="si-voice" data-goto="record">
+      <div class="si-icon si-icon-voice">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+      </div>
+      <div class="si-text">
+        <span class="si-title">Record Voice</span>
+        <span class="si-sub" id="si-voice-sub">Clone your voice once</span>
+      </div>
+      <svg class="si-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+    <button class="setup-item" type="button" id="si-avatar" data-goto="avatar">
+      <div class="si-icon si-icon-avatar">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="12" cy="10" r="3"/><path d="M6 21c0-3 3-5 6-5s6 2 6 5"/></svg>
+      </div>
+      <div class="si-text">
+        <span class="si-title">Upload Avatar</span>
+        <span class="si-sub" id="si-avatar-sub">For video stories</span>
+      </div>
+      <svg class="si-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+  </div>
+  <!-- Create -->
+  <h3 class="sec">Create</h3>
+  <button class="create-row" type="button" data-goto="generate">
+    <div class="cr-inner">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      <div><span class="cr-title">New Story</span><span class="cr-sub">Prompt → Preview → Unlock</span></div>
+    </div>
+    <svg class="si-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+  </button>
+  <!-- Journal -->
+  <h3 class="sec">Journal</h3>
+  <div id="journal-home" class="journal-list">
+    <div class="journal-empty" id="journal-empty">No stories yet</div>
+  </div>
+  <!-- Sync banner -->
+  <div class="sync-banner">
+    <span class="sync-icon">☁️</span>
+    <div class="sync-text">
+      <span class="sync-title">Cross-device sync</span>
+      <span class="sync-sub">Coming soon</span>
+    </div>
+  </div>
+  <!-- Footer -->
+  <div class="footer-links">
+    <a href="terms.html">Terms</a>
+    <span class="footer-sep">&middot;</span>
+    <a href="privacy.html">Privacy</a>
+    <span class="footer-sep">&middot;</span>
+    <a href="contact.html">Contact</a>
+  </div>
+</div>
+<nav class="tbar" id="tbar">
+  <button class="tab active" type="button" data-tab="home"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg><span>Home</span></button>
+  <button class="tab" type="button" data-tab="generate"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg><span>Create</span></button>
+  <button class="tab" type="button" data-tab="journal"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>Journal</span></button>
+  <button class="tab" type="button" data-tab="player" id="tab-player" style="display:none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,3 19,12 5,21"/></svg><span>Playing</span></button>
+</nav>
+</div>
+<!-- ===== RECORD ===== -->
+<div id="layer-record" class="layer" data-layer="record">
+<div class="lscroll">
+  <button class="back-btn" type="button" data-goto="home"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>Back</button>
+  <div class="lhd"><h2>Record Your Voice</h2><p>Read the passage aloud. About 30 seconds.</p></div>
+  <div class="script-card">
+    <p>"The stars twinkled softly above the old oak tree, where a little owl named Oliver sat on his favorite branch. Every night, he would tell the forest a bedtime story — and tonight was the most magical one yet."</p>
+  </div>
+  <div class="rec-visual">
+    <div class="rec-ring" id="rec-ring">
+      <div class="rec-core">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+      </div>
+    </div>
+    <span class="rec-timer" id="rec-timer">0:00</span>
+  </div>
+  <button class="btn-main" type="button" id="btn-rec"><span class="bm-text" id="rec-btn-text">Start Recording</span><div class="bm-spin hidden"></div></button>
+  <div id="rec-playback" class="rec-playback hidden">
+    <audio id="rec-audio" controls class="audio-el"></audio>
+    <div id="ts-voice" class="ts-box"></div>
+    <button class="btn-main" type="button" id="btn-submit-voice"><span class="bm-text">Use This Recording</span><div class="bm-spin hidden"></div></button>
+  </div>
+  <div id="err-voice" class="err-box hidden"></div>
+</div>
+</div>
+<!-- ===== AVATAR ===== -->
+<div id="layer-avatar" class="layer" data-layer="avatar">
+<div class="lscroll">
+  <button class="back-btn" type="button" data-goto="home"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>Back</button>
+  <div class="lhd"><h2>Upload Avatar</h2><p>A clear, front-facing photo works best.</p></div>
+  <div class="av-drop" id="av-drop">
+    <div id="av-preview-box" class="av-preview-box hidden"><img id="av-preview-img" class="av-preview-img" alt="Avatar preview"></div>
+    <div id="av-placeholder" class="av-placeholder">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="12" cy="10" r="3"/><path d="M6 21c0-3 3-5 6-5s6 2 6 5"/></svg>
+      <span>Tap to choose photo</span>
+    </div>
+    <input type="file" id="av-input" accept="image/jpeg,image/png,image/webp" class="hidden">
+  </div>
+  <div id="ts-avatar" class="ts-box"></div>
+  <button class="btn-main" type="button" id="btn-submit-avatar" disabled><span class="bm-text">Upload Avatar</span><div class="bm-spin hidden"></div></button>
+  <div id="err-avatar" class="err-box hidden"></div>
+</div>
+</div>
+<!-- ===== GENERATE ===== -->
+<div id="layer-generate" class="layer" data-layer="generate">
+  <div class="lscroll">
+    <button class="back-btn" type="button" data-goto="home">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+      Back
+    </button>
+    <div class="lhd">
+      <h2>Create a Story</h2>
+      <p>Describe your story and choose a format.</p>
+    </div>
+    <!-- AGE GATE -->
+    <div class="field" id="age-gate">
+      <label class="age-check">
+        <input type="checkbox" id="age-confirm" />
+        <span>
+          I confirm I am 18 years or older and understand this service is for adults.
+        </span>
+      </label>
+    </div>
+  <div class="field">
+    <label for="gen-prompt">Prompt</label>
+    <textarea id="gen-prompt" rows="4" maxlength="500" placeholder="A bedtime story about a brave fox who finds a garden under the moonlight…"></textarea>
+    <span class="field-count"><span id="gen-count">0</span>/500</span>
+  </div>
+ <!-- Language -->
+<div class="field">
+  <label>Language</label>
+  <div class="lang-row" id="lang-row">
+    <button type="button" class="lang-chip active" data-lang="en">🇺🇸 English</button>
+    <button type="button" class="lang-chip" data-lang="es">🇪🇸 Español</button>
+    <button type="button" class="lang-chip" data-lang="fr">🇫🇷 Français</button>
+    <button type="button" class="lang-chip" data-lang="de">🇩🇪 Deutsch</button>
+    <button type="button" class="lang-chip" data-lang="it">🇮🇹 Italiano</button>
+    <button type="button" class="lang-chip" data-lang="pt">🇵🇹 Português</button>
+    <button type="button" class="lang-chip" data-lang="zh">🇨🇳 中文</button>
+    <button type="button" class="lang-chip" data-lang="ja">🇯🇵 日本語</button>
+    <button type="button" class="lang-chip" data-lang="ar">🇸🇦 العربية</button>
+    <button type="button" class="lang-chip" data-lang="hi">🇮🇳 हिन्दी</button>
+    <button type="button" class="lang-chip" data-lang="ko">🇰🇷 한국어</button>
+  </div>
+  <div class="field-hint">
+    Languages are continuously improved for natural, human-like voices
+  </div>
+</div>
+<!-- Mood -->
+<div class="field">
+  <label>Mood <span class="field-opt">(optional)</span></label>
+  <div class="mood-row" id="mood-row">
+    <button class="mood-chip active" type="button" data-mood="calm">😌 Calm</button>
+    <button class="mood-chip" type="button" data-mood="magical">✨ Magical</button>
+    <button class="mood-chip" type="button" data-mood="adventure">🏔 Adventure</button>
+    <button class="mood-chip" type="button" data-mood="funny">😄 Funny</button>
+    <button class="mood-chip" type="button" data-mood="cozy">🧸 Cozy</button>
+  </div>
+</div>
+  <div class="field-label">Output Format</div>
+  <div class="fmt-list" id="fmt-list">
+    <button class="fmt-item active" type="button" data-fmt="audio">
+      <div class="fmt-radio"><div class="fmt-dot"></div></div>
+      <div class="fmt-info"><span class="fmt-name">🎙 Audio Story</span><span class="fmt-sub">Narrated in your voice</span></div>
+    </button>
+    <button class="fmt-item" type="button" data-fmt="video">
+      <div class="fmt-radio"><div class="fmt-dot"></div></div>
+      <div class="fmt-info"><span class="fmt-name">🖼 Video Story</span><span class="fmt-sub">Talking avatar</span></div>
+    </button>
+  </div>
+  <div id="ts-generate" class="ts-box"></div>
+  <button class="btn-main" type="button" id="btn-generate"><span class="bm-text">Generate Preview</span><div class="bm-spin hidden"></div></button>
+  <div id="err-generate" class="err-box hidden"></div>
+</div>
+</div>
+<!-- ===== PREVIEW ===== -->
+<div id="layer-preview" class="layer" data-layer="preview">
+<div class="lscroll">
+  <button class="back-btn" type="button" data-goto="generate"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>Back</button>
+  <div class="lhd"><h2>Preview</h2><p id="pv-prompt-echo"></p></div>
+  <div class="pv-player-card"><audio id="pv-audio" controls class="audio-el"></audio></div>
+  <div class="field-label">Unlock Full Story</div>
+  <button class="unlock-row" type="button" id="unlock-audio">
+    <div class="ur-info"><span class="ur-name">🎙 Audio Story</span><span class="ur-sub">Full narration in your voice</span></div>
+    <span class="ur-cost">1 credit</span>
+  </button>
+  <button class="unlock-row" type="button" id="unlock-video">
+    <div class="ur-info"><span class="ur-name">🖼 Video Story</span><span class="ur-sub">Talking avatar video</span></div>
+    <span class="ur-cost">1.2 credits</span>
+  </button>
+  <div id="err-preview" class="err-box hidden"></div>
+</div>
+</div>
+<!-- ===== PLAYER ===== -->
+<div id="layer-player" class="layer" data-layer="player">
+<div class="lscroll player-center">
+  <button class="back-btn" type="button" data-goto="home"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>Back</button>
+  <div class="pl-art">
+    <div class="pl-circle" id="pl-circle">
+      <div class="pl-ring"></div>
+      <div class="pl-inner">
+        <svg width="42" height="42" viewBox="0 0 36 36" fill="none"><path d="M18 5c-4.5 0-8 3.5-8 8 0 3 1.8 5.5 4 6.8L13 27h10l-1-7.2c2.2-1.3 4-3.8 4-6.8 0-4.5-3.5-8-8-8z" fill="#7C4DFF" opacity=".5"/><circle cx="15" cy="14" r="1.3" fill="#fff"/><circle cx="21" cy="14" r="1.3" fill="#fff"/><path d="M15.5 19s1.2 1.8 2.5 1.8 2.5-1.8 2.5-1.8" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+  </div>
+  <div class="pl-meta"><h2 id="pl-title">Story</h2><p id="pl-sub">—</p></div>
+  <div class="pl-seek-wrap">
+    <input type="range" id="pl-seek" class="pl-seekbar" min="0" max="100" value="0" step=".1">
+    <div class="pl-times"><span id="pl-cur">0:00</span><span id="pl-dur">0:00</span></div>
+  </div>
+  <div class="pl-controls">
+    <button class="pl-ctrl" type="button" id="pl-rew"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg><span class="pl-ctrl-n">15</span></button>
+    <button class="pl-ctrl pl-play" type="button" id="pl-playbtn">
+      <svg id="pl-ic-play" width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="6,3 20,12 6,21"/></svg>
+      <svg id="pl-ic-pause" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" class="hidden"><rect x="5" y="3" width="4" height="18" rx="1"/><rect x="15" y="3" width="4" height="18" rx="1"/></svg>
+    </button>
+    <button class="pl-ctrl" type="button" id="pl-ffw"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.13-9.36L23 10"/></svg><span class="pl-ctrl-n">15</span></button>
+  </div>
+  <div id="vid-status" class="vid-status hidden">
+    <div id="vid-status-icon"><div class="spin-sm"></div></div>
+    <div class="vid-status-text"><h4 id="vid-status-title">Processing…</h4><p id="vid-status-desc">Video generating</p></div>
+  </div>
+  <div id="vid-player-wrap" class="vid-player-wrap hidden"><video id="vid-el" controls playsinline class="vid-el"></video></div>
+</div>
+</div>
+<!-- ===== JOURNAL ===== -->
+<div id="layer-journal" class="layer" data-layer="journal">
+<div class="lscroll">
+  <button class="back-btn" type="button" data-goto="home"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>Back</button>
+  <div class="lhd"><h2>Journal</h2><p>Your unlocked stories</p></div>
+  <div id="journal-full" class="journal-list"><div class="journal-empty">Nothing here yet</div></div>
+</div>
+</div>
+<!-- ===== MODAL: TOP UP ===== -->
+<div id="modal-topup" class="modal" hidden>
+  <div class="modal-bg"></div>
+  <div class="modal-sheet">
+    <div class="modal-bar"></div>
+    <div class="modal-body">
+      <h2 class="modal-title">Add Balance</h2>
+      <p class="modal-desc">Any amount from $10 to $500</p>
+      <div class="tu-input-row">
+        <span class="tu-sign">$</span>
+        <input type="number" id="tu-amount" class="tu-input" inputmode="numeric" min="10" max="500" step="1" placeholder="0">
+      </div>
+      <div class="tu-range-labels"><span>$10</span><span>$500</span></div>
+      <input type="range" id="tu-slider" class="tu-slider" min="10" max="500" step="5" value="10">
+      <button class="btn-main" type="button" id="btn-topup"><span class="bm-text" id="tu-btn-text">Continue — $10.00</span><div class="bm-spin hidden"></div></button>
+      <div id="err-topup" class="err-box hidden"></div>
+      <p class="tu-footer">Secure payment via Stripe · Balance never expires</p>
+    </div>
+  </div>
+</div>
+<!-- TOAST -->
+<div id="toast" class="toast hidden"><span id="toast-msg"></span></div>
+<!-- OVERLAY -->
+<div id="overlay" class="overlay" hidden>
+  <div class="ov-inner">
+    <div class="ov-dots">
+      <div class="ov-d ov-d1"></div>
+      <div class="ov-d ov-d2"></div>
+      <div class="ov-d ov-d3"></div>
+    </div>
+    <h3 id="ov-title">Working…</h3>
+    <p id="ov-sub"></p>
+  </div>
+</div>
+<!-- FOOTER -->
+<footer class="footer">
+  <a href="/privacy.html">Privacy</a>
+  <span>·</span>
+  <a href="/terms.html">Terms</a>
+  <span>·</span>
+  <a href="mailto:admin@resonatale.com">Contact</a>
+</footer>
+<script src="app.js" defer></script>
+</body>
 </html>

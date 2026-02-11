@@ -1,7 +1,7 @@
 (function () {
 'use strict';
 var TURNSTILE_KEY = '0x4AAAAAACLI9vyJZYGLg9lS';
-var API = 'https://resonatale.com/api';
+var API = '/api';
 /* ─── GLOBAL STATE ─────────────────────── */
 var S = {
   bal: 0,

@@ -154,12 +154,13 @@ body{
   margin-bottom:16px;
   min-height:128px;
   box-shadow: 0 4px 16px rgba(0,0,0,.5);
-  animation: bounce-in 0.5s ease-out; /* Playful animation */
+  animation: bounce-in 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55); /* More playful bounce */
 }
 @keyframes bounce-in {
-  0% { transform: scale(0.9); opacity: 0; }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); opacity: 1; }
+  0% { transform: scale(0.8) rotate(-5deg); opacity: 0; }
+  50% { transform: scale(1.1) rotate(5deg); }
+  75% { transform: scale(0.95) rotate(-3deg); }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
 }
 .scard:active{
   transform:scale(.97);
@@ -188,7 +189,7 @@ body{
   opacity:.45; /* Brighter opacity */
   top:-24px;
   right:-16px;
-  animation:orb-f 6s ease-in-out infinite;
+  animation:orb-f 4s ease-in-out infinite; /* Faster for playfulness */
 }
 .orb-b{
   width:68px;
@@ -197,12 +198,15 @@ body{
   opacity:.38;
   bottom:-8px;
   left:16px;
-  animation:orb-f 8s ease-in-out infinite reverse;
+  animation:orb-f 5s ease-in-out infinite reverse; /* Faster */
 }
 @keyframes orb-f{
-  0%,100%{transform:translateY(0) scale(1)}
-  50%{transform:translateY(-12px) scale(1.08)}
+  0%,100%{transform:translateY(0) scale(1) rotate(0deg)}
+  25%{transform:translateY(-18px) scale(1.12) rotate(5deg)}
+  50%{transform:translateY(0) scale(0.95) rotate(-5deg)}
+  75%{transform:translateY(12px) scale(1.08) rotate(3deg)}
 }
+/* More playful with rotation and varied scale */
 .scard-body{
   position:relative;
   z-index:1;
@@ -258,9 +262,6 @@ body{
 .sdot-c.on{
   background:var(--green);
   box-shadow: 0 0 8px var(--green); /* Glowing for vibrancy */
-}
-.sdot-avatar.on{
-  background:var(--pink);
 }
 /* SETUP */
 .sec{
@@ -601,38 +602,47 @@ body{
   border:1.5px solid var(--bd2);
   border-radius:14px;
 }
-/* ─── LANGUAGE (SINGLE DROPDOWN) ───────── */
-.lang-select,
-select#lang-select {
+/* ─── LANGUAGE (CHIPS) ───────── */
+.lang-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.lang-chip {
   background: var(--bg3);
   border: 1.5px solid var(--bd);
-  border-radius: 12px;
-  padding: 10px 14px;
-  font-size: 13px;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 12px;
   font-weight: 700;
-  color: var(--t1);
+  color: var(--t2);
   font-family: inherit;
   cursor: pointer;
-  appearance: none;
   -webkit-appearance: none;
   transition:
-    border-color 0.15s ease,
     background-color 0.15s ease,
-    box-shadow 0.15s ease;
+    color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.1s ease;
+  box-shadow: 0 1px 4px rgba(0,0,0,.2);
 }
-.lang-select:hover,
-select#lang-select:hover {
+.lang-chip:hover {
   border-color: var(--p);
-}
-.lang-select:focus,
-select#lang-select:focus {
-  outline: none;
-  border-color: var(--p);
-  box-shadow: 0 0 0 3px var(--pg);
-}
-.lang-select option {
-  background: var(--bg2);
   color: var(--t1);
+  transform: scale(1.05); /* Playful scale on hover */
+}
+/* ACTIVE = CLEAR, CONFIDENT, SELECTED */
+.lang-chip.active {
+  background: var(--pg);
+  border-color: var(--p);
+  color: var(--p);
+}
+.lang-chip:active {
+  transform: scale(0.94);
+}
+.lang-chip:focus-visible {
+  outline: 2px solid var(--p);
+  outline-offset: 2px;
 }
 /* hint text under language — NEVER FAINT */
 .field-hint {
@@ -791,7 +801,7 @@ select#lang-select:focus {
   border:3px solid rgba(255,255,255,.25);
   border-top-color:#fff;
   border-radius:50%;
-  animation:spin .7s linear infinite;
+  animation:spin .6s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite; /* Bouncier spin */
 }
 @keyframes spin{
   to{transform:rotate(360deg)}
@@ -871,11 +881,11 @@ select#lang-select:focus {
 .rec-ring.on{
   border-color:var(--red);
   box-shadow:0 0 28px rgba(239,68,68,.25);
-  animation:rec-pulse 1.5s ease-in-out infinite;
+  animation:rec-pulse 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite; /* Bouncier pulse */
 }
 @keyframes rec-pulse{
-  0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.18)}
-  50%{box-shadow:0 0 24px 10px rgba(239,68,68,.14)}
+  0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.18); transform: scale(1);}
+  50%{box-shadow:0 0 24px 10px rgba(239,68,68,.14); transform: scale(1.05);}
 }
 .rec-core{
   width:94px;
@@ -1029,10 +1039,7 @@ select#lang-select:focus {
 }
 .pl-circle.on .pl-ring{
   opacity:1;
-  animation:ring-spin 3s linear infinite;
-}
-.pl-circle.on{
-  box-shadow:0 0 36px var(--pg);
+  animation:ring-spin 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite; /* Faster, bouncier spin */
 }
 @keyframes ring-spin{
   to{transform:rotate(360deg)}
@@ -1154,7 +1161,7 @@ select#lang-select:focus {
   border:3px solid var(--bd);
   border-top-color:var(--p);
   border-radius:50%;
-  animation:spin .8s linear infinite;
+  animation:spin .6s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite; /* Bouncier */
 }
 .vid-status-text h4{
   font-size:12px;
@@ -1188,11 +1195,11 @@ select#lang-select:focus {
   position:absolute;
   inset:0;
   background:rgba(0,0,0,.82);
-  animation:fade-in .2s;
+  animation:fade-in .3s cubic-bezier(0.68, -0.55, 0.265, 1.55); /* Bouncy fade */
 }
 @keyframes fade-in{
-  from{opacity:0}
-  to{opacity:1}
+  from{opacity:0; transform: scale(0.9);}
+  to{opacity:1; transform: scale(1);}
 }
 .modal-sheet{
   position:relative;
@@ -1202,13 +1209,13 @@ select#lang-select:focus {
   border-radius:24px 24px 0 0;
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
-  animation:slide-up .3s cubic-bezier(.32,.72,0,1);
+  animation:slide-up .4s cubic-bezier(0.68, -0.55, 0.265, 1.55); /* Bouncier slide */
   padding-bottom:calc(22px + var(--sb));
   box-shadow: 0 -4px 20px rgba(0,0,0,.5);
 }
 @keyframes slide-up{
-  from{transform:translateY(100%)}
-  to{transform:translateY(0)}
+  from{transform:translateY(100%) scale(0.9);}
+  to{transform:translateY(0) scale(1);}
 }
 .modal-bar{
   width:30px;
@@ -1312,7 +1319,7 @@ select#lang-select:focus {
   font-size:12px;
   font-weight:800;
   z-index:2000;
-  animation:toast-in .3s;
+  animation:toast-in .4s cubic-bezier(0.68, -0.55, 0.265, 1.55); /* Bouncy toast */
   box-shadow:0 6px 24px rgba(0,0,0,.5);
   max-width:calc(100% - 40px);
   text-align:center;
@@ -1320,10 +1327,10 @@ select#lang-select:focus {
 }
 @keyframes toast-in{
   from{
-    transform:translateX(-50%) translateY(14px);
+    transform:translateX(-50%) translateY(14px) scale(0.8);
   }
   to{
-    transform:translateX(-50%) translateY(0);
+    transform:translateX(-50%) translateY(0) scale(1);
   }
 }
 /* ─── OVERLAY (BLOCKING STATE) ─────────── */
@@ -1353,14 +1360,14 @@ select#lang-select:focus {
   width:14px;
   height:14px;
   border-radius:50%;
-  animation:ov-bounce 1.4s ease-in-out infinite;
+  animation:ov-bounce 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite; /* More playful bounce */
 }
 .ov-d1{background:var(--p)}
 .ov-d2{background:var(--teal);animation-delay:.16s}
 .ov-d3{background:var(--yellow);animation-delay:.32s}
 @keyframes ov-bounce{
   0%,80%,100%{transform:scale(.7)}
-  40%{transform:scale(1.15)}
+  40%{transform:scale(1.3)} /* Exaggerated scale */
 }
 .ov-inner h3{
   font-size:17px;

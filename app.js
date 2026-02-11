@@ -1,13 +1,14 @@
-body {
-  margin: 0;
-}
+(function () {
+'use strict';
+
+var TURNSTILE_KEY = '0x4AAAAAACLI9vyJZYGLg9lS';
+var API = '/api';   // ✅ fixed
 
 /* ─── GLOBAL STATE ─────────────────────── */
 var S = {
   bal: 0,
   hasVoice: false,
   hasAvatar: false,
-  // auth (added)
   loggedIn: false,
   pendingTopUpAmount: null,
   mood: 'calm',
@@ -17,25 +18,22 @@ var S = {
   previewId: null,
   videoId: null,
   videoPoll: null,
-  // voice recording
   rec: null,
   recChunks: [],
   recBlob: null,
   recStart: 0,
   recTimer: null,
   recHardStop: null,
-  // avatar
   avatarFile: null,
-  // turnstile
   tsWidgets: {},
   tsTokens: {},
   tsVoice: false,
   tsAvatar: false,
   tsGenerate: false,
-  // ui
   toastTimer: null,
   journal: []
 };
+
 /* ─── AUDIO PLAYER ─────────────────────── */
 var audio = new Audio();
 /* ─── HELPERS ──────────────────────────── */

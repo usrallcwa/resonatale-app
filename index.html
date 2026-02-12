@@ -1,250 +1,60 @@
-(function () {
-'use strict';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>ResonaTale</title>
+<link rel="stylesheet" href="app.css" />
+</head>
 
-var TURNSTILE_KEY = '0x4AAAAAACLI9vyJZYGLg9lS';
-var API = '/api';
+<body>
+<div id="app">
 
-var S = {
-  bal: 0,
-  hasVoice: false,
-  hasAvatar: false,
-  mood: 'calm',
-  lang: 'en',
-  fmt: 'audio',
-  busy: false,
-  previewId: null,
-  videoPoll: null,
-  journal: []
-};
+<header class="hdr">
+  <div class="hdr-name">ResonaTale</div>
+  <button id="bal-btn" class="bal-btn">
+    <span id="bal-hdr">0 credits</span>
+  </button>
+</header>
 
-var audio = new Audio();
+<!-- HOME -->
+<section id="layer-home" class="layer active">
+  <div class="card">
+    <h2>Balance</h2>
+    <div id="bal-main" class="bal-big">0 credits</div>
+    <div class="dots">
+      <span id="sdot-voice" class="dot"></span>
+      <span id="sdot-avatar" class="dot"></span>
+    </div>
+  </div>
 
-/* ───────────────── HELPERS ───────────────── */
+  <button data-goto="generate" class="btn-main">Create Story</button>
+</section>
 
-function $(id){ return document.getElementById(id); }
-function $$(sel){ return document.querySelectorAll(sel); }
-function on(el,ev,fn){ if(el) el.addEventListener(ev,fn); }
-function setText(el,t){ if(el) el.textContent=t; }
-function clamp(v,l,h){ return Math.max(l,Math.min(h,v)); }
-function pad2(n){ return n<10?'0'+n:''+n; }
+<!-- GENERATE -->
+<section id="layer-generate" class="layer">
+  <button data-goto="home" class="back-btn">← Back</button>
 
-/* ───────────────── SAFE STOP ───────────────── */
+  <h2>Create Story</h2>
 
-function stopAudio(){
-  audio.pause();
-  audio.currentTime=0;
-}
+  <textarea id="gen-prompt" maxlength="500" placeholder="Enter your story prompt..."></textarea>
 
-function stopVideoPoll(){
-  if(S.videoPoll){
-    clearInterval(S.videoPoll);
-    S.videoPoll=null;
-  }
-}
+  <div class="field">
+    <label><input type="checkbox" id="age-confirm" /> I confirm I am 18+</label>
+  </div>
 
-/* ───────────────── API ───────────────── */
+  <button id="btn-generate" class="btn-main">Generate</button>
+</section>
 
-function apiCall(path,opts){
-  opts=opts||{};
-  var headers=opts.headers||{};
-  if(!(opts.body instanceof FormData)){
-    headers['Content-Type']='application/json';
-  }
-  return fetch(API+path,{
-    method:opts.method||'GET',
-    headers:headers,
-    body:opts.body||null
-  }).then(async function(r){
-    var d=null;
-    try{ d=await r.json(); }catch(e){}
-    if(!r.ok) throw d||{error:'Request failed'};
-    return d;
-  });
-}
+<!-- PREVIEW -->
+<section id="layer-preview" class="layer">
+  <button data-goto="home" class="back-btn">← Back</button>
+  <h2>Preview</h2>
+  <audio id="pv-audio" controls></audio>
+</section>
 
-/* ───────────────── SYNC USER ───────────────── */
+</div>
 
-function syncUser(){
-  apiCall('/balance')
-  .then(function(d){
-    S.bal=Number(d.balance)||0;
-    S.hasVoice=!!d.hasVoice;
-    S.hasAvatar=!!d.hasAvatar;
-    updateUI();
-  })
-  .catch(function(){});
-}
-
-function updateUI(){
-  var txt=S.bal.toFixed(0)+' credits';
-  setText($('bal-hdr'),txt);
-  setText($('bal-main'),txt);
-
-  var badge=$('scard-badge');
-  if(badge){
-    if(S.bal<=0){ badge.textContent='0'; }
-    else if(S.bal<10){ badge.textContent='Low'; }
-    else{ badge.textContent='OK'; }
-  }
-
-  // FIXED DOT LOGIC (matches your HTML)
-  var voiceDot=$('#sdot-voice .sdot-c');
-  var avatarDot=$('#sdot-avatar .sdot-c');
-
-  if(voiceDot) voiceDot.classList.toggle('on',S.hasVoice);
-  if(avatarDot) avatarDot.classList.toggle('on',S.hasAvatar);
-
-  setText($('sdot-voice-t'),S.hasVoice?'Voice ready':'Voice');
-  setText($('sdot-avatar-t'),S.hasAvatar?'Avatar ready':'Avatar');
-}
-
-/* ───────────────── NAVIGATION ───────────────── */
-
-function navigate(target){
-  if(S.busy) return;
-
-  stopAudio();
-  stopVideoPoll();
-
-  $$('.layer').forEach(function(l){ l.classList.remove('active'); });
-  var el=$('layer-'+target);
-  if(el) el.classList.add('active');
-
-  $$('.tab').forEach(function(t){
-    t.classList.toggle('active',t.getAttribute('data-tab')===target);
-  });
-}
-
-/* ───────────────── TOP UP ───────────────── */
-
-function openTopUp(){
-  $('modal-topup').hidden=false;
-  var slider=$('tu-slider');
-  if(slider){
-    slider.value=10;
-    setText($('tu-btn-text'),'Continue — $10');
-  }
-}
-
-function processTopUp(){
-  var amt=parseInt($('tu-slider').value)||10;
-  amt=clamp(amt,10,500);
-
-  S.busy=true;
-
-  apiCall('/topup',{
-    method:'POST',
-    body:JSON.stringify({amount:amt})
-  })
-  .then(function(d){
-    if(d.url) window.location.href=d.url;
-  })
-  .finally(function(){ S.busy=false; });
-}
-
-/* ───────────────── GENERATE ───────────────── */
-
-function generateStory(){
-  if(S.busy) return;
-
-  if(!$('age-confirm').checked){
-    alert('You must confirm you are 18+');
-    return;
-  }
-
-  var prompt=$('gen-prompt').value.trim();
-  if(!prompt) return;
-
-  S.busy=true;
-
-  apiCall('/generate',{
-    method:'POST',
-    body:JSON.stringify({
-      prompt:prompt,
-      mood:S.mood,
-      language:S.lang,
-      format:S.fmt
-    })
-  })
-  .then(function(d){
-    S.previewId=d.storyId||null;
-    navigate('preview');
-  })
-  .finally(function(){ S.busy=false; });
-}
-
-/* ───────────────── INIT ───────────────── */
-
-function init(){
-
-  // Safe state reset
-  S.busy=false;
-  stopAudio();
-  stopVideoPoll();
-
-  // Restore journal
-  try{
-    S.journal=JSON.parse(localStorage.getItem('rt_journal'))||[];
-  }catch(e){
-    localStorage.removeItem('rt_journal');
-    S.journal=[];
-  }
-
-  /* NAV */
-  document.addEventListener('click',function(e){
-    var g=e.target.closest('[data-goto]');
-    if(g) navigate(g.getAttribute('data-goto'));
-
-    var t=e.target.closest('[data-tab]');
-    if(t) navigate(t.getAttribute('data-tab'));
-  });
-
-  /* TOPUP */
-  on($('bal-btn'),'click',openTopUp);
-  on($('scard'),'click',openTopUp);
-  on($('btn-topup'),'click',processTopUp);
-
-  /* GENERATE */
-  on($('btn-generate'),'click',generateStory);
-
-  /* FORMAT */
-  $$('.fmt-item').forEach(function(btn){
-    btn.addEventListener('click',function(){
-      $$('.fmt-item').forEach(function(b){b.classList.remove('active');});
-      btn.classList.add('active');
-      S.fmt=btn.dataset.fmt;
-    });
-  });
-
-  /* MOOD */
-  $$('.mood-chip').forEach(function(btn){
-    btn.addEventListener('click',function(){
-      $$('.mood-chip').forEach(function(b){b.classList.remove('active');});
-      btn.classList.add('active');
-      S.mood=btn.dataset.mood;
-    });
-  });
-
-  /* LANGUAGE */
-  $$('.lang-chip').forEach(function(btn){
-    btn.addEventListener('click',function(){
-      $$('.lang-chip').forEach(function(b){b.classList.remove('active');});
-      btn.classList.add('active');
-      S.lang=btn.dataset.lang;
-    });
-  });
-
-  /* SEEK */
-  on($('pl-seek'),'input',function(e){
-    if(audio.duration){
-      audio.currentTime=(e.target.value/100)*audio.duration;
-    }
-  });
-
-  navigate('home');
-  syncUser();
-}
-
-document.addEventListener('DOMContentLoaded',init);
-
-})();
+<script src="app.js"></script>
+</body>
+</html>

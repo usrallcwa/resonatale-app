@@ -4,203 +4,130 @@
 var TURNSTILE_KEY = '0x4AAAAAACLI9vyJZYGLg9lS';
 var API = '/api';
 
-/* ─── GLOBAL STATE ─────────────────────── */
-var S = {
+(function () {
+"use strict";
+
+const API_BASE = "https://api.resonatale.com";
+
+const S = {
   bal: 0,
   hasVoice: false,
   hasAvatar: false,
-  loggedIn: false,
-  pendingTopUpAmount: null,
-  mood: 'calm',
-  lang: 'en',
-  fmt: 'audio',
   busy: false,
-  previewId: null,
-  videoId: null,
-  videoPoll: null,
-  rec: null,
-  recChunks: [],
-  recBlob: null,
-  recStart: 0,
-  recTimer: null,
-  recHardStop: null,
-  avatarFile: null,
-  tsWidgets: {},
-  tsTokens: {},
-  tsVoice: false,
-  tsAvatar: false,
-  tsGenerate: false,
-  toastTimer: null,
-  journal: []
+  previewId: null
 };
 
-/* ─── AUDIO PLAYER ─────────────────────── */
-var audio = new Audio();
+const audio = new Audio();
 
-/* ─── SAFE STOP HELPERS ─────────────────── */
-function stopAudio() {
-  if (!audio) return;
-  audio.pause();
-  audio.currentTime = 0;
-}
+/* ---------- HELPERS ---------- */
 
-function stopVideoPoll() {
-  if (S.videoPoll) {
-    clearInterval(S.videoPoll);
-    S.videoPoll = null;
-  }
-}
-
-/* ─── HELPERS ──────────────────────────── */
 function $(id) { return document.getElementById(id); }
-function $$(sel, root) { return (root || document).querySelectorAll(sel); }
-function on(el, ev, fn) { if (el) el.addEventListener(ev, fn); }
-function setText(el, t) { if (el) el.textContent = t; }
-function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
-function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+function $$(sel) { return document.querySelectorAll(sel); }
 
-/* ─── TURNSTILE SAFE RESET AFTER SUCCESS ─── */
-function consumeTurnstile(containerId) {
-  resetTurnstile(containerId);
-}
-
-/* ─── NAVIGATION (FIXED) ─────────────────── */
 function navigate(target) {
+  $$(".layer").forEach(l => l.classList.remove("active"));
+  const el = $("layer-" + target);
+  if (el) el.classList.add("active");
+}
+
+async function api(path, options = {}) {
+  const res = await fetch(API_BASE + path, {
+    method: options.method || "GET",
+    headers: { "Content-Type": "application/json" },
+    body: options.body ? JSON.stringify(options.body) : null
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.error || "API Error");
+  }
+
+  return data;
+}
+
+/* ---------- UI ---------- */
+
+function updateUI() {
+  const balTxt = S.bal + " credits";
+  if ($("bal-hdr")) $("bal-hdr").textContent = balTxt;
+  if ($("bal-main")) $("bal-main").textContent = balTxt;
+
+  const v = $("sdot-voice");
+  const a = $("sdot-avatar");
+
+  if (v) v.classList.toggle("active", S.hasVoice);
+  if (a) a.classList.toggle("active", S.hasAvatar);
+}
+
+/* ---------- USER ---------- */
+
+async function syncUser() {
+  try {
+    const d = await api("/balance");
+    S.bal = Number(d.balance) || 0;
+    S.hasVoice = !!d.hasVoice;
+    S.hasAvatar = !!d.hasAvatar;
+    updateUI();
+  } catch (e) {
+    console.error("Balance sync failed");
+  }
+}
+
+/* ---------- GENERATE ---------- */
+
+async function generateStory() {
   if (S.busy) return;
 
-  stopAudio();
-  stopVideoPoll();
-
-  $$('.layer').forEach(function (l) {
-    l.classList.remove('active');
-  });
-
-  var el = $('layer-' + target);
-  if (el) {
-    el.classList.add('active');
-    var sc = el.querySelector('.lscroll,.home-scroll');
-    if (sc) sc.scrollTop = 0;
+  if (!$("age-confirm").checked) {
+    alert("You must confirm you are 18+");
+    return;
   }
 
-  $$('.tab').forEach(function (t) {
-    t.classList.toggle('active', t.getAttribute('data-tab') === target);
-  });
-
-  if (target === 'journal') {
-    renderJournal();
-  }
-}
-
-/* ─── FEATURE UI FIX (DOT SELECTOR FIXED) ─── */
-function updateFeatureUI(type, isEnabled) {
-  var dotId = type === 'voice' ? 'sdot-voice' : 'sdot-avatar';
-  var dot = $(dotId);
-  if (dot) dot.classList.toggle('on', isEnabled);
-}
-
-/* ─── API CALL ───────────────────────────── */
-function apiCall(path, opts) {
-  opts = opts || {};
-  var headers = opts.headers || {};
-  var isForm = opts.body instanceof FormData;
-
-  if (!isForm) {
-    headers['Content-Type'] = 'application/json';
-  }
-
-  return fetch(API + path, {
-    method: opts.method || 'GET',
-    headers: headers,
-    body: opts.body || null
-  }).then(async function (r) {
-    let data = null;
-    try { data = await r.json(); } catch (e) {}
-    if (!r.ok) throw data || { error: 'Request failed' };
-    return data;
-  });
-}
-
-/* ─── VIDEO POLL HARDENED ───────────────── */
-function startVideoPoll(videoId) {
-  stopVideoPoll();
-
-  var start = Date.now();
-  var MAX = 120000;
-
-  S.videoPoll = setInterval(function () {
-    if (Date.now() - start > MAX) {
-      stopVideoPoll();
-      return;
-    }
-
-    apiCall('/video/status?videoId=' + encodeURIComponent(videoId))
-      .then(function (d) {
-        if (d.status === 'completed') {
-          stopVideoPoll();
-          syncUser();
-        }
-        if (d.status === 'failed') {
-          stopVideoPoll();
-          syncUser();
-        }
-      })
-      .catch(function () {});
-  }, 5000);
-}
-
-/* ─── GENERATE SAFE ─────────────────────── */
-function generateStory() {
-  if (S.busy) return;
-
-  var prompt = ($('gen-prompt') ? $('gen-prompt').value : '').trim();
+  const prompt = $("gen-prompt").value.trim();
   if (!prompt) return;
-
-  var tk = getTurnstileToken('ts-generate');
-  if (!tk) return;
 
   S.busy = true;
 
-  apiCall('/generate', {
-    method: 'POST',
-    headers: { 'X-Turnstile-Token': tk },
-    body: JSON.stringify({
-      prompt: prompt,
-      mood: S.mood,
-      language: S.lang,
-      format: S.fmt
-    })
-  })
-  .then(function (d) {
-    consumeTurnstile('ts-generate');
-    S.previewId = d.storyId || null;
-    navigate('preview');
-  })
-  .catch(function () {
-    resetTurnstile('ts-generate');
-  })
-  .finally(function () {
-    S.busy = false;
-  });
-}
+  try {
+    const d = await api("/generate", {
+      method: "POST",
+      body: {
+        prompt,
+        mood: "calm",
+        language: "en",
+        format: "audio"
+      }
+    });
 
-/* ─── INIT ─────────────────────────────── */
-function init() {
-  S.busy = false;
-  stopAudio();
-  stopVideoPoll();
-
-  S.journal = (function () {
-    try {
-      return JSON.parse(localStorage.getItem('rt_journal')) || [];
-    } catch (e) {
-      localStorage.removeItem('rt_journal');
-      return [];
+    if (d.previewUrl) {
+      $("pv-audio").src = d.previewUrl;
+      navigate("preview");
     }
-  })();
 
-  navigate('home');
+  } catch (e) {
+    alert(e.message);
+  }
+
+  S.busy = false;
 }
 
-document.addEventListener('DOMContentLoaded', init);
+/* ---------- INIT ---------- */
+
+function init() {
+
+  document.addEventListener("click", function (e) {
+    const g = e.target.closest("[data-goto]");
+    if (g) navigate(g.getAttribute("data-goto"));
+  });
+
+  if ($("bal-btn")) $("bal-btn").addEventListener("click", () => navigate("home"));
+  if ($("btn-generate")) $("btn-generate").addEventListener("click", generateStory);
+
+  navigate("home");
+  syncUser();
+}
+
+document.addEventListener("DOMContentLoaded", init);
 
 })();

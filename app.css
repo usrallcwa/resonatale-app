@@ -76,6 +76,7 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   cursor: pointer;
+  user-select: none;
 }
 
 .nav-right {
@@ -240,6 +241,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: var(--radius-full);
   padding: 10px 18px;
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: 13px;
   font-weight: 500;
   color: var(--text-secondary);
@@ -595,6 +597,7 @@ body {
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
+  min-height: 65px;
 }
 
 .create-generate-area {
@@ -784,10 +787,27 @@ body {
 
 .player-ring.playing {
   border-color: transparent;
+}
+
+.player-ring-glow {
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
   background: conic-gradient(from 0deg, var(--neon-blue), var(--neon-pink), var(--neon-lime), var(--neon-blue));
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #fff calc(100% - 3px));
-  mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #fff calc(100% - 3px));
   animation: ringRotate 3s linear infinite;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.player-ring.playing .player-ring-glow {
+  opacity: 1;
+}
+
+.player-ring-mask {
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--bg-deep);
 }
 
 @keyframes ringRotate {
@@ -795,10 +815,8 @@ body {
 }
 
 .player-ring-inner {
-  position: absolute;
-  inset: 6px;
-  border-radius: 50%;
-  background: var(--bg-deep);
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -959,10 +977,12 @@ body {
   font-size: 40px;
   margin-bottom: 12px;
   opacity: 0.5;
+  display: block;
 }
 
 .journal-empty p {
   font-size: 14px;
+  margin-bottom: 20px;
 }
 
 .journal-grid {
@@ -978,6 +998,7 @@ body {
   padding: 16px;
   cursor: pointer;
   transition: all 0.2s ease;
+  position: relative;
 }
 
 .journal-card:hover {
@@ -1034,14 +1055,17 @@ body {
 }
 
 .journal-card-delete {
-  float: right;
+  position: absolute;
+  top: 12px;
+  right: 12px;
   background: none;
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 14px;
-  padding: 4px;
+  font-size: 16px;
+  padding: 4px 8px;
   transition: color 0.2s ease;
+  line-height: 1;
 }
 
 .journal-card-delete:hover {
@@ -1117,6 +1141,7 @@ body {
   color: var(--text-muted);
   cursor: pointer;
   padding: 8px;
+  transition: color 0.2s ease;
 }
 
 .modal-close-btn:hover {
@@ -1250,7 +1275,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 16px;
-  padding: 12px 0 20px;
+  padding: 32px 0 20px;
   flex-wrap: wrap;
 }
 
@@ -1294,6 +1319,7 @@ body {
   animation: toastIn 0.3s ease;
   max-width: 340px;
   text-align: center;
+  white-space: nowrap;
 }
 
 .toast.success {
@@ -1310,14 +1336,6 @@ body {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
-}
-
-/* ═══════════════════════════════════════
-   HIDDEN HELPER
-   ═══════════════════════════════════════ */
-
-.hidden {
-  display: none !important;
 }
 
 /* ═══════════════════════════════════════

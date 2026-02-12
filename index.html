@@ -1,60 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>ResonaTale</title>
-<link rel="stylesheet" href="app.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ResonaTale — Your Voice. Your World.</title>
+<meta name="description" content="AI-powered stories narrated in your own voice. Create immersive audio and video stories with ResonaTale.">
+<meta name="theme-color" content="#07070B">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
-
 <body>
-<div id="app">
-
-<header class="hdr">
-  <div class="hdr-name">ResonaTale</div>
-  <button id="bal-btn" class="bal-btn">
-    <span id="bal-hdr">0 credits</span>
-  </button>
-</header>
-
-<!-- HOME -->
-<section id="layer-home" class="layer active">
-  <div class="card">
-    <h2>Balance</h2>
-    <div id="bal-main" class="bal-big">0 credits</div>
-    <div class="dots">
-      <span id="sdot-voice" class="dot"></span>
-      <span id="sdot-avatar" class="dot"></span>
-    </div>
-  </div>
-
-  <button data-goto="generate" class="btn-main">Create Story</button>
-</section>
-
-<!-- GENERATE -->
-<section id="layer-generate" class="layer">
-  <button data-goto="home" class="back-btn">← Back</button>
-
-  <h2>Create Story</h2>
-
-  <textarea id="gen-prompt" maxlength="500" placeholder="Enter your story prompt..."></textarea>
-
-  <div class="field">
-    <label><input type="checkbox" id="age-confirm" /> I confirm I am 18+</label>
-  </div>
-
-  <button id="btn-generate" class="btn-main">Generate</button>
-</section>
-
-<!-- PREVIEW -->
-<section id="layer-preview" class="layer">
-  <button data-goto="home" class="back-btn">← Back</button>
-  <h2>Preview</h2>
-  <audio id="pv-audio" controls></audio>
-</section>
-
-</div>
-
+<div id="app"></div>
+<div id="modal-root"></div>
 <script src="app.js"></script>
 </body>
 </html>

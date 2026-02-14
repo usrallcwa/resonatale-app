@@ -15,6 +15,7 @@
     body{position:fixed;touch-action:pan-y}
     .app{width:100vw;height:100vh;display:flex;flex-direction:column;overflow:hidden}
     .header{display:flex;justify-content:space-between;align-items:center;padding:1rem;background:rgba(15,23,42,0.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);z-index:100;position:fixed;top:0;left:0;right:0}
+    body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;border:1px solid var(--border);pointer-events:none;z-index:9999}
     .header.hidden{display:none}
     .logo{font-size:1.5rem}
     .balance{background:linear-gradient(135deg,var(--primary),#8B5CF6);padding:0.5rem 1rem;border-radius:20px;font-weight:600;font-size:0.875rem}

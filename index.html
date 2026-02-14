@@ -4,46 +4,132 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0F172A">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
-    <title>ResonaTale - You Are The Star</title>
-    
-    <link rel="stylesheet" href="css/style.css">
+    <title>ResonaTale</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Cloudflare Turnstile -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <style>
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    :root{--primary:#6366F1;--accent:#06B6D4;--bg:#0F172A;--card:#1E293B;--text:#FFF;--muted:#94A3B8;--border:#334155;--error:#EF4444}
+    html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text)}
+    body{position:fixed;touch-action:pan-y}
+    .app{width:100vw;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+    .header{display:flex;justify-content:space-between;align-items:center;padding:1rem;background:rgba(15,23,42,0.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);z-index:100}
+    .header.hidden{display:none}
+    .logo{font-size:1.5rem}
+    .balance{background:linear-gradient(135deg,var(--primary),#8B5CF6);padding:0.5rem 1rem;border-radius:20px;font-weight:600;font-size:0.875rem}
+    .icon-btn{background:transparent;border:none;color:var(--text);font-size:1.5rem;padding:0.5rem;cursor:pointer;width:44px;height:44px}
+    .screen{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;background:var(--bg);transform:translateX(100%);transition:transform 0.3s ease;z-index:1}
+    .screen.active{transform:translateX(0);z-index:10}
+    .screen-header{display:flex;align-items:center;justify-content:space-between;padding:1rem;background:var(--card);border-bottom:1px solid var(--border);min-height:60px}
+    .back-btn{background:transparent;border:none;color:var(--text);font-size:1.5rem;cursor:pointer;width:44px;height:44px}
+    .screen-title{font-size:1.125rem;font-weight:600;flex:1;text-align:center}
+    .step{color:var(--muted);font-size:0.875rem;min-width:44px;text-align:right}
+    .screen-content{flex:1;overflow-y:auto;padding:1.5rem;-webkit-overflow-scrolling:touch}
+    .screen-footer{padding:1.5rem;background:var(--card);border-top:1px solid var(--border)}
+    #heroScreen{transform:translateX(0);display:flex;align-items:center;justify-content:center}
+    .hero{text-align:center;padding:2rem}
+    .hero-logo{font-size:2.5rem;font-weight:800;margin-bottom:0.5rem;background:linear-gradient(135deg,var(--primary),#8B5CF6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .hero-tag{font-size:1.125rem;color:var(--accent);margin-bottom:2rem;font-weight:500}
+    .hero-desc{margin-bottom:3rem;color:var(--muted)}
+    .hero-note{margin-top:1rem;font-size:0.875rem;color:var(--muted)}
+    .hero-footer{position:absolute;bottom:2rem;left:0;right:0;display:flex;justify-content:center;gap:1rem}
+    .link-btn{background:transparent;border:none;color:var(--muted);font-size:0.875rem;padding:0.5rem 1rem;cursor:pointer}
+    button{font-family:inherit;cursor:pointer;transition:all 0.2s}
+    .btn{background:linear-gradient(135deg,var(--primary),#8B5CF6);color:var(--text);border:none;border-radius:12px;padding:1rem 2rem;font-size:1rem;font-weight:600;width:100%;min-height:52px;box-shadow:0 4px 20px rgba(99,102,241,0.3)}
+    .btn:active{transform:scale(0.98)}
+    .btn:disabled{opacity:0.5;cursor:not-allowed}
+    .btn.pulse{animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{box-shadow:0 4px 20px rgba(99,102,241,0.3)}50%{box-shadow:0 8px 30px rgba(99,102,241,0.6)}}
+    .text-btn{background:transparent;border:none;color:var(--accent);font-size:0.875rem;text-decoration:underline}
+    .instruction{text-align:center;color:var(--muted);margin-bottom:1.5rem;font-size:0.875rem}
+    .upload-zone{background:var(--card);border:2px dashed var(--border);border-radius:16px;padding:3rem 2rem;text-align:center;cursor:pointer;margin-bottom:1.5rem;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .upload-zone:active{background:var(--border)}
+    .upload-icon{font-size:3rem;margin-bottom:1rem}
+    .upload-count{color:var(--muted);font-size:0.875rem}
+    .photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+    .photo-item{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--card)}
+    .photo-item img{width:100%;height:100%;object-fit:cover}
+    .photo-remove{position:absolute;top:4px;right:4px;width:28px;height:28px;border-radius:50%;background:rgba(239,68,68,0.9);border:none;color:white;font-size:1rem;cursor:pointer}
+    .voice-recorder{display:flex;flex-direction:column;align-items:center;gap:1.5rem}
+    .waveform{width:100%;height:150px;background:var(--card);border-radius:12px;display:flex;align-items:center;justify-content:center}
+    .record-timer{font-size:1.125rem;color:var(--muted);font-weight:600}
+    .btn-record{background:var(--error);color:white;border:none;border-radius:50%;width:80px;height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.25rem;box-shadow:0 4px 20px rgba(239,68,68,0.4)}
+    .btn-record.recording{animation:rec 1s infinite}
+    @keyframes rec{0%,100%{box-shadow:0 4px 20px rgba(239,68,68,0.4)}50%{box-shadow:0 8px 40px rgba(239,68,68,0.8)}}
+    .record-icon{font-size:1.5rem}
+    .record-text{font-size:0.75rem}
+    .hint{text-align:center;color:var(--muted);font-size:0.875rem}
+    .audio-preview{width:100%;display:flex;flex-direction:column;align-items:center;gap:1rem}
+    .audio-preview audio{width:100%;height:40px}
+    .audio-preview.hidden{display:none}
+    .form-group{margin-bottom:1.5rem}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+    .form-label{display:block;font-size:0.875rem;font-weight:600;margin-bottom:0.5rem;color:var(--muted)}
+    .form-input,.form-select{width:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:0.875rem;color:var(--text);font-size:1rem;font-family:inherit}
+    .form-input:focus,.form-select:focus{outline:none;border-color:var(--primary)}
+    .form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cpath fill='%2394A3B8' d='M6 9L1 4h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 1rem center;padding-right:3rem}
+    .char-count{display:block;text-align:right;font-size:0.75rem;color:var(--muted);margin-top:0.25rem}
+    .video-container{position:relative;background:#000;border-radius:12px;overflow:hidden;margin-bottom:1.5rem}
+    .video-container video{width:100%;display:block}
+    .watermark{position:absolute;bottom:1rem;right:1rem;background:rgba(0,0,0,0.7);padding:0.5rem 1rem;border-radius:8px;font-size:0.75rem;font-weight:600}
+    .preview-info{text-align:center}
+    .preview-title{font-size:1.125rem;font-weight:600;margin-bottom:0.5rem}
+    .preview-desc{color:var(--muted);font-size:0.875rem}
+    .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:1000;padding:1.5rem}
+    .modal.active{display:flex}
+    .modal-content{background:var(--card);border-radius:20px;padding:2rem;width:100%;max-width:400px;max-height:90vh;overflow-y:auto;position:relative}
+    .modal-close{position:absolute;top:1rem;right:1rem;background:transparent;border:none;color:var(--muted);font-size:2rem;width:44px;height:44px;cursor:pointer}
+    .modal-title{font-size:1.5rem;font-weight:700;margin-bottom:0.5rem}
+    .modal-subtitle{color:var(--muted);font-size:0.875rem;margin-bottom:2rem}
+    .form{display:flex;flex-direction:column;gap:1rem}
+    .checkbox-label{display:flex;gap:0.75rem;font-size:0.875rem;color:var(--muted);line-height:1.4}
+    .checkbox-label input{margin-top:0.25rem;cursor:pointer}
+    .checkbox-label a{color:var(--accent);text-decoration:none}
+    .turnstile-wrapper{display:flex;justify-content:center;margin:0.5rem 0}
+    .pricing-info{background:rgba(6,182,212,0.1);border:1px solid var(--accent);border-radius:12px;padding:1rem;text-align:center;margin-bottom:1.5rem;font-size:0.875rem}
+    .amount-display{font-size:3rem;font-weight:800;text-align:center;color:var(--accent);margin-bottom:1.5rem}
+    .credit-slider{width:100%;height:8px;border-radius:5px;background:var(--card);outline:none;-webkit-appearance:none;margin-bottom:0.5rem}
+    .credit-slider::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#8B5CF6);cursor:pointer;box-shadow:0 4px 12px rgba(99,102,241,0.4)}
+    .credit-slider::-moz-range-thumb{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#8B5CF6);cursor:pointer;border:none;box-shadow:0 4px 12px rgba(99,102,241,0.4)}
+    .slider-labels{display:flex;justify-content:space-between;font-size:0.875rem;color:var(--muted)}
+    .menu-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);transform:translateX(100%);transition:transform 0.3s;z-index:2000}
+    .menu-overlay.active{transform:translateX(0)}
+    .menu-content{position:absolute;right:0;top:0;width:80%;max-width:300px;height:100%;background:var(--card);padding:2rem;display:flex;flex-direction:column}
+    .menu-close{position:absolute;top:1rem;right:1rem;background:transparent;border:none;color:var(--muted);font-size:2rem;width:44px;height:44px}
+    .menu-user{margin-bottom:2rem;padding-bottom:2rem;border-bottom:1px solid var(--border)}
+    .menu-email{font-size:0.875rem;color:var(--muted);margin-bottom:0.5rem}
+    .menu-balance{font-size:1.25rem;font-weight:700;color:var(--accent)}
+    .menu-items{display:flex;flex-direction:column}
+    .menu-item{background:transparent;border:none;color:var(--text);text-align:left;padding:1rem 0;border-bottom:1px solid var(--border);font-size:1rem}
+    .menu-item.danger{color:var(--error)}
+    .loading-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg);display:none;align-items:center;justify-content:center;flex-direction:column;gap:2rem;z-index:3000}
+    .loading-overlay.active{display:flex}
+    .spinner{width:50px;height:50px;border:4px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loading-text{color:var(--muted);font-size:1rem}
+    .hidden{display:none!important}
+    </style>
 </head>
 <body>
-
-    <!-- APP CONTAINER -->
     <div id="app" class="app">
-
-        <!-- HEADER (Hidden on start, shown after login) -->
         <header id="appHeader" class="header hidden">
-            <div class="header-left">
-                <span class="logo">🎬</span>
-            </div>
-            <div class="header-right">
-                <span class="balance-badge">$<span id="userBalance">0</span></span>
+            <div><span class="logo">🎬</span></div>
+            <div style="display:flex;align-items:center;gap:1rem">
+                <span class="balance">$<span id="userBalance">0</span></span>
                 <button class="icon-btn" onclick="showMenu()">☰</button>
             </div>
         </header>
 
-        <!-- SCREEN 1: HERO (Entry Point) -->
         <div id="heroScreen" class="screen active">
-            <div class="hero-content">
+            <div class="hero">
                 <h1 class="hero-logo">ResonaTale</h1>
-                <p class="hero-tagline">You Are The Star</p>
+                <p class="hero-tag">You Are The Star</p>
                 <div class="hero-desc">
                     <p>Turn your photos into epic AI films</p>
-                    <p class="hero-subdesc">Narrated in your own voice</p>
+                    <p style="font-size:0.875rem;margin-top:0.5rem">Narrated in your own voice</p>
                 </div>
-                <button class="btn-primary pulse" onclick="startApp()">
-                    Start Creating
-                </button>
+                <button class="btn pulse" onclick="startApp()">Start Creating</button>
                 <p class="hero-note">Free preview • No signup required</p>
             </div>
             <div class="hero-footer">
@@ -53,84 +139,60 @@
             </div>
         </div>
 
-        <!-- SCREEN 2: PHOTO UPLOAD -->
         <div id="uploadScreen" class="screen">
             <div class="screen-header">
                 <button class="back-btn" onclick="goBack('heroScreen')">←</button>
                 <h2 class="screen-title">Upload Photos</h2>
-                <span class="step-indicator">1/4</span>
+                <span class="step">1/4</span>
             </div>
-            
             <div class="screen-content">
                 <p class="instruction">Upload 6-12 photos of yourself</p>
-                
-                <div class="upload-zone" id="uploadZone" onclick="triggerFileInput()">
+                <div class="upload-zone" onclick="triggerFileInput()">
                     <div class="upload-icon">📸</div>
-                    <p class="upload-text">Tap to select photos</p>
+                    <p>Tap to select photos</p>
                     <p class="upload-count"><span id="photoCount">0</span>/12</p>
                 </div>
-                
-                <input type="file" id="photoInput" accept="image/*" multiple style="display: none;">
-                
+                <input type="file" id="photoInput" accept="image/*" multiple style="display:none">
                 <div id="photoGrid" class="photo-grid"></div>
             </div>
-
             <div class="screen-footer">
-                <button id="photoContinueBtn" class="btn-primary" onclick="goToVoice()" disabled>
-                    Continue
-                </button>
+                <button id="photoContinueBtn" class="btn" onclick="goToVoice()" disabled>Continue</button>
             </div>
         </div>
 
-        <!-- SCREEN 3: VOICE RECORDING -->
         <div id="voiceScreen" class="screen">
             <div class="screen-header">
                 <button class="back-btn" onclick="goBack('uploadScreen')">←</button>
                 <h2 class="screen-title">Clone Your Voice</h2>
-                <span class="step-indicator">2/4</span>
+                <span class="step">2/4</span>
             </div>
-            
             <div class="screen-content">
                 <p class="instruction">Record 30 seconds of your voice</p>
-                
                 <div class="voice-recorder">
-                    <div class="waveform" id="waveform">
-                        <canvas id="waveformCanvas"></canvas>
-                    </div>
-                    
+                    <div class="waveform"><canvas id="waveformCanvas"></canvas></div>
                     <div class="record-timer" id="recordTimer">0:00 / 0:30</div>
-                    
                     <button id="recordBtn" class="btn-record" onclick="toggleRecording()">
                         <span class="record-icon">⏺</span>
-                        <span class="record-text">Start Recording</span>
+                        <span class="record-text">Start</span>
                     </button>
-                    
-                    <div id="recordingHint" class="hint">
-                        💡 Speak naturally - read a favorite quote or tell a short story
-                    </div>
+                    <div id="recordingHint" class="hint">💡 Speak naturally - read a quote or story</div>
                 </div>
-
                 <div id="audioPreview" class="audio-preview hidden">
                     <audio id="audioPlayback" controls></audio>
                     <button class="text-btn" onclick="reRecord()">Re-record</button>
                 </div>
             </div>
-
             <div class="screen-footer">
-                <button id="voiceContinueBtn" class="btn-primary" onclick="goToStory()" disabled>
-                    Continue
-                </button>
+                <button id="voiceContinueBtn" class="btn" onclick="goToStory()" disabled>Continue</button>
             </div>
         </div>
 
-        <!-- SCREEN 4: STORY INPUT -->
         <div id="storyScreen" class="screen">
             <div class="screen-header">
                 <button class="back-btn" onclick="goBack('voiceScreen')">←</button>
                 <h2 class="screen-title">Your Story</h2>
-                <span class="step-indicator">3/4</span>
+                <span class="step">3/4</span>
             </div>
-            
             <div class="screen-content">
                 <div class="form-group">
                     <label class="form-label">🌍 Language</label>
@@ -149,21 +211,13 @@
                         <option value="ru">🇷🇺 Русский</option>
                     </select>
                 </div>
-
                 <div class="form-group">
                     <label class="form-label">📝 Brief Description</label>
-                    <input 
-                        type="text" 
-                        id="briefDesc" 
-                        class="form-input" 
-                        placeholder="An epic adventure where I discover treasure..."
-                        maxlength="100"
-                    >
+                    <input type="text" id="briefDesc" class="form-input" placeholder="An epic adventure where I..." maxlength="100">
                     <span class="char-count"><span id="briefCount">0</span>/100</span>
                 </div>
-
                 <div class="form-row">
-                    <div class="form-group-half">
+                    <div class="form-group">
                         <label class="form-label">🎭 Mood</label>
                         <select id="moodSelect" class="form-select">
                             <option value="dramatic">Dramatic</option>
@@ -174,8 +228,7 @@
                             <option value="comedic">Comedic</option>
                         </select>
                     </div>
-                    
-                    <div class="form-group-half">
+                    <div class="form-group">
                         <label class="form-label">🎬 Genre</label>
                         <select id="genreSelect" class="form-select">
                             <option value="adventure">Adventure</option>
@@ -187,7 +240,6 @@
                         </select>
                     </div>
                 </div>
-
                 <div class="form-group">
                     <label class="form-label">📱 Orientation</label>
                     <select id="orientationSelect" class="form-select">
@@ -197,144 +249,74 @@
                     </select>
                 </div>
             </div>
-
             <div class="screen-footer">
-                <button class="btn-primary" onclick="generatePreview()">
-                    Generate Preview
-                </button>
+                <button class="btn" onclick="generatePreview()">Generate Preview</button>
             </div>
         </div>
 
-        <!-- SCREEN 5: PREVIEW -->
         <div id="previewScreen" class="screen">
             <div class="screen-header">
                 <h2 class="screen-title">Your Preview</h2>
-                <span class="step-indicator">4/4</span>
+                <span class="step">4/4</span>
             </div>
-            
             <div class="screen-content">
                 <div class="video-container">
                     <video id="previewVideo" controls playsinline></video>
                     <div class="watermark">PREVIEW</div>
                 </div>
-                
                 <div class="preview-info">
                     <p class="preview-title">30-second preview ready!</p>
-                    <p class="preview-desc">Create account to unlock full 3-minute film</p>
+                    <p class="preview-desc">Create account to unlock full film</p>
                 </div>
             </div>
-
             <div class="screen-footer">
-                <button class="btn-primary pulse" onclick="showSignup()">
-                    Unlock Full Film
-                </button>
+                <button class="btn pulse" onclick="showSignup()">Unlock Full Film</button>
             </div>
         </div>
 
-        <!-- SIGNUP MODAL -->
         <div id="signupModal" class="modal">
             <div class="modal-content">
                 <button class="modal-close" onclick="closeSignup()">×</button>
-                
                 <h3 class="modal-title">Create Account</h3>
-                <p class="modal-subtitle">Unlock your full 3-minute film</p>
-                
+                <p class="modal-subtitle">Unlock your full film</p>
                 <form id="signupForm" class="form" onsubmit="handleSignup(event)">
-                    <input 
-                        type="email" 
-                        id="signupEmail" 
-                        class="form-input" 
-                        placeholder="Email" 
-                        required
-                    >
-                    
-                    <input 
-                        type="password" 
-                        id="signupPassword" 
-                        class="form-input" 
-                        placeholder="Password (min 8 characters)" 
-                        minlength="8"
-                        required
-                    >
-                    
-                    <input 
-                        type="text" 
-                        id="signupName" 
-                        class="form-input" 
-                        placeholder="Name (optional)"
-                    >
-                    
+                    <input type="email" id="signupEmail" class="form-input" placeholder="Email" required>
+                    <input type="password" id="signupPassword" class="form-input" placeholder="Password (min 8)" minlength="8" required>
+                    <input type="text" id="signupName" class="form-input" placeholder="Name (optional)">
                     <label class="checkbox-label">
                         <input type="checkbox" id="consentCheck" required>
-                        <span>I consent to ResonaTale using my photos, voice, and likeness to generate my AI film. 
-                        <a href="terms.html" target="_blank">Terms</a> • 
-                        <a href="privacy.html" target="_blank">Privacy</a></span>
+                        <span>I consent to use my content. <a href="terms.html" target="_blank">Terms</a> • <a href="privacy.html" target="_blank">Privacy</a></span>
                     </label>
-                    
-                    <!-- Turnstile -->
                     <div class="turnstile-wrapper">
-                        <div 
-                            class="cf-turnstile" 
-                            data-sitekey="1x00000000000000000000AA"
-                            data-callback="onTurnstileSuccess"
-                            data-theme="dark"
-                        ></div>
+                        <div class="cf-turnstile" data-sitekey="YOUR_TURNSTILE_SITE_KEY" data-callback="onTurnstileSuccess" data-theme="dark"></div>
                     </div>
-                    
-                    <button type="submit" class="btn-primary" id="signupBtn" disabled>
-                        Create Account
-                    </button>
+                    <button type="submit" class="btn" id="signupBtn" disabled>Create Account</button>
                 </form>
             </div>
         </div>
 
-        <!-- ADD CREDITS MODAL -->
         <div id="creditsModal" class="modal">
             <div class="modal-content">
                 <button class="modal-close" onclick="closeCredits()">×</button>
-                
                 <h3 class="modal-title">Add Credits</h3>
-                <p class="modal-subtitle">Balance: $<span id="modalBalance">0.00</span></p>
-                
-                <div class="pricing-info">
-                    <p>💰 Each film costs $19.99</p>
-                </div>
-                
+                <p class="modal-subtitle">Balance: $<span id="modalBalance">0</span></p>
+                <div class="pricing-info">💰 Each film costs $19.99</div>
                 <div class="form-group">
-                    <label class="form-label">Amount ($20-$500)</label>
-                    <div class="input-with-prefix">
-                        <span class="input-prefix">$</span>
-                        <input 
-                            type="number" 
-                            id="creditAmount" 
-                            class="form-input" 
-                            min="20" 
-                            max="500" 
-                            value="50"
-                        >
-                    </div>
+                    <label class="form-label">Select Amount</label>
+                    <div class="amount-display">$<span id="sliderValue">100</span></div>
+                    <input type="range" id="creditSlider" class="credit-slider" min="20" max="500" value="100" step="10">
+                    <div class="slider-labels"><span>$20</span><span>$500</span></div>
                 </div>
-                
-                <div class="quick-amounts">
-                    <button class="quick-btn" onclick="setAmount(20)">$20</button>
-                    <button class="quick-btn" onclick="setAmount(50)">$50</button>
-                    <button class="quick-btn" onclick="setAmount(100)">$100</button>
-                    <button class="quick-btn" onclick="setAmount(200)">$200</button>
-                </div>
-                
-                <button class="btn-primary" onclick="processPayment()">
-                    Add to Wallet
-                </button>
+                <button class="btn" onclick="processPayment()">Add to Wallet</button>
             </div>
         </div>
 
-        <!-- MENU OVERLAY -->
         <div id="menuOverlay" class="menu-overlay">
             <div class="menu-content">
                 <button class="menu-close" onclick="closeMenu()">×</button>
                 <div class="menu-user">
                     <p class="menu-email" id="menuEmail">user@email.com</p>
-                    <p class="menu-balance">$<span id="menuBalance">0.00</span></p>
+                    <p class="menu-balance">$<span id="menuBalance">0</span></p>
                 </div>
                 <div class="menu-items">
                     <button class="menu-item" onclick="showAddCredits()">💳 Add Credits</button>
@@ -346,19 +328,15 @@
             </div>
         </div>
 
-        <!-- LOADING OVERLAY -->
         <div id="loadingOverlay" class="loading-overlay">
             <div class="spinner"></div>
             <p class="loading-text" id="loadingText">Processing...</p>
         </div>
-
     </div>
 
-    <!-- Scripts -->
     <script src="js/app.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/wallet.js"></script>
     <script src="js/render.js"></script>
-
 </body>
 </html>

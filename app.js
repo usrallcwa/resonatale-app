@@ -1,136 +1,96 @@
-// ============================================
-// GLOBAL STATE & CONFIGURATION
-// ============================================
+// CONFIG
 const API_BASE = 'https://resonatale-worker.ayatemarketing.workers.dev';
 
-let appState = {
-    currentScreen: 'heroScreen',
-    previousScreen: null,
+// STATE
+let state = {
     photos: [],
     voiceBlob: null,
     voiceId: null,
-    recordingStartTime: null,
+    recordingStart: null,
     mediaRecorder: null,
     audioStream: null,
     turnstileToken: null,
     authToken: localStorage.getItem('authToken'),
     userId: localStorage.getItem('userId'),
-    userBalance: 0,
-    previewVideoUrl: null
+    balance: 0
 };
 
-// ============================================
-// INITIALIZATION
-// ============================================
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🎬 ResonaTale App Initialized');
+// INIT
+document.addEventListener('DOMContentLoaded', () => {
+    if (state.authToken) checkAuth();
     
-    // Check if user is logged in
-    if (appState.authToken) {
-        initAuthenticatedApp();
-    }
+    const slider = document.getElementById('creditSlider');
+    const display = document.getElementById('sliderValue');
+    if (slider) slider.addEventListener('input', () => display.textContent = slider.value);
     
-    // Setup event listeners
-    setupEventListeners();
+    const briefDesc = document.getElementById('briefDesc');
+    if (briefDesc) briefDesc.addEventListener('input', (e) => {
+        document.getElementById('briefCount').textContent = e.target.value.length;
+    });
     
-    // Start film counter animation
-    animateFilmCounter();
+    const photoInput = document.getElementById('photoInput');
+    if (photoInput) photoInput.addEventListener('change', handlePhotoSelect);
 });
 
-function setupEventListeners() {
-    // Photo input
-    const photoInput = document.getElementById('photoInput');
-    if (photoInput) {
-        photoInput.addEventListener('change', handlePhotoSelection);
-    }
-    
-    // Brief description character counter
-    const briefDesc = document.getElementById('briefDesc');
-    if (briefDesc) {
-        briefDesc.addEventListener('input', function(e) {
-            const count = e.target.value.length;
-            document.getElementById('briefCount').textContent = count;
+// AUTH CHECK
+async function checkAuth() {
+    try {
+        const res = await fetch(`${API_BASE}/api/auth/me`, {
+            headers: { 'Authorization': `Bearer ${state.authToken}` }
         });
-    }
-    
-    // Prevent pull-to-refresh on mobile
-    document.body.addEventListener('touchmove', function(e) {
-        if (e.touches.length > 1) {
-            e.preventDefault();
+        if (res.ok) {
+            const data = await res.json();
+            state.balance = data.user.balance || 0;
+            updateBalance();
+            document.getElementById('appHeader').classList.remove('hidden');
+            document.getElementById('menuEmail').textContent = data.user.email;
+        } else {
+            logout();
         }
-    }, { passive: false });
+    } catch (e) {
+        console.error('Auth check failed:', e);
+    }
 }
 
-// ============================================
+function updateBalance() {
+    document.querySelectorAll('#userBalance, #modalBalance, #menuBalance').forEach(el => {
+        el.textContent = state.balance.toFixed(2);
+    });
+}
+
 // NAVIGATION
-// ============================================
 function startApp() {
-    navigateToScreen('uploadScreen');
+    navigateTo('uploadScreen');
 }
 
-function navigateToScreen(screenId) {
-    const currentScreen = document.querySelector('.screen.active');
-    const nextScreen = document.getElementById(screenId);
-    
-    if (!nextScreen) return;
-    
-    // Update state
-    appState.previousScreen = appState.currentScreen;
-    appState.currentScreen = screenId;
-    
-    // Animate transition
-    if (currentScreen) {
-        currentScreen.classList.remove('active');
-        currentScreen.classList.add('exiting');
-        setTimeout(() => {
-            currentScreen.classList.remove('exiting');
-        }, 300);
-    }
-    
-    nextScreen.classList.add('active');
-    
-    // Show/hide header based on screen
-    const header = document.getElementById('appHeader');
-    if (screenId === 'heroScreen') {
-        header.classList.add('hidden');
-    } else if (appState.authToken) {
-        header.classList.remove('hidden');
-    }
+function navigateTo(screenId) {
+    document.querySelector('.screen.active')?.classList.remove('active');
+    document.getElementById(screenId)?.classList.add('active');
 }
 
 function goBack(screenId) {
-    navigateToScreen(screenId);
+    navigateTo(screenId);
 }
 
-// ============================================
 // PHOTO UPLOAD
-// ============================================
 function triggerFileInput() {
     document.getElementById('photoInput').click();
 }
 
-function handlePhotoSelection(event) {
-    const files = Array.from(event.target.files);
+function handlePhotoSelect(e) {
+    const files = Array.from(e.target.files);
     
-    if (appState.photos.length + files.length > 12) {
-        showToast('Maximum 12 photos allowed', 'error');
+    if (state.photos.length + files.length > 12) {
+        showToast('Maximum 12 photos', 'error');
         return;
-    }
-    
-    if (appState.photos.length + files.length < 6 && files.length > 0) {
-        // Allow selection but don't enable continue yet
     }
     
     files.forEach(file => {
         if (file.type.startsWith('image/')) {
             const reader = new FileReader();
-            reader.onload = function(e) {
-                appState.photos.push({
-                    file: file,
-                    dataUrl: e.target.result
-                });
+            reader.onload = (evt) => {
+                state.photos.push({ file, dataUrl: evt.target.result });
                 updatePhotoGrid();
-                updatePhotoContinueButton();
             };
             reader.readAsDataURL(file);
         }
@@ -141,126 +101,101 @@ function updatePhotoGrid() {
     const grid = document.getElementById('photoGrid');
     const count = document.getElementById('photoCount');
     
-    count.textContent = appState.photos.length;
+    count.textContent = state.photos.length;
     
-    grid.innerHTML = appState.photos.map((photo, index) => `
+    grid.innerHTML = state.photos.map((p, i) => `
         <div class="photo-item">
-            <img src="${photo.dataUrl}" alt="Photo ${index + 1}">
-            <button class="photo-remove" onclick="removePhoto(${index})">×</button>
+            <img src="${p.dataUrl}">
+            <button class="photo-remove" onclick="removePhoto(${i})">×</button>
         </div>
     `).join('');
+    
+    document.getElementById('photoContinueBtn').disabled = state.photos.length < 6;
 }
 
-function removePhoto(index) {
-    appState.photos.splice(index, 1);
+function removePhoto(i) {
+    state.photos.splice(i, 1);
     updatePhotoGrid();
-    updatePhotoContinueButton();
-}
-
-function updatePhotoContinueButton() {
-    const btn = document.getElementById('photoContinueBtn');
-    btn.disabled = appState.photos.length < 6;
 }
 
 function goToVoice() {
-    if (appState.photos.length < 6) {
-        showToast('Please upload at least 6 photos', 'error');
+    if (state.photos.length < 6) {
+        showToast('Upload at least 6 photos', 'error');
         return;
     }
-    navigateToScreen('voiceScreen');
+    navigateTo('voiceScreen');
 }
 
-// ============================================
 // VOICE RECORDING
-// ============================================
 async function toggleRecording() {
     const btn = document.getElementById('recordBtn');
     const icon = btn.querySelector('.record-icon');
     const text = btn.querySelector('.record-text');
     
-    if (!appState.mediaRecorder || appState.mediaRecorder.state === 'inactive') {
-        // Start recording
+    if (!state.mediaRecorder || state.mediaRecorder.state === 'inactive') {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            appState.audioStream = stream;
-            appState.mediaRecorder = new MediaRecorder(stream);
+            state.audioStream = stream;
+            state.mediaRecorder = new MediaRecorder(stream);
             
-            const audioChunks = [];
-            
-            appState.mediaRecorder.ondataavailable = (event) => {
-                audioChunks.push(event.data);
+            const chunks = [];
+            state.mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+            state.mediaRecorder.onstop = () => {
+                state.voiceBlob = new Blob(chunks, { type: 'audio/webm' });
+                showAudioPreview();
+                stopStreams();
             };
             
-            appState.mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                appState.voiceBlob = audioBlob;
-                showAudioPreview(audioBlob);
-                stopAllStreams();
-            };
-            
-            appState.mediaRecorder.start();
-            appState.recordingStartTime = Date.now();
+            state.mediaRecorder.start();
+            state.recordingStart = Date.now();
             
             btn.classList.add('recording');
             icon.textContent = '⏹';
-            text.textContent = 'Stop Recording';
+            text.textContent = 'Stop';
             
-            // Start timer
-            startRecordingTimer();
-            
-            // Auto-stop after 30 seconds
+            startTimer();
             setTimeout(() => {
-                if (appState.mediaRecorder && appState.mediaRecorder.state === 'recording') {
-                    stopRecording();
-                }
+                if (state.mediaRecorder?.state === 'recording') stopRecording();
             }, 30000);
             
-        } catch (error) {
-            console.error('Microphone access error:', error);
+        } catch (e) {
             showToast('Microphone access denied', 'error');
         }
     } else {
-        // Stop recording
         stopRecording();
     }
 }
 
 function stopRecording() {
-    if (appState.mediaRecorder && appState.mediaRecorder.state === 'recording') {
-        appState.mediaRecorder.stop();
+    if (state.mediaRecorder?.state === 'recording') {
+        state.mediaRecorder.stop();
         const btn = document.getElementById('recordBtn');
-        const icon = btn.querySelector('.record-icon');
-        const text = btn.querySelector('.record-text');
-        
         btn.classList.remove('recording');
-        icon.textContent = '⏺';
-        text.textContent = 'Start Recording';
+        btn.querySelector('.record-icon').textContent = '⏺';
+        btn.querySelector('.record-text').textContent = 'Start';
     }
 }
 
-function startRecordingTimer() {
-    const timerEl = document.getElementById('recordTimer');
+function startTimer() {
+    const timer = document.getElementById('recordTimer');
     const interval = setInterval(() => {
-        if (!appState.recordingStartTime || !appState.mediaRecorder || appState.mediaRecorder.state !== 'recording') {
+        if (!state.recordingStart || state.mediaRecorder?.state !== 'recording') {
             clearInterval(interval);
-            timerEl.textContent = '0:00 / 0:30';
+            timer.textContent = '0:00 / 0:30';
             return;
         }
-        
-        const elapsed = Math.floor((Date.now() - appState.recordingStartTime) / 1000);
-        const minutes = Math.floor(elapsed / 60);
-        const seconds = elapsed % 60;
-        timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')} / 0:30`;
+        const elapsed = Math.floor((Date.now() - state.recordingStart) / 1000);
+        const min = Math.floor(elapsed / 60);
+        const sec = elapsed % 60;
+        timer.textContent = `${min}:${sec.toString().padStart(2, '0')} / 0:30`;
     }, 100);
 }
 
-function showAudioPreview(blob) {
+function showAudioPreview() {
     const preview = document.getElementById('audioPreview');
     const audio = document.getElementById('audioPlayback');
-    
-    audio.src = URL.createObjectURL(blob);
+    audio.src = URL.createObjectURL(state.voiceBlob);
     preview.classList.remove('hidden');
-    
     document.getElementById('recordingHint').style.display = 'none';
     document.getElementById('voiceContinueBtn').disabled = false;
 }
@@ -269,335 +204,163 @@ function reRecord() {
     document.getElementById('audioPreview').classList.add('hidden');
     document.getElementById('recordingHint').style.display = 'block';
     document.getElementById('voiceContinueBtn').disabled = true;
-    appState.voiceBlob = null;
-    
-    const audio = document.getElementById('audioPlayback');
-    audio.src = '';
+    state.voiceBlob = null;
 }
 
-function stopAllStreams() {
-    if (appState.audioStream) {
-        appState.audioStream.getTracks().forEach(track => track.stop());
-        appState.audioStream = null;
-    }
+function stopStreams() {
+    state.audioStream?.getTracks().forEach(t => t.stop());
+    state.audioStream = null;
 }
 
 function goToStory() {
-    if (!appState.voiceBlob) {
-        showToast('Please record your voice first', 'error');
+    if (!state.voiceBlob) {
+        showToast('Record your voice first', 'error');
         return;
     }
-    navigateToScreen('storyScreen');
+    navigateTo('storyScreen');
 }
 
-// ============================================
-// GENERATE PREVIEW
-// ============================================
+// PREVIEW GENERATION
 async function generatePreview() {
-    const briefDesc = document.getElementById('briefDesc').value.trim();
-    
-    if (!briefDesc) {
-        showToast('Please enter a brief description', 'error');
-        return;
-    }
-    
-    if (appState.photos.length < 6) {
-        showToast('Please upload at least 6 photos', 'error');
-        return;
-    }
-    
-    if (!appState.voiceBlob) {
-        showToast('Please record your voice', 'error');
+    const brief = document.getElementById('briefDesc').value.trim();
+    if (!brief) {
+        showToast('Enter a description', 'error');
         return;
     }
     
     showLoading('Uploading photos...');
     
     try {
-        // Step 1: Upload photos
-        const photoUrls = await uploadPhotos();
+        // Upload voice
+        showLoading('Cloning voice...');
+        const formData = new FormData();
+        formData.append('audio', state.voiceBlob, 'voice.webm');
+        formData.append('name', 'User Voice');
         
-        // Step 2: Upload voice and get voice ID
-        showLoading('Cloning your voice...');
-        const voiceId = await uploadVoice();
-        appState.voiceId = voiceId;
+        const voiceRes = await fetch(`${API_BASE}/api/voice/clone`, {
+            method: 'POST',
+            body: formData
+        });
         
-        // Step 3: Generate preview
-        showLoading('Creating your preview film...');
-        const previewData = await generatePreviewRequest(photoUrls, voiceId, briefDesc);
+        if (!voiceRes.ok) throw new Error('Voice upload failed');
+        const voiceData = await voiceRes.json();
+        state.voiceId = voiceData.voiceId;
         
-        // Step 4: Show preview
-        appState.previewVideoUrl = previewData.audioUrl; // Temporary until video is ready
-        navigateToScreen('previewScreen');
+        // Generate preview
+        showLoading('Creating preview...');
+        const previewRes = await fetch(`${API_BASE}/api/render/preview`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                prompt: brief,
+                photoCount: state.photos.length,
+                voiceId: state.voiceId,
+                language: document.getElementById('languageSelect').value,
+                mood: document.getElementById('moodSelect').value,
+                genre: document.getElementById('genreSelect').value,
+                orientation: document.getElementById('orientationSelect').value
+            })
+        });
         
-        // Set preview video
-        const video = document.getElementById('previewVideo');
-        video.src = previewData.audioUrl; // Replace with actual video URL when available
+        if (!previewRes.ok) throw new Error('Preview generation failed');
+        const preview = await previewRes.json();
         
+        document.getElementById('previewVideo').src = preview.audioUrl;
+        navigateTo('previewScreen');
         hideLoading();
         showToast('Preview ready!', 'success');
         
-    } catch (error) {
-        console.error('Preview generation error:', error);
+    } catch (e) {
         hideLoading();
-        showToast(error.message || 'Failed to generate preview', 'error');
+        showToast(e.message, 'error');
     }
 }
 
-async function uploadPhotos() {
-    // For now, return placeholder URLs
-    // In production, upload to your storage (Cloudflare R2, S3, etc.)
-    return appState.photos.map((photo, i) => `photo_${i}_${Date.now()}`);
-}
-
-async function uploadVoice() {
-    const formData = new FormData();
-    formData.append('audio', appState.voiceBlob, 'voice.webm');
-    formData.append('name', 'User Voice');
-    
-    const response = await fetch(`${API_BASE}/api/voice/clone`, {
-        method: 'POST',
-        body: formData
-    });
-    
-    if (!response.ok) {
-        throw new Error('Voice upload failed');
-    }
-    
-    const data = await response.json();
-    return data.voiceId;
-}
-
-async function generatePreviewRequest(photoUrls, voiceId, briefDesc) {
-    const language = document.getElementById('languageSelect').value;
-    const mood = document.getElementById('moodSelect').value;
-    const genre = document.getElementById('genreSelect').value;
-    const orientation = document.getElementById('orientationSelect').value;
-    
-    const response = await fetch(`${API_BASE}/api/render/preview`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            prompt: briefDesc,
-            photoUrls: photoUrls,
-            voiceId: voiceId,
-            photoCount: photoUrls.length,
-            language: language,
-            mood: mood,
-            genre: genre,
-            orientation: orientation
-        })
-    });
-    
-    if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Preview generation failed');
-    }
-    
-    return await response.json();
-}
-
-// ============================================
-// SIGNUP/AUTH
-// ============================================
+// MODALS
 function showSignup() {
-    const modal = document.getElementById('signupModal');
-    modal.classList.add('active');
+    document.getElementById('signupModal').classList.add('active');
 }
 
 function closeSignup() {
-    const modal = document.getElementById('signupModal');
-    modal.classList.remove('active');
+    document.getElementById('signupModal').classList.remove('active');
 }
 
-// Turnstile callbacks
-window.onTurnstileSuccess = function(token) {
-    console.log('✅ Turnstile verified');
-    appState.turnstileToken = token;
-    document.getElementById('signupBtn').disabled = false;
-};
-
-window.onTurnstileError = function() {
-    console.error('❌ Turnstile failed');
-    showToast('Security verification failed', 'error');
-    appState.turnstileToken = null;
-    document.getElementById('signupBtn').disabled = true;
-};
-
-// Signup form will be handled in auth.js
-
-// ============================================
-// AUTHENTICATED APP
-// ============================================
-async function initAuthenticatedApp() {
-    try {
-        // Verify token and get user data
-        const response = await fetch(`${API_BASE}/api/auth/me`, {
-            headers: {
-                'Authorization': `Bearer ${appState.authToken}`
-            }
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            appState.userBalance = data.user.balance || 0;
-            updateBalanceDisplay();
-            
-            const header = document.getElementById('appHeader');
-            if (appState.currentScreen !== 'heroScreen') {
-                header.classList.remove('hidden');
-            }
-            
-            // Update menu with user info
-            document.getElementById('menuEmail').textContent = data.user.email;
-            document.getElementById('menuBalance').textContent = data.user.balance?.toFixed(2) || '0.00';
-        } else {
-            // Token invalid, logout
-            logout();
-        }
-    } catch (error) {
-        console.error('Auth check error:', error);
-    }
-}
-
-function updateBalanceDisplay() {
-    const balanceEls = document.querySelectorAll('#userBalance, #modalBalance, #menuBalance');
-    balanceEls.forEach(el => {
-        el.textContent = appState.userBalance.toFixed(2);
-    });
-}
-
-// ============================================
-// MENU
-// ============================================
-function showMenu() {
-    const menu = document.getElementById('menuOverlay');
-    menu.classList.add('active');
-}
-
-function closeMenu() {
-    const menu = document.getElementById('menuOverlay');
-    menu.classList.remove('active');
-}
-
-function logout() {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userId');
-    appState.authToken = null;
-    appState.userId = null;
-    appState.userBalance = 0;
-    
-    closeMenu();
-    navigateToScreen('heroScreen');
-    
-    const header = document.getElementById('appHeader');
-    header.classList.add('hidden');
-    
-    showToast('Logged out successfully', 'success');
-}
-
-// ============================================
-// CREDITS/WALLET
-// ============================================
 function showAddCredits() {
     closeMenu();
-    const modal = document.getElementById('creditsModal');
-    modal.classList.add('active');
-    document.getElementById('modalBalance').textContent = appState.userBalance.toFixed(2);
+    document.getElementById('creditsModal').classList.add('active');
+    document.getElementById('modalBalance').textContent = state.balance.toFixed(2);
 }
 
 function closeCredits() {
-    const modal = document.getElementById('creditsModal');
-    modal.classList.remove('active');
+    document.getElementById('creditsModal').classList.remove('active');
 }
 
-function setAmount(amount) {
-    document.getElementById('creditAmount').value = amount;
+function showMenu() {
+    document.getElementById('menuOverlay').classList.add('active');
 }
 
-// Payment processing will be in wallet.js
+function closeMenu() {
+    document.getElementById('menuOverlay').classList.remove('active');
+}
 
-// ============================================
-// PAGES (Terms, Privacy, Contact)
-// ============================================
+// TURNSTILE
+window.onTurnstileSuccess = function(token) {
+    state.turnstileToken = token;
+    document.getElementById('signupBtn').disabled = false;
+};
+
+// PAYMENT
+function processPayment() {
+    const amount = parseInt(document.getElementById('creditSlider').value);
+    if (amount < 20 || amount > 500) {
+        showToast('Amount must be $20-$500', 'error');
+        return;
+    }
+    console.log('Process payment:', amount);
+    // Handled in wallet.js
+}
+
+// PAGES
 function showPage(page) {
     if (page === 'contact') {
         window.location.href = 'mailto:admin@resonatale.com';
-    } else if (page === 'terms') {
-        window.open('terms.html', '_blank');
-    } else if (page === 'privacy') {
-        window.open('privacy.html', '_blank');
+    } else {
+        window.open(`${page}.html`, '_blank');
     }
 }
 
-// ============================================
+// LOGOUT
+function logout() {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userId');
+    state.authToken = null;
+    state.userId = null;
+    state.balance = 0;
+    closeMenu();
+    navigateTo('heroScreen');
+    document.getElementById('appHeader').classList.add('hidden');
+    showToast('Logged out', 'success');
+}
+
 // UI HELPERS
-// ============================================
 function showLoading(text = 'Processing...') {
-    const overlay = document.getElementById('loadingOverlay');
-    const loadingText = document.getElementById('loadingText');
-    loadingText.textContent = text;
-    overlay.classList.add('active');
+    document.getElementById('loadingText').textContent = text;
+    document.getElementById('loadingOverlay').classList.add('active');
 }
 
 function hideLoading() {
-    const overlay = document.getElementById('loadingOverlay');
-    overlay.classList.remove('active');
+    document.getElementById('loadingOverlay').classList.remove('active');
 }
 
-function showToast(message, type = 'info') {
-    // Simple toast notification
+function showToast(msg, type = 'info') {
     const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.textContent = message;
-    toast.style.cssText = `
-        position: fixed;
-        bottom: 2rem;
-        left: 50%;
-        transform: translateX(-50%);
-        background: ${type === 'error' ? '#EF4444' : type === 'success' ? '#10B981' : '#6366F1'};
-        color: white;
-        padding: 1rem 2rem;
-        border-radius: 12px;
-        z-index: 9999;
-        font-weight: 600;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    `;
-    
+    const colors = { error: '#EF4444', success: '#10B981', info: '#6366F1' };
+    toast.style.cssText = `position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:${colors[type]};color:#FFF;padding:1rem 2rem;border-radius:12px;z-index:9999;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,0.3)`;
+    toast.textContent = msg;
     document.body.appendChild(toast);
-    
     setTimeout(() => {
         toast.style.opacity = '0';
-        toast.style.transition = 'opacity 0.3s ease';
+        toast.style.transition = 'opacity 0.3s';
         setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
-
-// ============================================
-// SOCIAL PROOF COUNTER
-// ============================================
-function animateFilmCounter() {
-    const counter = document.getElementById('filmCounter');
-    if (!counter) return;
-    
-    let count = 47329;
-    setInterval(() => {
-        count += Math.floor(Math.random() * 3) + 1;
-        counter.textContent = count.toLocaleString();
-    }, 5000);
-}
-
-// ============================================
-// ERROR HANDLING
-// ============================================
-window.addEventListener('error', function(e) {
-    console.error('Global error:', e.error);
-    showToast('Something went wrong. Please try again.', 'error');
-});
-
-window.addEventListener('unhandledrejection', function(e) {
-    console.error('Unhandled promise rejection:', e.reason);
-    showToast('Network error. Please check your connection.', 'error');
-});

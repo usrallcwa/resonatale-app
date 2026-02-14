@@ -1,15 +1,364 @@
-@"
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ResonaTale - AI Voice Cloning & Video Stories</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0F172A">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <title>ResonaTale - You Are The Star</title>
+    
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Cloudflare Turnstile -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+</head>
+<body>
+
+    <!-- APP CONTAINER -->
+    <div id="app" class="app">
+
+        <!-- HEADER (Hidden on start, shown after login) -->
+        <header id="appHeader" class="header hidden">
+            <div class="header-left">
+                <span class="logo">🎬</span>
+            </div>
+            <div class="header-right">
+                <span class="balance-badge">$<span id="userBalance">0</span></span>
+                <button class="icon-btn" onclick="showMenu()">☰</button>
+            </div>
+        </header>
+
+        <!-- SCREEN 1: HERO (Entry Point) -->
+        <div id="heroScreen" class="screen active">
+            <div class="hero-content">
+                <h1 class="hero-logo">ResonaTale</h1>
+                <p class="hero-tagline">You Are The Star</p>
+                <div class="hero-desc">
+                    <p>Turn your photos into epic AI films</p>
+                    <p class="hero-subdesc">Narrated in your own voice</p>
+                </div>
+                <button class="btn-primary pulse" onclick="startApp()">
+                    Start Creating
+                </button>
+                <p class="hero-note">Free preview • No signup required</p>
+            </div>
+            <div class="hero-footer">
+                <button class="link-btn" onclick="showPage('contact')">✉️</button>
+                <button class="link-btn" onclick="showPage('terms')">Terms</button>
+                <button class="link-btn" onclick="showPage('privacy')">Privacy</button>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: PHOTO UPLOAD -->
+        <div id="uploadScreen" class="screen">
+            <div class="screen-header">
+                <button class="back-btn" onclick="goBack('heroScreen')">←</button>
+                <h2 class="screen-title">Upload Photos</h2>
+                <span class="step-indicator">1/4</span>
+            </div>
+            
+            <div class="screen-content">
+                <p class="instruction">Upload 6-12 photos of yourself</p>
+                
+                <div class="upload-zone" id="uploadZone" onclick="triggerFileInput()">
+                    <div class="upload-icon">📸</div>
+                    <p class="upload-text">Tap to select photos</p>
+                    <p class="upload-count"><span id="photoCount">0</span>/12</p>
+                </div>
+                
+                <input type="file" id="photoInput" accept="image/*" multiple style="display: none;">
+                
+                <div id="photoGrid" class="photo-grid"></div>
+            </div>
+
+            <div class="screen-footer">
+                <button id="photoContinueBtn" class="btn-primary" onclick="goToVoice()" disabled>
+                    Continue
+                </button>
+            </div>
+        </div>
+
+        <!-- SCREEN 3: VOICE RECORDING -->
+        <div id="voiceScreen" class="screen">
+            <div class="screen-header">
+                <button class="back-btn" onclick="goBack('uploadScreen')">←</button>
+                <h2 class="screen-title">Clone Your Voice</h2>
+                <span class="step-indicator">2/4</span>
+            </div>
+            
+            <div class="screen-content">
+                <p class="instruction">Record 30 seconds of your voice</p>
+                
+                <div class="voice-recorder">
+                    <div class="waveform" id="waveform">
+                        <canvas id="waveformCanvas"></canvas>
+                    </div>
+                    
+                    <div class="record-timer" id="recordTimer">0:00 / 0:30</div>
+                    
+                    <button id="recordBtn" class="btn-record" onclick="toggleRecording()">
+                        <span class="record-icon">⏺</span>
+                        <span class="record-text">Start Recording</span>
+                    </button>
+                    
+                    <div id="recordingHint" class="hint">
+                        💡 Speak naturally - read a favorite quote or tell a short story
+                    </div>
+                </div>
+
+                <div id="audioPreview" class="audio-preview hidden">
+                    <audio id="audioPlayback" controls></audio>
+                    <button class="text-btn" onclick="reRecord()">Re-record</button>
+                </div>
+            </div>
+
+            <div class="screen-footer">
+                <button id="voiceContinueBtn" class="btn-primary" onclick="goToStory()" disabled>
+                    Continue
+                </button>
+            </div>
+        </div>
+
+        <!-- SCREEN 4: STORY INPUT -->
+        <div id="storyScreen" class="screen">
+            <div class="screen-header">
+                <button class="back-btn" onclick="goBack('voiceScreen')">←</button>
+                <h2 class="screen-title">Your Story</h2>
+                <span class="step-indicator">3/4</span>
+            </div>
+            
+            <div class="screen-content">
+                <div class="form-group">
+                    <label class="form-label">🌍 Language</label>
+                    <select id="languageSelect" class="form-select">
+                        <option value="en">🇺🇸 English</option>
+                        <option value="es">🇪🇸 Español</option>
+                        <option value="fr">🇫🇷 Français</option>
+                        <option value="de">🇩🇪 Deutsch</option>
+                        <option value="it">🇮🇹 Italiano</option>
+                        <option value="pt">🇵🇹 Português</option>
+                        <option value="zh">🇨🇳 中文</option>
+                        <option value="ja">🇯🇵 日本語</option>
+                        <option value="ko">🇰🇷 한국어</option>
+                        <option value="ar">🇸🇦 العربية</option>
+                        <option value="hi">🇮🇳 हिन्दी</option>
+                        <option value="ru">🇷🇺 Русский</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">📝 Brief Description</label>
+                    <input 
+                        type="text" 
+                        id="briefDesc" 
+                        class="form-input" 
+                        placeholder="An epic adventure where I discover treasure..."
+                        maxlength="100"
+                    >
+                    <span class="char-count"><span id="briefCount">0</span>/100</span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group-half">
+                        <label class="form-label">🎭 Mood</label>
+                        <select id="moodSelect" class="form-select">
+                            <option value="dramatic">Dramatic</option>
+                            <option value="inspiring">Inspiring</option>
+                            <option value="romantic">Romantic</option>
+                            <option value="thrilling">Thrilling</option>
+                            <option value="mysterious">Mysterious</option>
+                            <option value="comedic">Comedic</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group-half">
+                        <label class="form-label">🎬 Genre</label>
+                        <select id="genreSelect" class="form-select">
+                            <option value="adventure">Adventure</option>
+                            <option value="scifi">Sci-Fi</option>
+                            <option value="fantasy">Fantasy</option>
+                            <option value="biography">Biography</option>
+                            <option value="action">Action</option>
+                            <option value="horror">Horror</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">📱 Orientation</label>
+                    <select id="orientationSelect" class="form-select">
+                        <option value="portrait">📱 Portrait (9:16)</option>
+                        <option value="landscape">🖼️ Landscape (16:9)</option>
+                        <option value="square">⬛ Square (1:1)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="screen-footer">
+                <button class="btn-primary" onclick="generatePreview()">
+                    Generate Preview
+                </button>
+            </div>
+        </div>
+
+        <!-- SCREEN 5: PREVIEW -->
+        <div id="previewScreen" class="screen">
+            <div class="screen-header">
+                <h2 class="screen-title">Your Preview</h2>
+                <span class="step-indicator">4/4</span>
+            </div>
+            
+            <div class="screen-content">
+                <div class="video-container">
+                    <video id="previewVideo" controls playsinline></video>
+                    <div class="watermark">PREVIEW</div>
+                </div>
+                
+                <div class="preview-info">
+                    <p class="preview-title">30-second preview ready!</p>
+                    <p class="preview-desc">Create account to unlock full 3-minute film</p>
+                </div>
+            </div>
+
+            <div class="screen-footer">
+                <button class="btn-primary pulse" onclick="showSignup()">
+                    Unlock Full Film
+                </button>
+            </div>
+        </div>
+
+        <!-- SIGNUP MODAL -->
+        <div id="signupModal" class="modal">
+            <div class="modal-content">
+                <button class="modal-close" onclick="closeSignup()">×</button>
+                
+                <h3 class="modal-title">Create Account</h3>
+                <p class="modal-subtitle">Unlock your full 3-minute film</p>
+                
+                <form id="signupForm" class="form" onsubmit="handleSignup(event)">
+                    <input 
+                        type="email" 
+                        id="signupEmail" 
+                        class="form-input" 
+                        placeholder="Email" 
+                        required
+                    >
+                    
+                    <input 
+                        type="password" 
+                        id="signupPassword" 
+                        class="form-input" 
+                        placeholder="Password (min 8 characters)" 
+                        minlength="8"
+                        required
+                    >
+                    
+                    <input 
+                        type="text" 
+                        id="signupName" 
+                        class="form-input" 
+                        placeholder="Name (optional)"
+                    >
+                    
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="consentCheck" required>
+                        <span>I consent to ResonaTale using my photos, voice, and likeness to generate my AI film. 
+                        <a href="terms.html" target="_blank">Terms</a> • 
+                        <a href="privacy.html" target="_blank">Privacy</a></span>
+                    </label>
+                    
+                    <!-- Turnstile -->
+                    <div class="turnstile-wrapper">
+                        <div 
+                            class="cf-turnstile" 
+                            data-sitekey="1x00000000000000000000AA"
+                            data-callback="onTurnstileSuccess"
+                            data-theme="dark"
+                        ></div>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary" id="signupBtn" disabled>
+                        Create Account
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ADD CREDITS MODAL -->
+        <div id="creditsModal" class="modal">
+            <div class="modal-content">
+                <button class="modal-close" onclick="closeCredits()">×</button>
+                
+                <h3 class="modal-title">Add Credits</h3>
+                <p class="modal-subtitle">Balance: $<span id="modalBalance">0.00</span></p>
+                
+                <div class="pricing-info">
+                    <p>💰 Each film costs $19.99</p>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Amount ($20-$500)</label>
+                    <div class="input-with-prefix">
+                        <span class="input-prefix">$</span>
+                        <input 
+                            type="number" 
+                            id="creditAmount" 
+                            class="form-input" 
+                            min="20" 
+                            max="500" 
+                            value="50"
+                        >
+                    </div>
+                </div>
+                
+                <div class="quick-amounts">
+                    <button class="quick-btn" onclick="setAmount(20)">$20</button>
+                    <button class="quick-btn" onclick="setAmount(50)">$50</button>
+                    <button class="quick-btn" onclick="setAmount(100)">$100</button>
+                    <button class="quick-btn" onclick="setAmount(200)">$200</button>
+                </div>
+                
+                <button class="btn-primary" onclick="processPayment()">
+                    Add to Wallet
+                </button>
+            </div>
+        </div>
+
+        <!-- MENU OVERLAY -->
+        <div id="menuOverlay" class="menu-overlay">
+            <div class="menu-content">
+                <button class="menu-close" onclick="closeMenu()">×</button>
+                <div class="menu-user">
+                    <p class="menu-email" id="menuEmail">user@email.com</p>
+                    <p class="menu-balance">$<span id="menuBalance">0.00</span></p>
+                </div>
+                <div class="menu-items">
+                    <button class="menu-item" onclick="showAddCredits()">💳 Add Credits</button>
+                    <button class="menu-item" onclick="showPage('terms')">📄 Terms</button>
+                    <button class="menu-item" onclick="showPage('privacy')">🔒 Privacy</button>
+                    <button class="menu-item" onclick="showPage('contact')">✉️ Contact</button>
+                    <button class="menu-item danger" onclick="logout()">🚪 Logout</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- LOADING OVERLAY -->
+        <div id="loadingOverlay" class="loading-overlay">
+            <div class="spinner"></div>
+            <p class="loading-text" id="loadingText">Processing...</p>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/app.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/render.js"></script>
+
+</body>
 </html>
-"@ | Out-File -FilePath index.html -Encoding utf8

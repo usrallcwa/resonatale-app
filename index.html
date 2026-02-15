@@ -1,4 +1,4 @@
-  <head>
+ <head>
   <meta charset="utf-8" />
   <title>ResonaTale – You Are The Star</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -13,6 +13,32 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png" />
 
   <link rel="stylesheet" href="css/styles.css" />
+
+  <!-- Turnstile config + callbacks -->
+  <script>
+    // Set your Turnstile Site Key here:
+    window.TURNSTILE_SITE_KEY = "0x4AAAAAACLI9vyJZYGLg9lS";
+
+    // Store token globally (app.js can read window.turnstileToken)
+    window.turnstileToken = null;
+
+    // Called by Turnstile on success; receives the token.
+    window.onTurnstileSuccess = function (token) {
+      window.turnstileToken = token;
+    };
+
+    window.onTurnstileExpired = function () {
+      window.turnstileToken = null;
+    };
+
+    // Cloudflare passes an error code as first arg for error-callback.
+    window.onTurnstileError = function () {
+      window.turnstileToken = null;
+    };
+  </script>
+
+  <!-- Load Cloudflare Turnstile -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 
 <body>

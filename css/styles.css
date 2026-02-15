@@ -14,6 +14,11 @@
   --border-soft: rgba(255, 255, 255, 0.15);
   --border-hairline: rgba(255, 255, 255, 0.08);
   --bg-panel: radial-gradient(circle at top left, #1b1b2c 0%, #0b0b15 55%, #05050a 100%);
+
+  /* overlay z-order */
+  --z-menu: 900;
+  --z-auth: 950;
+  --z-loading: 1000;
 }
 
 html {
@@ -46,19 +51,15 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   padding: 1rem 1.5rem;
 
-  /* Prevent flex parent (.app-root) from shrinking the header */
   flex-shrink: 0;
 
-  /* Sticky header */
   position: sticky;
   top: 0;
   z-index: 50;
   width: 100%;
 
-  /* Fallback background so header area is always readable */
   background-color: rgba(0, 0, 0, 0.9);
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent);
 }
@@ -77,21 +78,13 @@ body {
 
 .brand-logo-img {
   width: 40px;
-  height: 40px; /* ensures consistent header height for both <img> and inline <svg> */
+  height: 40px; /* for both <img> and inline <svg> */
   display: block;
 }
 
-.brand-word {
-  margin-left: 0.5rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-/* Old logo text (safe to delete if unused) */
+.brand-word,
 .header-logo-text {
+  margin-left: 0.5rem;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -113,8 +106,6 @@ body {
 .screen {
   display: none;
   padding: 0 1.5rem 2.5rem;
-
-  /* lets the active screen fill available space under the header */
   flex: 1 0 auto;
 }
 
@@ -125,9 +116,8 @@ body {
 /* HERO / WELCOME */
 
 #heroScreen {
-  /* NOTE: .screen.active sets display:block globally; we override below when active */
   min-height: calc(100vh - 72px);
-  min-height: calc(100dvh - 72px); /* better on mobile when supported */
+  min-height: calc(100dvh - 72px);
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -135,12 +125,12 @@ body {
   padding-top: 3.5rem;
 }
 
-/* Ensure hero screen actually uses flex when it is the active screen */
+/* Ensure hero screen uses flex when active */
 #heroScreen.screen.active {
   display: flex;
 }
 
-/* Floating card panel + typography */
+/* Hero card */
 
 .hero {
   width: 100%;
@@ -155,7 +145,6 @@ body {
     0 0 0 1px rgba(255, 255, 255, 0.02);
   position: relative;
 
-  /* Safari needs the -webkit- prefix in practice in some cases */
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
 
@@ -172,7 +161,6 @@ body {
   pointer-events: none;
 }
 
-/* 3D hover hint on desktop */
 @media (hover: hover) and (pointer: fine) {
   .hero {
     transition: transform 160ms ease-out, box-shadow 160ms ease-out;
@@ -255,7 +243,8 @@ body {
   cursor: pointer;
 }
 
-/* subtle pulsing CTA */
+/* CTA pulse */
+
 .pulse {
   animation: pulseGlow 1.8s ease-out infinite;
 }
@@ -282,7 +271,7 @@ body {
   margin-bottom: 1rem;
 }
 
-/* LEGAL / CONTACT PAGES */
+/* (Optional) LEGAL/CONTACT inline pages — safe to keep for future, not used now */
 
 .page {
   max-width: 640px;
@@ -332,15 +321,6 @@ body {
   cursor: pointer;
 }
 
-/* OVERLAY Z-INDEX POLICY
-   Keep overlays ABOVE header (your header uses z-index ~50).
-   Loading should be top-most. */
-:root {
-  --z-menu: 900;
-  --z-auth: 950;
-  --z-loading: 1000;
-}
-
 /* AUTH MODAL / LOGIN CARD */
 
 .auth-modal {
@@ -357,7 +337,7 @@ body {
 }
 
 .auth-modal.active {
-  display: flex !important; /* overrides any inline display:none */
+  display: flex !important;
 }
 
 .auth-card {
@@ -420,7 +400,7 @@ body {
 }
 
 .menu-overlay.open {
-  display: flex !important; /* overrides any inline display:none */
+  display: flex !important;
 }
 
 .menu-content {
@@ -517,7 +497,7 @@ body {
 }
 
 .loading-overlay.active {
-  display: flex !important; /* overrides any inline display:none */
+  display: flex !important;
 }
 
 .spinner {
@@ -548,4 +528,3 @@ body {
     padding-bottom: 3.5rem;
   }
 }
-

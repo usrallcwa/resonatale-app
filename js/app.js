@@ -14,7 +14,6 @@ let appState = {
   mediaRecorder: null,
   audioStream: null,
 
-  // Turnstile token is mirrored from window.turnstileToken
   get turnstileToken() {
     return window.turnstileToken || null;
   },
@@ -36,7 +35,6 @@ document.addEventListener('DOMContentLoaded', function () {
     initCompliance();
   }
 
-  // Initial header state
   updateHeaderVisibility(appState.currentScreen);
 
   if (appState.authToken && typeof initAuthenticatedApp === 'function') {
@@ -65,7 +63,6 @@ function setupEventListeners() {
     });
   }
 
-  // Prevent multi-touch pull-to-refresh on mobile
   document.body.addEventListener(
     'touchmove',
     function (e) {
@@ -91,7 +88,6 @@ function updateHeaderVisibility(screenId) {
   if (screenId === 'heroScreen') {
     header.classList.add('hidden');
   } else {
-    // Show header only when authenticated
     if (appState.authToken) {
       header.classList.remove('hidden');
     } else {
@@ -549,7 +545,7 @@ async function generatePreviewRequest(photoUrls, voiceId, briefDesc) {
     try {
       error = await response.json();
     } catch {}
-      throw new Error(error.error || error.message || 'Preview generation failed');
+    throw new Error(error.error || error.message || 'Preview generation failed');
   }
 
   return await response.json();

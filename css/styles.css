@@ -61,9 +61,8 @@ body {
 }
 
 .brand-logo-img {
-  height: 32px;
-  width: 32px;
-  border-radius: 8px;
+  width: 40px;      /* tweak to match your design */
+  height: auto;
   display: block;
 }
 

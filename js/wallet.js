@@ -23,7 +23,7 @@ async function processPayment() {
   showLoading?.('Processing payment...');
 
   try {
-    const res = await fetch(`${API_BASE}/api/wallet/create-checkout`, {
+    const res = await fetch(`${API_BASE}/wallet/create-checkout`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -55,7 +55,7 @@ async function refreshBalance() {
   if (!appState.authToken) return;
 
   try {
-    const res = await fetch(`${API_BASE}/api/wallet/balance`, {
+    const res = await fetch(`${API_BASE}/wallet/balance`, {
       headers: { Authorization: `Bearer ${appState.authToken}` }
     });
 

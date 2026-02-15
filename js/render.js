@@ -3,39 +3,51 @@
 async function startFullRender() {
   // Require auth + credits
   if (!appState.authToken) {
-    showToast?.('Please log in to render a full film.', 'error');
-    showLogin?.();
+    if (typeof showToast === 'function') {
+      showToast('Please log in to render a full film.', 'error');
+    }
+    if (typeof showLogin === 'function') showLogin();
     return;
   }
 
-  // basic credit check (adjust threshold as needed)
+  // Basic credit check (adjust threshold as needed)
   if (appState.userBalance < 19.99) {
-    showAddCredits?.();
-    showToast?.('Insufficient credits', 'error');
+    if (typeof showAddCredits === 'function') showAddCredits();
+    if (typeof showToast === 'function') {
+      showToast('Insufficient credits', 'error');
+    }
     return;
   }
 
   // Compliance + verification
   if (!hasConsent()) {
-    showConsentModal?.();
-    showToast?.('Please confirm you are 18+ before rendering.', 'error');
+    if (typeof showConsentModal === 'function') showConsentModal();
+    if (typeof showToast === 'function') {
+      showToast('Please confirm you are 18+ before rendering.', 'error');
+    }
     return;
   }
   if (!appState.turnstileToken) {
-    showToast?.('Please complete the verification check.', 'error');
+    if (typeof showToast === 'function') {
+      showToast('Please complete the verification check.', 'error');
+    }
     return;
   }
 
   if (!appState.photos.length) {
-    showToast?.('Please upload photos first.', 'error');
+    if (typeof showToast === 'function') {
+      showToast('Please upload photos first.', 'error');
+    }
     return;
   }
   if (!appState.voiceId) {
-    showToast?.('Missing voice clone. Generate a preview first.', 'error');
+    if (typeof showToast === 'function') {
+      showToast('Missing voice clone. Generate a preview first.', 'error');
+    }
     return;
   }
 
-  showLoading?.('Uploading photos...');
+  if (typeof showLoading === 'function') showLoading('Uploading photos...');
 
   try {
     // Upload photos
@@ -45,7 +57,7 @@ async function startFullRender() {
     });
     formData.append('turnstileToken', appState.turnstileToken);
 
-    const uploadRes = await fetch(`${API_BASE}/render/upload-photos`, {
+    const uploadRes = await fetch(`${API_BASE}/api/render/upload-photos`, {
       method: 'POST',
       headers: appState.authToken
         ? { Authorization: `Bearer ${appState.authToken}` }
@@ -57,11 +69,11 @@ async function startFullRender() {
     const uploadData = await uploadRes.json();
 
     // Start render job
-    showLoading?.('Starting render...');
+    if (typeof showLoading === 'function') showLoading('Starting render...');
     const briefDescEl = document.getElementById('briefDesc');
     const briefDesc = briefDescEl ? briefDescEl.value : '';
 
-    const renderRes = await fetch(`${API_BASE}/render/full`, {
+    const renderRes = await fetch(`${API_BASE}/api/render/full`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -85,21 +97,24 @@ async function startFullRender() {
     if (!renderRes.ok) throw new Error('Render failed');
     const renderData = await renderRes.json();
 
-    // Poll for completion
     await pollRenderStatus(renderData.jobId);
   } catch (e) {
     console.error('Full render error:', e);
-    hideLoading?.();
-    showToast?.(e.message || 'Full render failed', 'error');
+    if (typeof hideLoading === 'function') hideLoading();
+    if (typeof showToast === 'function') {
+      showToast(e.message || 'Full render failed', 'error');
+    }
   }
 }
 
 async function pollRenderStatus(jobId) {
-  showLoading?.('Rendering your film... (1–3 min)');
+  if (typeof showLoading === 'function') {
+    showLoading('Rendering your film... (1–3 min)');
+  }
 
   const interval = setInterval(async () => {
     try {
-      const res = await fetch(`${API_BASE}/render/status/${jobId}`, {
+      const res = await fetch(`${API_BASE}/api/render/status/${jobId}`, {
         headers: appState.authToken
           ? { Authorization: `Bearer ${appState.authToken}` }
           : undefined
@@ -114,16 +129,17 @@ async function pollRenderStatus(jobId) {
 
       if (data.status === 'completed') {
         clearInterval(interval);
-        hideLoading?.();
+        if (typeof hideLoading === 'function') hideLoading();
         showCompletedFilm(data.videoUrl);
         if (typeof initAuthenticatedApp === 'function') {
-          // refresh balance from server
-          initAuthenticatedApp();
+          initAuthenticatedApp(); // refresh balance
         }
       } else if (data.status === 'failed') {
         clearInterval(interval);
-        hideLoading?.();
-        showToast?.('Render failed. Credits refunded.', 'error');
+        if (typeof hideLoading === 'function') hideLoading();
+        if (typeof showToast === 'function') {
+          showToast('Render failed. Credits refunded.', 'error');
+        }
         if (typeof initAuthenticatedApp === 'function') {
           initAuthenticatedApp();
         }
@@ -135,10 +151,12 @@ async function pollRenderStatus(jobId) {
     } catch (e) {
       console.error('Polling error:', e);
       clearInterval(interval);
-      hideLoading?.();
-      showToast?.(e.message || 'Render status check failed', 'error');
+      if (typeof hideLoading === 'function') hideLoading();
+      if (typeof showToast === 'function') {
+        showToast(e.message || 'Render status check failed', 'error');
+      }
     }
-  }, 5000); // Poll every 5 seconds
+  }, 5000);
 }
 
 function showCompletedFilm(videoUrl) {
@@ -164,14 +182,21 @@ function showCompletedFilm(videoUrl) {
       </div>
       <div class="screen-footer">
         <button class="btn" type="button" onclick="downloadFilm('${videoUrl}')">⬇️ Download</button>
-        <button class="btn" type="button" style="margin-top:1rem;background:transparent;border:1px solid var(--border)" onclick="createAnother()">Create Another</button>
+        <button
+          class="btn"
+          type="button"
+          style="margin-top:1rem;background:transparent;border:1px solid rgba(255,255,255,0.2);"
+          onclick="createAnother()"
+        >
+          Create Another
+        </button>
       </div>
     </div>
   `;
 
   root.insertAdjacentHTML('beforeend', completionHTML);
-  navigateToScreen?.('completionScreen');
-  showToast?.('Film ready!', 'success');
+  if (typeof navigateToScreen === 'function') navigateToScreen('completionScreen');
+  if (typeof showToast === 'function') showToast('Film ready!', 'success');
 }
 
 function downloadFilm(url) {
@@ -181,21 +206,18 @@ function downloadFilm(url) {
   document.body.appendChild(a);
   a.click();
   a.remove();
-  showToast?.('Download started', 'success');
+  if (typeof showToast === 'function') showToast('Download started', 'success');
 }
 
 function createAnother() {
-  // Reset state
   appState.photos = [];
   appState.voiceBlob = null;
   appState.voiceId = null;
 
-  // Remove completion screen
   const screen = document.getElementById('completionScreen');
   if (screen) screen.remove();
 
-  // Go back to start
-  navigateToScreen?.('uploadScreen');
+  if (typeof navigateToScreen === 'function') navigateToScreen('uploadScreen');
   if (typeof updatePhotoGrid === 'function') updatePhotoGrid();
-  showToast?.('Ready for new film', 'success');
+  if (typeof showToast === 'function') showToast('Ready for new film', 'success');
 }

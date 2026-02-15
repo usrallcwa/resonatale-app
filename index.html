@@ -118,6 +118,16 @@
           <p class="hero-desc-sub">Narrated in your own voice</p>
         </div>
 
+        <!-- Turnstile widget for verification (used by signup/login/preview) -->
+        <div
+          class="cf-turnstile"
+          data-sitekey="0x4AAAAAACLI9vyJZYGLg9lS"
+          data-callback="onTurnstileSuccess"
+          data-error-callback="onTurnstileError"
+          data-expired-callback="onTurnstileExpired"
+          style="margin-bottom:1rem;"
+        ></div>
+
         <button class="btn primary-btn pulse" type="button" onclick="if (window.startApp) window.startApp();">
           Start Creating
         </button>

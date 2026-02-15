@@ -18,6 +18,7 @@
   </head>
   <body>
     <div class="app-root">
+      <!-- HEADER -->
       <header class="app-header">
         <div class="header-left">
           <a href="/" class="brand-logo">
@@ -29,53 +30,53 @@
         </div>
       </header>
 
-     <!-- HERO / WELCOME SCREEN -->
-<div id="heroScreen" class="screen active">
-  <button
-    class="link-btn hero-login-btn"
-    onclick="showLogin()"
-  >
-    Login
-  </button>
+      <!-- HERO / WELCOME SCREEN -->
+      <div id="heroScreen" class="screen active">
+        <button
+          class="link-btn hero-login-btn"
+          onclick="showLogin()"
+        >
+          Login
+        </button>
 
-  <div class="hero">
-    <h1 class="hero-logo">ResonaTale</h1>
-    <p class="hero-tag">You Are The Star</p>
+        <div class="hero">
+          <h1 class="hero-logo">ResonaTale</h1>
+          <p class="hero-tag">You Are The Star</p>
 
-    <div class="hero-desc">
-      <p>Turn your photos into epic AI films</p>
-      <p class="hero-desc-sub">Narrated in your own voice</p>
-    </div>
+          <div class="hero-desc">
+            <p>Turn your photos into epic AI films</p>
+            <p class="hero-desc-sub">Narrated in your own voice</p>
+          </div>
 
-    <button class="btn primary-btn pulse" onclick="startApp()">
-      Start Creating
-    </button>
+          <button class="btn primary-btn pulse" onclick="startApp()">
+            Start Creating
+          </button>
 
-    <p class="hero-note">Free preview • No signup required</p>
-  </div>
+          <p class="hero-note">Free preview • No signup required</p>
+        </div>
 
-  <div class="hero-footer">
-    <button class="link-btn" onclick="showPage('contactSection')">✉️</button>
-    <button class="link-btn" onclick="showPage('termsSection')">Terms</button>
-    <button class="link-btn" onclick="showPage('privacySection')">Privacy</button>
-  </div>
+        <div class="hero-footer">
+          <button class="link-btn" onclick="showPage('contactSection')">✉️</button>
+          <button class="link-btn" onclick="showPage('termsSection')">Terms</button>
+          <button class="link-btn" onclick="showPage('privacySection')">Privacy</button>
+        </div>
 
-  <!-- Inline legal/contact sections (hidden by default) -->
-  <div id="contactSection" class="page" style="display:none;">
-    <h2>Contact</h2>
-    <p>Email us at support@resonatale.com</p>
-  </div>
+        <!-- Inline legal/contact sections (hidden by default) -->
+        <div id="contactSection" class="page" style="display:none;">
+          <h2>Contact</h2>
+          <p>Email us at support@resonatale.com</p>
+        </div>
 
-  <div id="termsSection" class="page" style="display:none;">
-    <h2>Terms of Service</h2>
-    <p>Your short terms content goes here.</p>
-  </div>
+        <div id="termsSection" class="page" style="display:none;">
+          <h2>Terms of Service</h2>
+          <p>Your short terms content goes here.</p>
+        </div>
 
-  <div id="privacySection" class="page" style="display:none;">
-    <h2>Privacy Policy</h2>
-    <p>Your short privacy summary goes here.</p>
-  </div>
-</div>
+        <div id="privacySection" class="page" style="display:none;">
+          <h2>Privacy Policy</h2>
+          <p>Your short privacy summary goes here.</p>
+        </div>
+      </div>
 
       <!-- UPLOAD SCREEN -->
       <div id="uploadScreen" class="screen">
@@ -87,7 +88,7 @@
         <!-- existing upload UI goes here -->
       </div>
 
-      <!-- OTHER SCREENS (placeholders, keep your existing content/ids/logic) -->
+      <!-- OTHER SCREENS -->
       <div id="scriptScreen" class="screen">
         <div class="screen-header">
           <button class="back-btn" onclick="goBack('uploadScreen')">←</button>
@@ -115,7 +116,7 @@
         <!-- preview UI -->
       </div>
 
-      <!-- LOGIN / AUTH MODAL (structure only, keep your existing JS) -->
+      <!-- LOGIN / AUTH MODAL -->
       <div id="authModal" class="auth-modal" style="display:none;">
         <div class="auth-card">
           <button class="auth-close" onclick="closeLogin()">×</button>
@@ -157,6 +158,21 @@
         });
         var target = document.getElementById(id);
         if (target) target.style.display = "block";
+      }
+
+      // Simple menu controls for header button + overlay
+      function openMenu() {
+        var overlay = document.getElementById("menuOverlay");
+        if (overlay) {
+          overlay.classList.add("open");
+        }
+      }
+
+      function closeMenu() {
+        var overlay = document.getElementById("menuOverlay");
+        if (overlay) {
+          overlay.classList.remove("open");
+        }
       }
     </script>
 

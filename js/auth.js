@@ -1,5 +1,71 @@
 // auth.js - Authentication & Signup
 
+function showLogin() {
+    document.getElementById('loginModal').classList.add('active');
+}
+
+function closeLogin() {
+    document.getElementById('loginModal').classList.remove('active');
+}
+
+function switchToSignup() {
+    closeLogin();
+    showSignup();
+}
+
+function switchToLogin() {
+    closeSignup();
+    showLogin();
+}
+
+async function handleLoginSubmit(event) {
+    event.preventDefault();
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    await handleLogin(email, password);
+    closeLogin();
+}
+
+async function handleLogin(email, password) {
+    showLoading('Logging in...');
+    
+    try {
+        const res = await fetch(`${API_BASE}/api/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        
+        const data = await res.json();
+        
+        if (!res.ok || !data.success) {
+            throw new Error(data.error || 'Login failed');
+        }
+        
+        // Store auth with correct response structure
+        state.authToken = data.accessToken;
+        state.userId = data.user.id;
+        state.balance = data.user.balance || 0;
+        
+        localStorage.setItem('authToken', data.accessToken);
+        localStorage.setItem('userId', data.user.id);
+        
+        updateBalance();
+        document.getElementById('appHeader').classList.remove('hidden');
+        document.getElementById('menuEmail').textContent = email;
+        
+        hideLoading();
+        showToast('Logged in!', 'success');
+        
+        // Go to upload screen
+        navigateTo('uploadScreen');
+        
+    } catch (e) {
+        hideLoading();
+        showToast(e.message, 'error');
+    }
+}
+
 async function handleSignup(event) {
     event.preventDefault();
     
@@ -28,23 +94,24 @@ async function handleSignup(event) {
                 email,
                 password,
                 name,
+                consentAccepted: true,
                 turnstileToken: state.turnstileToken
             })
         });
         
         const data = await res.json();
         
-        if (!res.ok) {
+        if (!res.ok || !data.success) {
             throw new Error(data.error || 'Signup failed');
         }
         
-        // Store auth
-        state.authToken = data.token;
-        state.userId = data.userId;
-        state.balance = data.balance || 0;
+        // Store auth with correct response structure
+        state.authToken = data.accessToken;
+        state.userId = data.user.id;
+        state.balance = data.user.balance || 0;
         
-        localStorage.setItem('authToken', data.token);
-        localStorage.setItem('userId', data.userId);
+        localStorage.setItem('authToken', data.accessToken);
+        localStorage.setItem('userId', data.user.id);
         
         // Update UI
         updateBalance();
@@ -57,42 +124,6 @@ async function handleSignup(event) {
         
         // Start full render
         startFullRender();
-        
-    } catch (e) {
-        hideLoading();
-        showToast(e.message, 'error');
-    }
-}
-
-async function handleLogin(email, password) {
-    showLoading('Logging in...');
-    
-    try {
-        const res = await fetch(`${API_BASE}/api/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        });
-        
-        const data = await res.json();
-        
-        if (!res.ok) {
-            throw new Error(data.error || 'Login failed');
-        }
-        
-        state.authToken = data.token;
-        state.userId = data.userId;
-        state.balance = data.balance || 0;
-        
-        localStorage.setItem('authToken', data.token);
-        localStorage.setItem('userId', data.userId);
-        
-        updateBalance();
-        document.getElementById('appHeader').classList.remove('hidden');
-        document.getElementById('menuEmail').textContent = email;
-        
-        hideLoading();
-        showToast('Logged in!', 'success');
         
     } catch (e) {
         hideLoading();

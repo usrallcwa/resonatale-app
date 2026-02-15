@@ -13,7 +13,13 @@ let appState = {
   recordingStartTime: null,
   mediaRecorder: null,
   audioStream: null,
-  turnstileToken: null,
+
+  // Turnstile token is mirrored from window.turnstileToken so app.js
+  // doesn't trust a separate stale field.
+  get turnstileToken() {
+    return window.turnstileToken || null;
+  },
+
   authToken: localStorage.getItem('authToken'),
   userId: localStorage.getItem('userId'),
   userBalance: 0,
@@ -26,6 +32,11 @@ let appState = {
 // ============================================
 document.addEventListener('DOMContentLoaded', function () {
   console.log('🎬 ResonaTale App Initialized');
+
+  // 18+ consent modal wiring (defined in another section)
+  if (typeof initCompliance === 'function') {
+    initCompliance();
+  }
 
   // Ensure header visibility is correct on initial paint.
   updateHeaderVisibility(appState.currentScreen);
@@ -85,7 +96,7 @@ function updateHeaderVisibility(screenId) {
     return;
   }
 
-  // Keep your existing intent: show header only when authenticated.
+  // Show header only when authenticated.
   if (appState.authToken) header.classList.remove('hidden');
 }
 
@@ -115,7 +126,39 @@ function goBack(screenId) {
 // ============================================
 // PHOTO UPLOAD
 // ============================================
+
+// simple helpers (used here and in later sections)
+const CONSENT_KEY = 'rt_consent_18plus_v1';
+
+function hasConsent() {
+  return localStorage.getItem(CONSENT_KEY) === 'true';
+}
+
+function requireConsentOrBlock() {
+  if (hasConsent()) return true;
+  if (typeof showConsentModal === 'function') {
+    showConsentModal();
+  } else {
+    if (typeof showToast === 'function') {
+      showToast('Please confirm you are 18+ before continuing.', 'error');
+    }
+  }
+  return false;
+}
+
+function requireTurnstileOrBlock() {
+  if (appState.turnstileToken) return true;
+  if (typeof showToast === 'function') {
+    showToast('Please complete the verification check.', 'error');
+  }
+  return false;
+}
+
 function triggerFileInput() {
+  // gate before user can pick photos
+  if (!requireConsentOrBlock()) return;
+  if (!requireTurnstileOrBlock()) return;
+
   const input = document.getElementById('photoInput');
   if (input) input.click();
 }
@@ -218,6 +261,10 @@ function pickBestAudioMimeType() {
 async function toggleRecording() {
   const btn = document.getElementById('recordBtn');
   if (!btn) return;
+
+  // gate recording as well
+  if (!requireConsentOrBlock()) return;
+  if (!requireTurnstileOrBlock()) return;
 
   if (!window.MediaRecorder) {
     if (typeof showToast === 'function') showToast('Recording not supported on this browser', 'error');
@@ -373,6 +420,21 @@ async function generatePreview() {
   const briefDescEl = document.getElementById('briefDesc');
   const briefDesc = briefDescEl ? briefDescEl.value.trim() : '';
 
+  // Compliance gates before we spend API
+  if (!hasConsent()) {
+    if (typeof showConsentModal === 'function') showConsentModal();
+    if (typeof showToast === 'function') {
+      showToast('Please confirm you are 18+ before generating a preview.', 'error');
+    }
+    return;
+  }
+  if (!appState.turnstileToken) {
+    if (typeof showToast === 'function') {
+      showToast('Please complete the verification check.', 'error');
+    }
+    return;
+  }
+
   if (!briefDesc) {
     if (typeof showToast === 'function') showToast('Please enter a brief description', 'error');
     return;
@@ -416,7 +478,9 @@ async function generatePreview() {
   } catch (error) {
     console.error('Preview generation error:', error);
     if (typeof hideLoading === 'function') hideLoading();
-    if (typeof showToast === 'function') showToast(error.message || 'Failed to generate preview', 'error');
+    if (typeof showToast === 'function') {
+      showToast(error.message || 'Failed to generate preview', 'error');
+    }
   }
 }
 
@@ -426,9 +490,18 @@ async function uploadPhotos() {
 }
 
 async function uploadVoice() {
+  if (!hasConsent()) {
+    if (typeof showConsentModal === 'function') showConsentModal();
+    throw new Error('Consent required');
+  }
+  if (!appState.turnstileToken) {
+    throw new Error('Verification required');
+  }
+
   const formData = new FormData();
   formData.append('audio', appState.voiceBlob, 'voice.webm');
   formData.append('name', 'User Voice');
+  formData.append('turnstileToken', appState.turnstileToken);
 
   const headers = {};
   if (appState.authToken) headers['Authorization'] = `Bearer ${appState.authToken}`;
@@ -453,6 +526,10 @@ async function uploadVoice() {
 }
 
 async function generatePreviewRequest(photoUrls, voiceId, briefDesc) {
+  if (!appState.turnstileToken) {
+    throw new Error('Verification required');
+  }
+
   const language = document.getElementById('languageSelect')?.value || 'en';
   const mood = document.getElementById('moodSelect')?.value || 'default';
   const genre = document.getElementById('genreSelect')?.value || 'default';
@@ -472,7 +549,8 @@ async function generatePreviewRequest(photoUrls, voiceId, briefDesc) {
       language,
       mood,
       genre,
-      orientation
+      orientation,
+      turnstileToken: appState.turnstileToken
     })
   });
 
@@ -537,7 +615,6 @@ function openMenu() {
   const overlay = document.getElementById('menuOverlay');
   if (!overlay) return;
 
-  // Works even if HTML has inline style="display:none"
   overlay.style.display = 'flex';
   overlay.classList.add('open');
 }
@@ -560,7 +637,7 @@ function logout(silent = false) {
 
   closeMenu();
   hideLoading();
-  closeCredits?.(); // if defined elsewhere
+  if (typeof closeCredits === 'function') closeCredits();
 
   navigateToScreen('heroScreen');
 
@@ -622,7 +699,7 @@ function hideLoading() {
 let __toastCooldownUntil = 0;
 function showToast(message, type = 'info') {
   const now = Date.now();
-  if (now < __toastCooldownUntil) return; // prevent toast spam during error storms
+  if (now < __toastCooldownUntil) return;
   __toastCooldownUntil = now + 800;
 
   const toast = document.createElement('div');
@@ -669,17 +746,17 @@ function animateFilmCounter() {
 // ERROR HANDLING
 // ============================================
 window.addEventListener('error', function (e) {
-  // ErrorEvent.error can be undefined; use message fallback.
-  console.error('Global error:', e?.error || e?.message || e); // robust logging [web:160][web:162]
-  if (typeof showToast === 'function') showToast('Something went wrong. Please try again.', 'error');
+  console.error('Global error:', e?.error || e?.message || e);
+  if (typeof showToast === 'function') {
+    showToast('Something went wrong. Please try again.', 'error');
+  }
 });
 
 window.addEventListener('unhandledrejection', function (e) {
   console.error('Unhandled promise rejection:', e?.reason);
-
-  // Many environments allow suppressing default handling via preventDefault(). [web:151]
   if (typeof e?.preventDefault === 'function') e.preventDefault();
-
-  if (typeof showToast === 'function') showToast('Network error. Please check your connection.', 'error');
+  if (typeof showToast === 'function') {
+    showToast('Network error. Please check your connection.', 'error');
+  }
 });
 

@@ -45,7 +45,7 @@ async function startFullRender() {
     });
     formData.append('turnstileToken', appState.turnstileToken);
 
-    const uploadRes = await fetch(`${API_BASE}/api/render/upload-photos`, {
+    const uploadRes = await fetch(`${API_BASE}/render/upload-photos`, {
       method: 'POST',
       headers: appState.authToken
         ? { Authorization: `Bearer ${appState.authToken}` }
@@ -61,7 +61,7 @@ async function startFullRender() {
     const briefDescEl = document.getElementById('briefDesc');
     const briefDesc = briefDescEl ? briefDescEl.value : '';
 
-    const renderRes = await fetch(`${API_BASE}/api/render/full`, {
+    const renderRes = await fetch(`${API_BASE}/render/full`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -76,7 +76,8 @@ async function startFullRender() {
         language: document.getElementById('languageSelect')?.value || 'en',
         mood: document.getElementById('moodSelect')?.value || 'default',
         genre: document.getElementById('genreSelect')?.value || 'default',
-        orientation: document.getElementById('orientationSelect')?.value || 'landscape',
+        orientation:
+          document.getElementById('orientationSelect')?.value || 'landscape',
         turnstileToken: appState.turnstileToken
       })
     });
@@ -98,7 +99,7 @@ async function pollRenderStatus(jobId) {
 
   const interval = setInterval(async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/render/status/${jobId}`, {
+      const res = await fetch(`${API_BASE}/render/status/${jobId}`, {
         headers: appState.authToken
           ? { Authorization: `Bearer ${appState.authToken}` }
           : undefined

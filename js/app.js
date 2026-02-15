@@ -1,7 +1,7 @@
 // ============================================
 // GLOBAL STATE & CONFIGURATION
 // ============================================
-const API_BASE = 'https://resonatale-worker.ayatemarketing.workers.dev';
+const API_BASE = 'https://api.resonatale.com';
 
 let appState = {
     currentScreen: 'heroScreen',

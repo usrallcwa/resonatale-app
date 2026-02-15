@@ -1,4 +1,4 @@
-// auth.js - Authentication & Signup
+-// auth.js - Authentication & Signup
 
 // Simple login modal controls (matches #authModal in index.html)
 function showLogin() {
@@ -62,7 +62,7 @@ async function handleLogin(email, password) {
   showLoading?.('Logging in...');
 
   try {
-    const res = await fetch(`${API_BASE}/api/auth/login`, {
+    const res = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
@@ -132,7 +132,7 @@ async function handleSignup(event) {
   showLoading?.('Creating account...');
 
   try {
-    const res = await fetch(`${API_BASE}/api/auth/signup`, {
+    const res = await fetch(`${API_BASE}/auth/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

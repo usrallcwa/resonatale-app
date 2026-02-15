@@ -15,7 +15,6 @@
   --border-hairline: rgba(255, 255, 255, 0.08);
   --bg-panel: radial-gradient(circle at top left, #1b1b2c 0%, #0b0b15 55%, #05050a 100%);
 
-  /* overlay z-order */
   --z-menu: 900;
   --z-auth: 950;
   --z-loading: 1000;
@@ -31,7 +30,6 @@ body {
   min-height: 100%;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
 
-  /* Fallback color (in case gradients fail) */
   background-color: #000;
   background: radial-gradient(circle at top, #060615 0%, #020208 55%, #000000 100%);
 
@@ -39,8 +37,8 @@ body {
 }
 
 .app-root {
-  min-height: 100vh;  /* fallback */
-  min-height: 100dvh; /* mobile-safe when supported */
+  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
@@ -68,8 +66,6 @@ body {
   display: none;
 }
 
-/* Logo */
-
 .brand-logo {
   display: inline-flex;
   align-items: center;
@@ -78,18 +74,8 @@ body {
 
 .brand-logo-img {
   width: 40px;
-  height: 40px; /* for both <img> and inline <svg> */
+  height: 40px; /* works for <img> and <svg> */
   display: block;
-}
-
-.brand-word,
-.header-logo-text {
-  margin-left: 0.5rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.8);
 }
 
 .header-menu-btn {
@@ -125,7 +111,7 @@ body {
   padding-top: 3.5rem;
 }
 
-/* Ensure hero screen uses flex when active */
+/* hero as flex container when active */
 #heroScreen.screen.active {
   display: flex;
 }
@@ -271,29 +257,7 @@ body {
   margin-bottom: 1rem;
 }
 
-/* (Optional) LEGAL/CONTACT inline pages — safe to keep for future, not used now */
-
-.page {
-  max-width: 640px;
-  margin: 0 auto 2.5rem;
-  padding: 1.75rem 1.5rem;
-  background: radial-gradient(circle at top left, #141422 0%, #05050c 55%, #010104 100%);
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
-}
-
-.page h2 {
-  margin: 0 0 0.75rem;
-  font-size: 1.25rem;
-}
-
-.page p {
-  margin: 0 0 0.5rem;
-  color: rgba(255, 255, 255, 0.78);
-}
-
-/* SCREEN HEADERS (steps) */
+/* SCREEN HEADERS */
 
 .screen-header {
   display: flex;
@@ -382,6 +346,28 @@ body {
   color: rgba(255, 255, 255, 0.7);
   font-size: 1.2rem;
   cursor: pointer;
+}
+
+/* Login form fields */
+
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 1rem;
+}
+
+.auth-field label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.auth-field input {
+  padding: 0.55rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
 }
 
 /* MENU OVERLAY */
@@ -521,7 +507,7 @@ body {
   }
 }
 
-/* RESPONSIVE TWEAKS */
+/* RESPONSIVE */
 
 @media (min-width: 768px) {
   #heroScreen {

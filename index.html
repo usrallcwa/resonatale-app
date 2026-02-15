@@ -146,7 +146,10 @@
   </div>
 
   <div class="hero-footer">
-    <button class="link-btn" type="button" onclick="showPage('contactSection')">✉️</button>
+    <!-- Opens contact panel AND email compose -->
+    <button class="link-btn" type="button" onclick="openContactEmail()">
+      ✉️
+    </button>
     <button class="link-btn" type="button" onclick="showPage('termsSection')">Terms</button>
     <button class="link-btn" type="button" onclick="showPage('privacySection')">Privacy</button>
   </div>
@@ -246,27 +249,17 @@
     if (target) target.style.display = "block";
   }
 
-  // Simple menu controls for header button + overlay
-  function openMenu() {
-    var overlay = document.getElementById("menuOverlay");
-    if (overlay) {
-      overlay.style.display = "block";
-      overlay.classList.add("open");
-    }
-  }
-
-  function closeMenu() {
-    var overlay = document.getElementById("menuOverlay");
-    if (overlay) {
-      overlay.classList.remove("open");
-      overlay.style.display = "none";
-    }
+  function openContactEmail() {
+    // show inline Contact panel
+    showPage('contactSection');
+    // open email compose
+    window.location.href = 'mailto:admin@resonatale.com?subject=ResonaTale%20Support';
   }
 </script>
 
-    <script src="js/app.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/wallet.js"></script>
-    <script src="js/render.js"></script>
-  </body>
+<script src="js/app.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/wallet.js"></script>
+<script src="js/render.js"></script>
+</body>
 </html>

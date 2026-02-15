@@ -47,6 +47,31 @@ body {
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent);
 }
 
+/* NEW: logo styles */
+
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.brand-logo-img {
+  height: 32px;
+  width: 32px;
+  border-radius: 8px;
+  display: block;
+}
+
+.brand-word {
+  margin-left: 0.5rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* if you no longer use this span, you can delete this rule */
 .header-logo-text {
   font-weight: 600;
   letter-spacing: 0.1em;

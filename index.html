@@ -122,31 +122,53 @@
             </div>
         </header>
 
-        <div id="heroScreen" class="screen active">
-            <button class="link-btn" style="position:absolute;top:1.5rem;right:1.5rem;color:var(--accent);font-weight:600" onclick="showLogin()">Login</button>
-            <div class="hero">
-                <h1 class="hero-logo">ResonaTale</h1>
-                <p class="hero-tag">You Are The Star</p>
-                <div class="hero-desc">
-                    <p>Turn your photos into epic AI films</p>
-                    <p style="font-size:0.875rem;margin-top:0.5rem">Narrated in your own voice</p>
-                </div>
-                <button class="btn pulse" onclick="startApp()">Start Creating</button>
-                <p class="hero-note">Free preview • No signup required</p>
-            </div>
-            <div class="hero-footer">
-                <button class="link-btn" onclick="showPage('contact')">✉️</button>
-                <button class="link-btn" onclick="showPage('terms')">Terms</button>
-                <button class="link-btn" onclick="showPage('privacy')">Privacy</button>
-            </div>
-        </div>
+<div id="heroScreen" class="screen active">
+  <button
+    class="link-btn"
+    style="position:absolute;top:1.5rem;right:1.5rem;color:var(--accent);font-weight:600"
+    onclick="showLogin()"
+  >
+    Login
+  </button>
 
-        <div id="uploadScreen" class="screen">
-            <div class="screen-header">
-                <button class="back-btn" onclick="goBack('heroScreen')">←</button>
-                <h2 class="screen-title">Upload Photos</h2>
-                <span class="step">1/4</span>
-            </div>
+  <div class="hero">
+    <h1 class="hero-logo">ResonaTale</h1>
+    <p class="hero-tag">You Are The Star</p>
+    <div class="hero-desc">
+      <p>Turn your photos into epic AI films</p>
+      <p style="font-size:0.875rem;margin-top:0.5rem">Narrated in your own voice</p>
+    </div>
+    <button class="btn pulse" onclick="startApp()">Start Creating</button>
+    <p class="hero-note">Free preview • No signup required</p>
+  </div>
+
+  <div class="hero-footer">
+    <button class="link-btn" onclick="showPage('contactSection')">✉️</button>
+    <button class="link-btn" onclick="showPage('termsSection')">Terms</button>
+    <button class="link-btn" onclick="showPage('privacySection')">Privacy</button>
+  </div>
+
+  <!-- Inline sections toggled by footer buttons -->
+  <div id="contactSection" class="page" style="display:none;">
+    <!-- Contact content -->
+  </div>
+
+  <div id="termsSection" class="page" style="display:none;">
+    <!-- Terms of Service content -->
+  </div>
+
+  <div id="privacySection" class="page" style="display:none;">
+    <!-- Privacy Policy content -->
+  </div>
+</div>
+
+<div id="uploadScreen" class="screen">
+  <div class="screen-header">
+    <button class="back-btn" onclick="goBack('heroScreen')">←</button>
+    <h2 class="screen-title">Upload Photos</h2>
+    <span class="step">1/4</span>
+  </div>
+
             <div class="screen-content">
                 <p class="instruction">Upload 6-12 photos of yourself</p>
                 <div class="upload-zone" onclick="triggerFileInput()">
@@ -333,32 +355,54 @@
             </div>
         </div>
 
-        <div id="menuOverlay" class="menu-overlay">
-            <div class="menu-content">
-                <button class="menu-close" onclick="closeMenu()">×</button>
-                <div class="menu-user">
-                    <p class="menu-email" id="menuEmail">user@email.com</p>
-                    <p class="menu-balance">$<span id="menuBalance">0</span></p>
-                </div>
-                <div class="menu-items">
-                    <button class="menu-item" onclick="showAddCredits()">💳 Add Credits</button>
-                    <button class="menu-item" onclick="showPage('terms')">📄 Terms</button>
-                    <button class="menu-item" onclick="showPage('privacy')">🔒 Privacy</button>
-                    <button class="menu-item" onclick="showPage('contact')">✉️ Contact</button>
-                    <button class="menu-item danger" onclick="logout()">🚪 Logout</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="loadingOverlay" class="loading-overlay">
-            <div class="spinner"></div>
-            <p class="loading-text" id="loadingText">Processing...</p>
-        </div>
+       <div id="menuOverlay" class="menu-overlay">
+  <div class="menu-content">
+    <button class="menu-close" onclick="closeMenu()">×</button>
+    <div class="menu-user">
+      <p class="menu-email" id="menuEmail">user@email.com</p>
+      <p class="menu-balance">$<span id="menuBalance">0</span></p>
     </div>
+    <div class="menu-items">
+      <button class="menu-item" onclick="showAddCredits()">💳 Add Credits</button>
+      <button class="menu-item" onclick="showPage('termsSection')">📄 Terms</button>
+      <button class="menu-item" onclick="showPage('privacySection')">🔒 Privacy</button>
+      <button class="menu-item" onclick="showPage('contactSection')">✉️ Contact</button>
+      <button class="menu-item danger" onclick="logout()">🚪 Logout</button>
+    </div>
+  </div>
+</div>
 
-    <script src="js/app.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/wallet.js"></script>
-    <script src="js/render.js"></script>
+<div id="loadingOverlay" class="loading-overlay">
+  <div class="spinner"></div>
+  <p class="loading-text" id="loadingText">Processing...</p>
+</div>
+
+<!-- Inline legal/contact sections -->
+<div id="contactSection" class="page" style="display:none;">
+  <!-- Contact content -->
+</div>
+
+<div id="termsSection" class="page" style="display:none;">
+  <!-- Terms of Service content -->
+</div>
+
+<div id="privacySection" class="page" style="display:none;">
+  <!-- Privacy Policy content -->
+</div>
+
+<script>
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(el => {
+      el.style.display = 'none';
+    });
+    const target = document.getElementById(id);
+    if (target) target.style.display = 'block';
+  }
+</script>
+
+<script src="js/app.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/wallet.js"></script>
+<script src="js/render.js"></script>
 </body>
 </html>

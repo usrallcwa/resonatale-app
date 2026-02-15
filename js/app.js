@@ -8,6 +8,7 @@ let appState = {
   previousScreen: null,
   photos: [],
   voiceBlob: null,
+  voiceMimeType: null,
   voiceId: null,
   recordingStartTime: null,
   mediaRecorder: null,
@@ -16,7 +17,8 @@ let appState = {
   authToken: localStorage.getItem('authToken'),
   userId: localStorage.getItem('userId'),
   userBalance: 0,
-  previewVideoUrl: null
+  previewVideoUrl: null,
+  audioObjectUrl: null
 };
 
 // ============================================
@@ -25,12 +27,19 @@ let appState = {
 document.addEventListener('DOMContentLoaded', function () {
   console.log('🎬 ResonaTale App Initialized');
 
-  if (appState.authToken) {
+  // Ensure header visibility is correct on initial paint.
+  updateHeaderVisibility(appState.currentScreen);
+
+  // Guard optional functions so one missing script doesn't kill the app.
+  if (appState.authToken && typeof initAuthenticatedApp === 'function') {
     initAuthenticatedApp();
   }
 
   setupEventListeners();
-  animateFilmCounter();
+
+  if (typeof animateFilmCounter === 'function') {
+    animateFilmCounter();
+  }
 });
 
 function setupEventListeners() {
@@ -52,7 +61,7 @@ function setupEventListeners() {
   document.body.addEventListener(
     'touchmove',
     function (e) {
-      if (e.touches.length > 1) {
+      if (e.touches && e.touches.length > 1) {
         e.preventDefault();
       }
     },
@@ -67,10 +76,22 @@ function startApp() {
   navigateToScreen('uploadScreen');
 }
 
+function updateHeaderVisibility(screenId) {
+  const header = document.querySelector('.app-header');
+  if (!header) return;
+
+  if (screenId === 'heroScreen') {
+    header.classList.add('hidden');
+    return;
+  }
+
+  // Keep your existing intent: show header only when authenticated.
+  if (appState.authToken) header.classList.remove('hidden');
+}
+
 function navigateToScreen(screenId) {
   const currentScreen = document.querySelector('.screen.active');
   const nextScreen = document.getElementById(screenId);
-
   if (!nextScreen) return;
 
   appState.previousScreen = appState.currentScreen;
@@ -79,22 +100,12 @@ function navigateToScreen(screenId) {
   if (currentScreen) {
     currentScreen.classList.remove('active');
     currentScreen.classList.add('exiting');
-    setTimeout(() => {
-      currentScreen.classList.remove('exiting');
-    }, 300);
+    setTimeout(() => currentScreen.classList.remove('exiting'), 300);
   }
 
   nextScreen.classList.add('active');
 
-  // Header visibility (your header has class, not id)
-  const header = document.querySelector('.app-header');
-  if (!header) return;
-
-  if (screenId === 'heroScreen') {
-    header.classList.add('hidden');
-  } else if (appState.authToken) {
-    header.classList.remove('hidden');
-  }
+  updateHeaderVisibility(screenId);
 }
 
 function goBack(screenId) {
@@ -110,15 +121,17 @@ function triggerFileInput() {
 }
 
 function handlePhotoSelection(event) {
-  const files = Array.from(event.target.files || []);
+  const inputEl = event.target;
+  const files = Array.from(inputEl.files || []);
 
   if (appState.photos.length + files.length > 12) {
-    showToast('Maximum 12 photos allowed', 'error');
+    if (typeof showToast === 'function') showToast('Maximum 12 photos allowed', 'error');
+    inputEl.value = ''; // allow re-selecting after error
     return;
   }
 
   files.forEach((file) => {
-    if (file.type.startsWith('image/')) {
+    if (file && file.type && file.type.startsWith('image/')) {
       const reader = new FileReader();
       reader.onload = function (e) {
         appState.photos.push({
@@ -131,6 +144,9 @@ function handlePhotoSelection(event) {
       reader.readAsDataURL(file);
     }
   });
+
+  // IMPORTANT: reset so selecting the same file again triggers change.
+  inputEl.value = '';
 }
 
 function updatePhotoGrid() {
@@ -145,7 +161,7 @@ function updatePhotoGrid() {
       (photo, index) => `
         <div class="photo-item">
           <img src="${photo.dataUrl}" alt="Photo ${index + 1}">
-          <button class="photo-remove" onclick="removePhoto(${index})">×</button>
+          <button class="photo-remove" type="button" onclick="removePhoto(${index})">×</button>
         </div>
       `
     )
@@ -166,18 +182,47 @@ function updatePhotoContinueButton() {
 
 function goToVoice() {
   if (appState.photos.length < 6) {
-    showToast('Please upload at least 6 photos', 'error');
+    if (typeof showToast === 'function') showToast('Please upload at least 6 photos', 'error');
     return;
   }
+
+  // If you have a Script step, don't skip it when present.
+  if (appState.currentScreen === 'uploadScreen' && document.getElementById('scriptScreen')) {
+    navigateToScreen('scriptScreen');
+    return;
+  }
+
   navigateToScreen('voiceScreen');
 }
 
 // ============================================
 // VOICE RECORDING
 // ============================================
+function pickBestAudioMimeType() {
+  if (!window.MediaRecorder || typeof MediaRecorder.isTypeSupported !== 'function') return null;
+
+  const candidates = [
+    'audio/webm;codecs=opus',
+    'audio/webm',
+    'audio/mp4',
+    'audio/ogg;codecs=opus',
+    'audio/ogg'
+  ];
+
+  for (const t of candidates) {
+    if (MediaRecorder.isTypeSupported(t)) return t;
+  }
+  return null;
+}
+
 async function toggleRecording() {
   const btn = document.getElementById('recordBtn');
   if (!btn) return;
+
+  if (!window.MediaRecorder) {
+    if (typeof showToast === 'function') showToast('Recording not supported on this browser', 'error');
+    return;
+  }
 
   const icon = btn.querySelector('.record-icon');
   const text = btn.querySelector('.record-text');
@@ -186,17 +231,25 @@ async function toggleRecording() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       appState.audioStream = stream;
-      appState.mediaRecorder = new MediaRecorder(stream);
+
+      const mimeType = pickBestAudioMimeType();
+      appState.voiceMimeType = mimeType || undefined;
+
+      appState.mediaRecorder = mimeType
+        ? new MediaRecorder(stream, { mimeType })
+        : new MediaRecorder(stream);
 
       const audioChunks = [];
 
       appState.mediaRecorder.ondataavailable = (event) => {
-        audioChunks.push(event.data);
+        if (event.data && event.data.size > 0) audioChunks.push(event.data);
       };
 
       appState.mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        const type = appState.voiceMimeType || (audioChunks[0] && audioChunks[0].type) || 'audio/webm';
+        const audioBlob = new Blob(audioChunks, { type });
         appState.voiceBlob = audioBlob;
+
         showAudioPreview(audioBlob);
         stopAllStreams();
       };
@@ -211,13 +264,11 @@ async function toggleRecording() {
       startRecordingTimer();
 
       setTimeout(() => {
-        if (appState.mediaRecorder && appState.mediaRecorder.state === 'recording') {
-          stopRecording();
-        }
+        if (appState.mediaRecorder && appState.mediaRecorder.state === 'recording') stopRecording();
       }, 30000);
     } catch (error) {
       console.error('Microphone access error:', error);
-      showToast('Microphone access denied', 'error');
+      if (typeof showToast === 'function') showToast('Microphone access denied', 'error');
     }
   } else {
     stopRecording();
@@ -245,11 +296,7 @@ function startRecordingTimer() {
   if (!timerEl) return;
 
   const interval = setInterval(() => {
-    if (
-      !appState.recordingStartTime ||
-      !appState.mediaRecorder ||
-      appState.mediaRecorder.state !== 'recording'
-    ) {
+    if (!appState.recordingStartTime || !appState.mediaRecorder || appState.mediaRecorder.state !== 'recording') {
       clearInterval(interval);
       timerEl.textContent = '0:00 / 0:30';
       return;
@@ -267,7 +314,11 @@ function showAudioPreview(blob) {
   const audio = document.getElementById('audioPlayback');
   if (!preview || !audio) return;
 
-  audio.src = URL.createObjectURL(blob);
+  // Revoke previous URL to avoid leaks.
+  if (appState.audioObjectUrl) URL.revokeObjectURL(appState.audioObjectUrl);
+  appState.audioObjectUrl = URL.createObjectURL(blob);
+
+  audio.src = appState.audioObjectUrl;
   preview.classList.remove('hidden');
 
   const hint = document.getElementById('recordingHint');
@@ -289,6 +340,9 @@ function reRecord() {
 
   appState.voiceBlob = null;
 
+  if (appState.audioObjectUrl) URL.revokeObjectURL(appState.audioObjectUrl);
+  appState.audioObjectUrl = null;
+
   const audio = document.getElementById('audioPlayback');
   if (audio) audio.src = '';
 }
@@ -302,11 +356,14 @@ function stopAllStreams() {
 
 function goToStory() {
   if (!appState.voiceBlob) {
-    showToast('Please record your voice first', 'error');
+    if (typeof showToast === 'function') showToast('Please record your voice first', 'error');
     return;
   }
-  // If you have a storyScreen later, navigate; otherwise comment this out
-  // navigateToScreen('storyScreen');
+
+  // If Script step exists and you're on it, continue to Voice; otherwise leave as-is.
+  if (appState.currentScreen === 'scriptScreen' && document.getElementById('voiceScreen')) {
+    navigateToScreen('voiceScreen');
+  }
 }
 
 // ============================================
@@ -317,45 +374,49 @@ async function generatePreview() {
   const briefDesc = briefDescEl ? briefDescEl.value.trim() : '';
 
   if (!briefDesc) {
-    showToast('Please enter a brief description', 'error');
+    if (typeof showToast === 'function') showToast('Please enter a brief description', 'error');
     return;
   }
-
   if (appState.photos.length < 6) {
-    showToast('Please upload at least 6 photos', 'error');
+    if (typeof showToast === 'function') showToast('Please upload at least 6 photos', 'error');
     return;
   }
-
   if (!appState.voiceBlob) {
-    showToast('Please record your voice', 'error');
+    if (typeof showToast === 'function') showToast('Please record your voice', 'error');
     return;
   }
 
-  showLoading('Uploading photos...');
+  if (typeof showLoading === 'function') showLoading('Uploading photos...');
 
   try {
     const photoUrls = await uploadPhotos();
 
-    showLoading('Cloning your voice...');
+    if (typeof showLoading === 'function') showLoading('Cloning your voice...');
     const voiceId = await uploadVoice();
     appState.voiceId = voiceId;
 
-    showLoading('Creating your preview film...');
+    if (typeof showLoading === 'function') showLoading('Creating your preview film...');
     const previewData = await generatePreviewRequest(photoUrls, voiceId, briefDesc);
 
-    appState.previewVideoUrl = previewData.audioUrl; // placeholder
+    const mediaUrl =
+      previewData.videoUrl ||
+      previewData.previewUrl ||
+      previewData.url ||
+      previewData.audioUrl;
+
+    appState.previewVideoUrl = mediaUrl || null;
 
     navigateToScreen('previewScreen');
 
     const video = document.getElementById('previewVideo');
-    if (video) video.src = previewData.audioUrl;
+    if (video && mediaUrl) video.src = mediaUrl;
 
-    hideLoading();
-    showToast('Preview ready!', 'success');
+    if (typeof hideLoading === 'function') hideLoading();
+    if (typeof showToast === 'function') showToast('Preview ready!', 'success');
   } catch (error) {
     console.error('Preview generation error:', error);
-    hideLoading();
-    showToast(error.message || 'Failed to generate preview', 'error');
+    if (typeof hideLoading === 'function') hideLoading();
+    if (typeof showToast === 'function') showToast(error.message || 'Failed to generate preview', 'error');
   }
 }
 
@@ -369,13 +430,22 @@ async function uploadVoice() {
   formData.append('audio', appState.voiceBlob, 'voice.webm');
   formData.append('name', 'User Voice');
 
+  const headers = {};
+  if (appState.authToken) headers['Authorization'] = `Bearer ${appState.authToken}`;
+
   const response = await fetch(`${API_BASE}/api/voice/clone`, {
     method: 'POST',
+    headers,
     body: formData
   });
 
   if (!response.ok) {
-    throw new Error('Voice upload failed');
+    let msg = 'Voice upload failed';
+    try {
+      const err = await response.json();
+      if (err && (err.error || err.message)) msg = err.error || err.message;
+    } catch {}
+    throw new Error(msg);
   }
 
   const data = await response.json();
@@ -388,11 +458,12 @@ async function generatePreviewRequest(photoUrls, voiceId, briefDesc) {
   const genre = document.getElementById('genreSelect')?.value || 'default';
   const orientation = document.getElementById('orientationSelect')?.value || 'landscape';
 
+  const headers = { 'Content-Type': 'application/json' };
+  if (appState.authToken) headers['Authorization'] = `Bearer ${appState.authToken}`;
+
   const response = await fetch(`${API_BASE}/api/render/preview`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
+    headers,
     body: JSON.stringify({
       prompt: briefDesc,
       photoUrls: photoUrls,
@@ -406,13 +477,11 @@ async function generatePreviewRequest(photoUrls, voiceId, briefDesc) {
   });
 
   if (!response.ok) {
-    let error;
+    let error = {};
     try {
       error = await response.json();
-    } catch {
-      error = {};
-    }
-    throw new Error(error.error || 'Preview generation failed');
+    } catch {}
+    throw new Error(error.error || error.message || 'Preview generation failed');
   }
 
   return await response.json();
@@ -422,40 +491,42 @@ async function generatePreviewRequest(photoUrls, voiceId, briefDesc) {
 // AUTHENTICATED APP
 // ============================================
 async function initAuthenticatedApp() {
+  if (!appState.authToken) return;
+
   try {
     const response = await fetch(`${API_BASE}/api/auth/me`, {
-      headers: {
-        Authorization: `Bearer ${appState.authToken}`
-      }
+      headers: { Authorization: `Bearer ${appState.authToken}` }
     });
 
-    if (response.ok) {
-      const data = await response.json();
-      appState.userBalance = data.user.balance || 0;
-      updateBalanceDisplay();
-
-      const header = document.querySelector('.app-header');
-      if (header && appState.currentScreen !== 'heroScreen') {
-        header.classList.remove('hidden');
-      }
-
-      const emailEl = document.getElementById('menuEmail');
-      if (emailEl) emailEl.textContent = data.user.email;
-
-      const balanceEl = document.getElementById('menuBalance');
-      if (balanceEl) balanceEl.textContent = (data.user.balance ?? 0).toFixed(2);
-    } else {
-      logout();
+    if (!response.ok) {
+      logout(true); // silent
+      return;
     }
+
+    const data = await response.json();
+    const balanceNum = Number(data?.user?.balance ?? 0);
+
+    appState.userBalance = Number.isFinite(balanceNum) ? balanceNum : 0;
+    updateBalanceDisplay();
+
+    const header = document.querySelector('.app-header');
+    if (header && appState.currentScreen !== 'heroScreen') header.classList.remove('hidden');
+
+    const emailEl = document.getElementById('menuEmail');
+    if (emailEl) emailEl.textContent = data?.user?.email || '';
+
+    const balanceEl = document.getElementById('menuBalance');
+    if (balanceEl) balanceEl.textContent = appState.userBalance.toFixed(2);
   } catch (error) {
     console.error('Auth check error:', error);
+    // Don’t force logout on transient network errors.
   }
 }
 
 function updateBalanceDisplay() {
   const balanceEls = document.querySelectorAll('#userBalance, #modalBalance, #menuBalance');
   balanceEls.forEach((el) => {
-    el.textContent = appState.userBalance.toFixed(2);
+    el.textContent = Number(appState.userBalance || 0).toFixed(2);
   });
 }
 
@@ -464,32 +535,39 @@ function updateBalanceDisplay() {
 // ============================================
 function openMenu() {
   const overlay = document.getElementById('menuOverlay');
-  if (overlay) {
-    overlay.classList.add('open');
-  }
+  if (!overlay) return;
+
+  // Works even if HTML has inline style="display:none"
+  overlay.style.display = 'flex';
+  overlay.classList.add('open');
 }
 
 function closeMenu() {
   const overlay = document.getElementById('menuOverlay');
-  if (overlay) {
-    overlay.classList.remove('open');
-  }
+  if (!overlay) return;
+
+  overlay.classList.remove('open');
+  overlay.style.display = 'none';
 }
 
-function logout() {
+function logout(silent = false) {
   localStorage.removeItem('authToken');
   localStorage.removeItem('userId');
+
   appState.authToken = null;
   appState.userId = null;
   appState.userBalance = 0;
 
   closeMenu();
+  hideLoading();
+  closeCredits?.(); // if defined elsewhere
+
   navigateToScreen('heroScreen');
 
   const header = document.querySelector('.app-header');
   if (header) header.classList.add('hidden');
 
-  showToast('Logged out successfully', 'success');
+  if (!silent) showToast('Logged out successfully', 'success');
 }
 
 // ============================================
@@ -499,28 +577,26 @@ function showAddCredits() {
   closeMenu();
   const modal = document.getElementById('creditsModal');
   if (!modal) return;
+
+  modal.style.display = 'flex';
   modal.classList.add('active');
 
   const balanceEl = document.getElementById('modalBalance');
-  if (balanceEl) balanceEl.textContent = appState.userBalance.toFixed(2);
+  if (balanceEl) balanceEl.textContent = Number(appState.userBalance || 0).toFixed(2);
 }
 
 function closeCredits() {
   const modal = document.getElementById('creditsModal');
   if (!modal) return;
+
   modal.classList.remove('active');
+  modal.style.display = 'none';
 }
 
 function setAmount(amount) {
   const input = document.getElementById('creditAmount');
   if (input) input.value = amount;
 }
-
-// ============================================
-// INLINE PAGES (Contact, Terms, Privacy)
-// ============================================
-// NOTE: index.html already defines a showPage(id) helper inline;
-// to avoid conflicts, this app.js does NOT override it.
 
 // ============================================
 // UI HELPERS
@@ -531,16 +607,24 @@ function showLoading(text = 'Processing...') {
   if (!overlay || !loadingText) return;
 
   loadingText.textContent = text;
+  overlay.style.display = 'flex';
   overlay.classList.add('active');
 }
 
 function hideLoading() {
   const overlay = document.getElementById('loadingOverlay');
   if (!overlay) return;
+
   overlay.classList.remove('active');
+  overlay.style.display = 'none';
 }
 
+let __toastCooldownUntil = 0;
 function showToast(message, type = 'info') {
+  const now = Date.now();
+  if (now < __toastCooldownUntil) return; // prevent toast spam during error storms
+  __toastCooldownUntil = now + 800;
+
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
   toast.textContent = message;
@@ -585,11 +669,17 @@ function animateFilmCounter() {
 // ERROR HANDLING
 // ============================================
 window.addEventListener('error', function (e) {
-  console.error('Global error:', e.error);
-  showToast('Something went wrong. Please try again.', 'error');
+  // ErrorEvent.error can be undefined; use message fallback.
+  console.error('Global error:', e?.error || e?.message || e); // robust logging [web:160][web:162]
+  if (typeof showToast === 'function') showToast('Something went wrong. Please try again.', 'error');
 });
 
 window.addEventListener('unhandledrejection', function (e) {
-  console.error('Unhandled promise rejection:', e.reason);
-  showToast('Network error. Please check your connection.', 'error');
+  console.error('Unhandled promise rejection:', e?.reason);
+
+  // Many environments allow suppressing default handling via preventDefault(). [web:151]
+  if (typeof e?.preventDefault === 'function') e.preventDefault();
+
+  if (typeof showToast === 'function') showToast('Network error. Please check your connection.', 'error');
 });
+

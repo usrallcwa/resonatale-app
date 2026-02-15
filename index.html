@@ -208,6 +208,82 @@
             Log In
           </button>
         </form>
+
+        <p style="margin-top:1rem;font-size:0.85rem;color:rgba(255,255,255,0.7);">
+          Don’t have an account?
+          <button
+            type="button"
+            class="link-btn"
+            onclick="if (window.switchToSignup) window.switchToSignup();"
+          >
+            Create one
+          </button>
+        </p>
+      </div>
+    </div>
+
+    <!-- SIGNUP MODAL -->
+    <div id="signupModal" class="auth-modal" style="display:none;">
+      <div class="auth-card">
+        <button class="auth-close" type="button" onclick="if (window.closeSignup) window.closeSignup();">×</button>
+        <h2 class="auth-title">Create Account</h2>
+
+        <form onsubmit="handleSignup(event)">
+          <div class="auth-field">
+            <label for="signupName">Name</label>
+            <input
+              id="signupName"
+              type="text"
+              required
+              placeholder="Your name"
+            />
+          </div>
+
+          <div class="auth-field">
+            <label for="signupEmail">Email</label>
+            <input
+              id="signupEmail"
+              type="email"
+              required
+              placeholder="you@example.com"
+            />
+          </div>
+
+          <div class="auth-field">
+            <label for="signupPassword">Password</label>
+            <input
+              id="signupPassword"
+              type="password"
+              required
+              placeholder="Create a password"
+            />
+          </div>
+
+          <div class="auth-field" style="flex-direction:row;align-items:center;gap:0.5rem;">
+            <input id="consentCheck" type="checkbox" />
+            <label
+              for="consentCheck"
+              style="margin:0;font-size:0.78rem;color:rgba(255,255,255,0.7);"
+            >
+              I accept the Terms and confirm I am 18+.
+            </label>
+          </div>
+
+          <button class="btn primary-btn" type="submit">
+            Create Account
+          </button>
+        </form>
+
+        <p style="margin-top:1rem;font-size:0.85rem;color:rgba(255,255,255,0.7);">
+          Already have an account?
+          <button
+            type="button"
+            class="link-btn"
+            onclick="if (window.switchToLogin) window.switchToLogin();"
+          >
+            Log in
+          </button>
+        </p>
       </div>
     </div>
 

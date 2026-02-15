@@ -145,12 +145,16 @@
     <p class="hero-note">Free preview • No signup required</p>
   </div>
 
- <div class="hero-footer">
-  <a class="link-btn" href="mailto:admin@resonatale.com?subject=ResonaTale%20Support">
-    Contact
-  </a>
-  <a class="link-btn" href="terms.index.html" target="_blank">Terms</a>
-  <a class="link-btn" href="privacy.index.html" target="_blank">Privacy</a>
+  <div class="hero-footer">
+    <a
+      class="link-btn"
+      href="mailto:admin@resonatale.com?subject=ResonaTale%20Support"
+    >
+      Contact
+    </a>
+    <a class="link-btn" href="terms.index.html" target="_blank">Terms</a>
+    <a class="link-btn" href="privacy.index.html" target="_blank">Privacy</a>
+  </div>
 </div>
 
 <!-- UPLOAD SCREEN -->
@@ -209,7 +213,7 @@
       <p class="menu-balance">$<span id="menuBalance">0</span></p>
     </div>
     <div class="menu-items">
-      <!-- IMPORTANT: type="button" so it never submits a form / reloads -->
+      <!-- type="button" so it never submits a form / reloads -->
       <button class="menu-item" type="button" onclick="showAddCredits()">💳 Add Credits</button>
       <button class="menu-item danger" type="button" onclick="logout()">🚪 Logout</button>
     </div>
@@ -222,32 +226,9 @@
   <p class="loading-text" id="loadingText">Processing...</p>
 </div>
 
-<!-- helper to toggle legal/contact panels -->
-<script>
-  function showPage(id) {
-    // hide all inline legal/contact sections
-    document.querySelectorAll(".page").forEach(function (el) {
-      el.style.display = "none";
-    });
-    // show the requested one
-    var target = document.getElementById(id);
-    if (target) {
-      target.style.display = "block";
-    }
-  }
-
-  function openContactEmail() {
-    // show inline Contact panel
-    showPage('contactSection');
-    // open email compose
-    window.location.href = 'mailto:admin@resonatale.com?subject=ResonaTale%20Support';
-  }
-</script>
-
 <script src="js/app.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/wallet.js"></script>
 <script src="js/render.js"></script>
 </body>
 </html>
-

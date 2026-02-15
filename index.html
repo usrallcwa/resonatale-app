@@ -97,7 +97,7 @@
       </div>
 
       <div class="header-right">
-        <button class="header-menu-btn" type="button" onclick="if (window.openMenu) window.openMenu();">
+        <button class="header-menu-btn" type="button" onclick="openMenu()">
           ☰
         </button>
       </div>
@@ -105,7 +105,7 @@
 
     <!-- HERO / WELCOME SCREEN -->
     <div id="heroScreen" class="screen active">
-      <button class="link-btn hero-login-btn" type="button" onclick="if (window.showLogin) window.showLogin();">
+      <button class="link-btn hero-login-btn" type="button" onclick="showLogin()">
         Login
       </button>
 
@@ -118,7 +118,7 @@
           <p class="hero-desc-sub">Narrated in your own voice</p>
         </div>
 
-        <!-- Turnstile widget for verification (used by signup/login/preview) -->
+        <!-- Turnstile widget for verification -->
         <div
           class="cf-turnstile"
           data-sitekey="0x4AAAAAACLI9vyJZYGLg9lS"
@@ -128,7 +128,7 @@
           style="margin-bottom:1rem;"
         ></div>
 
-        <button class="btn primary-btn pulse" type="button" onclick="if (window.startApp) window.startApp();">
+        <button class="btn primary-btn pulse" type="button" onclick="startApp()">
           Start Creating
         </button>
 
@@ -142,25 +142,26 @@
         >
           Contact
         </a>
-        <a class="link-btn" href="terms.index.html" target="_blank">Terms</a>
-        <a class="link-btn" href="privacy.index.html" target="_blank">Privacy</a>
+        <!-- These assume physical files exist at /terms/index.html and /privacy/index.html -->
+        <a class="link-btn" href="terms/index.html" target="_blank">Terms</a>
+        <a class="link-btn" href="privacy/index.html" target="_blank">Privacy</a>
       </div>
     </div>
 
     <!-- UPLOAD SCREEN -->
     <div id="uploadScreen" class="screen">
       <div class="screen-header">
-        <button class="back-btn" type="button" onclick="if (window.goBack) window.goBack('heroScreen');">←</button>
+        <button class="back-btn" type="button" onclick="goBack('heroScreen');">←</button>
         <h2 class="screen-title">Upload Photos</h2>
         <span class="step">1/4</span>
       </div>
-      <!-- existing upload UI goes here -->
+      <!-- upload UI goes here -->
     </div>
 
     <!-- SCRIPT SCREEN -->
     <div id="scriptScreen" class="screen">
       <div class="screen-header">
-        <button class="back-btn" type="button" onclick="if (window.goBack) window.goBack('uploadScreen');">←</button>
+        <button class="back-btn" type="button" onclick="goBack('uploadScreen');">←</button>
         <h2 class="screen-title">Script</h2>
         <span class="step">2/4</span>
       </div>
@@ -170,7 +171,7 @@
     <!-- VOICE SCREEN -->
     <div id="voiceScreen" class="screen">
       <div class="screen-header">
-        <button class="back-btn" type="button" onclick="if (window.goBack) window.goBack('scriptScreen');">←</button>
+        <button class="back-btn" type="button" onclick="goBack('scriptScreen');">←</button>
         <h2 class="screen-title">Voice</h2>
         <span class="step">3/4</span>
       </div>
@@ -180,17 +181,17 @@
     <!-- PREVIEW SCREEN -->
     <div id="previewScreen" class="screen">
       <div class="screen-header">
-        <button class="back-btn" type="button" onclick="if (window.goBack) window.goBack('voiceScreen');">←</button>
+        <button class="back-btn" type="button" onclick="goBack('voiceScreen');">←</button>
         <h2 class="screen-title">Preview &amp; Export</h2>
         <span class="step">4/4</span>
       </div>
       <!-- preview UI -->
     </div>
 
-    <!-- LOGIN / AUTH MODAL -->
+    <!-- LOGIN MODAL -->
     <div id="authModal" class="auth-modal" style="display:none;">
       <div class="auth-card">
-        <button class="auth-close" type="button" onclick="if (window.closeLogin) window.closeLogin();">×</button>
+        <button class="auth-close" type="button" onclick="closeLogin()">×</button>
         <h2 class="auth-title">Login</h2>
 
         <form onsubmit="handleLoginSubmit(event)">
@@ -224,7 +225,7 @@
           <button
             type="button"
             class="link-btn"
-            onclick="if (window.switchToSignup) window.switchToSignup();"
+            onclick="switchToSignup()"
           >
             Create one
           </button>
@@ -235,7 +236,7 @@
     <!-- SIGNUP MODAL -->
     <div id="signupModal" class="auth-modal" style="display:none;">
       <div class="auth-card">
-        <button class="auth-close" type="button" onclick="if (window.closeSignup) window.closeSignup();">×</button>
+        <button class="auth-close" type="button" onclick="closeSignup()">×</button>
         <h2 class="auth-title">Create Account</h2>
 
         <form onsubmit="handleSignup(event)">
@@ -289,7 +290,7 @@
           <button
             type="button"
             class="link-btn"
-            onclick="if (window.switchToLogin) window.switchToLogin();"
+            onclick="switchToLogin()"
           >
             Log in
           </button>
@@ -297,19 +298,48 @@
       </div>
     </div>
 
-    <!-- MENU OVERLAY (hidden by default) -->
+    <!-- CREDITS MODAL -->
+    <div id="creditsModal" class="auth-modal" style="display:none;">
+      <div class="auth-card">
+        <button class="auth-close" type="button" onclick="closeCredits()">×</button>
+        <h2 class="auth-title">Add Credits</h2>
+        <p style="font-size:0.9rem;color:rgba(255,255,255,0.75);margin-bottom:1rem;">
+          Current balance: $<span id="modalBalance">0</span>
+        </p>
+
+        <!-- simple amount slider, wired to wallet.js -->
+        <input
+          id="creditSlider"
+          type="range"
+          min="20"
+          max="500"
+          step="10"
+          value="20"
+          style="width:100%;margin-bottom:0.5rem;"
+        />
+        <p style="font-size:0.85rem;color:rgba(255,255,255,0.7);margin-top:0;">
+          Amount: $<span id="creditAmount">20</span>
+        </p>
+
+        <button class="btn primary-btn" type="button" onclick="processPayment()">
+          Continue to Checkout
+        </button>
+      </div>
+    </div>
+
+    <!-- MENU OVERLAY -->
     <div id="menuOverlay" class="menu-overlay" style="display:none;">
       <div class="menu-content">
-        <button class="menu-close" type="button" onclick="if (window.closeMenu) window.closeMenu();">×</button>
+        <button class="menu-close" type="button" onclick="closeMenu()">×</button>
         <div class="menu-user">
-          <p class="menu-email" id="menuEmail">user@email.com</p>
+          <p class="menu-email" id="menuEmail"></p>
           <p class="menu-balance">$<span id="menuBalance">0</span></p>
         </div>
         <div class="menu-items">
-          <button class="menu-item" type="button" onclick="if (window.showAddCredits) window.showAddCredits();">
+          <button class="menu-item" type="button" onclick="showAddCredits()">
             💳 Add Credits
           </button>
-          <button class="menu-item danger" type="button" onclick="if (window.logout) window.logout();">
+          <button class="menu-item danger" type="button" onclick="logout()">
             🚪 Logout
           </button>
         </div>
@@ -327,5 +357,19 @@
   <script src="js/auth.js"></script>
   <script src="js/render.js"></script>
   <script src="js/wallet.js"></script>
+
+  <script>
+    // keep the slider label in sync
+    document.addEventListener('DOMContentLoaded', function () {
+      var slider = document.getElementById('creditSlider');
+      var amountLabel = document.getElementById('creditAmount');
+      if (slider && amountLabel) {
+        amountLabel.textContent = slider.value;
+        slider.addEventListener('input', function () {
+          amountLabel.textContent = slider.value;
+        });
+      }
+    });
+  </script>
 </body>
 </html>

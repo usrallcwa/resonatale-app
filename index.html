@@ -182,7 +182,32 @@
       <div class="auth-card">
         <button class="auth-close" type="button" onclick="if (window.closeLogin) window.closeLogin();">×</button>
         <h2 class="auth-title">Login</h2>
-        <!-- login form fields/buttons go here -->
+
+        <form onsubmit="handleLoginSubmit(event)">
+          <div class="auth-field">
+            <label for="loginEmail">Email</label>
+            <input
+              id="loginEmail"
+              type="email"
+              required
+              placeholder="you@example.com"
+            />
+          </div>
+
+          <div class="auth-field">
+            <label for="loginPassword">Password</label>
+            <input
+              id="loginPassword"
+              type="password"
+              required
+              placeholder="••••••••"
+            />
+          </div>
+
+          <button class="btn primary-btn" type="submit">
+            Log In
+          </button>
+        </form>
       </div>
     </div>
 
@@ -195,7 +220,6 @@
           <p class="menu-balance">$<span id="menuBalance">0</span></p>
         </div>
         <div class="menu-items">
-          <!-- type="button" so it never submits a form / reloads -->
           <button class="menu-item" type="button" onclick="if (window.showAddCredits) window.showAddCredits();">
             💳 Add Credits
           </button>

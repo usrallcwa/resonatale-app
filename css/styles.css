@@ -36,8 +36,6 @@ body {
   flex-direction: column;
 }
 
-/* HEADER */
-
 .app-header {
   display: flex;
   align-items: center;
@@ -45,7 +43,7 @@ body {
   padding: 1rem 1.5rem;
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: 50; /* was 20 */
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent);
 }
 

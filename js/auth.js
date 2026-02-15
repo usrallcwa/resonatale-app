@@ -1,4 +1,4 @@
--// auth.js - Authentication & Signup
+// auth.js - Authentication & Signup
 
 // Simple login modal controls (matches #authModal in index.html)
 function showLogin() {
@@ -55,23 +55,27 @@ async function handleLoginSubmit(event) {
 
 async function handleLogin(email, password) {
   if (!email || !password) {
-    showToast?.('Please enter email and password', 'error');
+    if (typeof showToast === 'function') showToast('Please enter email and password', 'error');
     return;
   }
 
-  showLoading?.('Logging in...');
+  if (typeof showLoading === 'function') showLoading('Logging in...');
 
   try {
-    const res = await fetch(`${API_BASE}/auth/login`, {
+    const res = await fetch(`${API_BASE}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     });
 
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
 
     if (!res.ok || data.success === false) {
       throw new Error(data.error || data.message || 'Login failed');
+    }
+
+    if (!data.user || !data.accessToken) {
+      throw new Error('Invalid login response');
     }
 
     // Normalized auth state
@@ -82,21 +86,23 @@ async function handleLogin(email, password) {
     localStorage.setItem('authToken', data.accessToken);
     localStorage.setItem('userId', data.user.id);
 
-    updateBalanceDisplay?.();          // from app.js
-    updateHeaderVisibility?.(appState.currentScreen);
+    if (typeof updateBalanceDisplay === 'function') updateBalanceDisplay();
+    if (typeof updateHeaderVisibility === 'function') {
+      updateHeaderVisibility(appState.currentScreen);
+    }
 
     const emailEl = document.getElementById('menuEmail');
     if (emailEl) emailEl.textContent = data.user.email || email;
 
     closeLogin();
-    hideLoading?.();
-    showToast?.('Logged in!', 'success');
+    if (typeof hideLoading === 'function') hideLoading();
+    if (typeof showToast === 'function') showToast('Logged in!', 'success');
 
-    navigateToScreen?.('uploadScreen');
+    if (typeof navigateToScreen === 'function') navigateToScreen('uploadScreen');
   } catch (e) {
     console.error('Login error:', e);
-    hideLoading?.();
-    showToast?.(e.message || 'Login failed', 'error');
+    if (typeof hideLoading === 'function') hideLoading();
+    if (typeof showToast === 'function') showToast(e.message || 'Login failed', 'error');
   }
 }
 
@@ -110,7 +116,7 @@ async function handleSignup(event) {
   const consentEl = document.getElementById('consentCheck');
 
   if (!emailEl || !passwordEl || !nameEl || !consentEl) {
-    showToast?.('Signup form is incomplete.', 'error');
+    if (typeof showToast === 'function') showToast('Signup form is incomplete.', 'error');
     return;
   }
 
@@ -120,19 +126,23 @@ async function handleSignup(event) {
   const consent = consentEl.checked;
 
   if (!consent) {
-    showToast?.('Please accept terms and confirm you are 18+.', 'error');
+    if (typeof showToast === 'function') {
+      showToast('Please accept terms and confirm you are 18+.', 'error');
+    }
     return;
   }
 
   if (!appState.turnstileToken) {
-    showToast?.('Please complete the verification check.', 'error');
+    if (typeof showToast === 'function') {
+      showToast('Please complete the verification check.', 'error');
+    }
     return;
   }
 
-  showLoading?.('Creating account...');
+  if (typeof showLoading === 'function') showLoading('Creating account...');
 
   try {
-    const res = await fetch(`${API_BASE}/auth/signup`, {
+    const res = await fetch(`${API_BASE}/api/auth/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -144,10 +154,14 @@ async function handleSignup(event) {
       })
     });
 
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
 
     if (!res.ok || data.success === false) {
       throw new Error(data.error || data.message || 'Signup failed');
+    }
+
+    if (!data.user || !data.accessToken) {
+      throw new Error('Invalid signup response');
     }
 
     appState.authToken = data.accessToken;
@@ -157,21 +171,22 @@ async function handleSignup(event) {
     localStorage.setItem('authToken', data.accessToken);
     localStorage.setItem('userId', data.user.id);
 
-    updateBalanceDisplay?.();
-    updateHeaderVisibility?.(appState.currentScreen);
+    if (typeof updateBalanceDisplay === 'function') updateBalanceDisplay();
+    if (typeof updateHeaderVisibility === 'function') {
+      updateHeaderVisibility(appState.currentScreen);
+    }
 
     const emailMenuEl = document.getElementById('menuEmail');
     if (emailMenuEl) emailMenuEl.textContent = data.user.email || email;
 
     closeSignup();
-    hideLoading?.();
-    showToast?.('Account created!', 'success');
+    if (typeof hideLoading === 'function') hideLoading();
+    if (typeof showToast === 'function') showToast('Account created!', 'success');
 
-    // Optional: kick user into main flow
-    navigateToScreen?.('uploadScreen');
+    if (typeof navigateToScreen === 'function') navigateToScreen('uploadScreen');
   } catch (e) {
     console.error('Signup error:', e);
-    hideLoading?.();
-    showToast?.(e.message || 'Signup failed', 'error');
+    if (typeof hideLoading === 'function') hideLoading();
+    if (typeof showToast === 'function') showToast(e.message || 'Signup failed', 'error');
   }
 }

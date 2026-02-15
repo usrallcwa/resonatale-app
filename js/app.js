@@ -14,8 +14,7 @@ let appState = {
   mediaRecorder: null,
   audioStream: null,
 
-  // Turnstile token is mirrored from window.turnstileToken so app.js
-  // doesn't trust a separate stale field.
+  // Turnstile token is mirrored from window.turnstileToken
   get turnstileToken() {
     return window.turnstileToken || null;
   },
@@ -33,15 +32,13 @@ let appState = {
 document.addEventListener('DOMContentLoaded', function () {
   console.log('🎬 ResonaTale App Initialized');
 
-  // 18+ consent modal wiring (defined in another section)
   if (typeof initCompliance === 'function') {
     initCompliance();
   }
 
-  // Ensure header visibility is correct on initial paint.
+  // Initial header state
   updateHeaderVisibility(appState.currentScreen);
 
-  // Guard optional functions so one missing script doesn't kill the app.
   if (appState.authToken && typeof initAuthenticatedApp === 'function') {
     initAuthenticatedApp();
   }
@@ -68,7 +65,7 @@ function setupEventListeners() {
     });
   }
 
-  // Prevent pull-to-refresh on mobile (multi-touch only)
+  // Prevent multi-touch pull-to-refresh on mobile
   document.body.addEventListener(
     'touchmove',
     function (e) {
@@ -93,11 +90,14 @@ function updateHeaderVisibility(screenId) {
 
   if (screenId === 'heroScreen') {
     header.classList.add('hidden');
-    return;
+  } else {
+    // Show header only when authenticated
+    if (appState.authToken) {
+      header.classList.remove('hidden');
+    } else {
+      header.classList.add('hidden');
+    }
   }
-
-  // Show header only when authenticated.
-  if (appState.authToken) header.classList.remove('hidden');
 }
 
 function navigateToScreen(screenId) {
@@ -124,10 +124,8 @@ function goBack(screenId) {
 }
 
 // ============================================
-// PHOTO UPLOAD
+// 18+ CONSENT / TURNSTILE GUARDS
 // ============================================
-
-// simple helpers (used here and in later sections)
 const CONSENT_KEY = 'rt_consent_18plus_v1';
 
 function hasConsent() {
@@ -138,10 +136,8 @@ function requireConsentOrBlock() {
   if (hasConsent()) return true;
   if (typeof showConsentModal === 'function') {
     showConsentModal();
-  } else {
-    if (typeof showToast === 'function') {
-      showToast('Please confirm you are 18+ before continuing.', 'error');
-    }
+  } else if (typeof showToast === 'function') {
+    showToast('Please confirm you are 18+ before continuing.', 'error');
   }
   return false;
 }
@@ -154,8 +150,10 @@ function requireTurnstileOrBlock() {
   return false;
 }
 
+// ============================================
+// PHOTO UPLOAD
+// ============================================
 function triggerFileInput() {
-  // gate before user can pick photos
   if (!requireConsentOrBlock()) return;
   if (!requireTurnstileOrBlock()) return;
 
@@ -169,7 +167,7 @@ function handlePhotoSelection(event) {
 
   if (appState.photos.length + files.length > 12) {
     if (typeof showToast === 'function') showToast('Maximum 12 photos allowed', 'error');
-    inputEl.value = ''; // allow re-selecting after error
+    inputEl.value = '';
     return;
   }
 
@@ -188,7 +186,6 @@ function handlePhotoSelection(event) {
     }
   });
 
-  // IMPORTANT: reset so selecting the same file again triggers change.
   inputEl.value = '';
 }
 
@@ -229,13 +226,11 @@ function goToVoice() {
     return;
   }
 
-  // If you have a Script step, don't skip it when present.
   if (appState.currentScreen === 'uploadScreen' && document.getElementById('scriptScreen')) {
     navigateToScreen('scriptScreen');
-    return;
+  } else {
+    navigateToScreen('voiceScreen');
   }
-
-  navigateToScreen('voiceScreen');
 }
 
 // ============================================
@@ -262,7 +257,6 @@ async function toggleRecording() {
   const btn = document.getElementById('recordBtn');
   if (!btn) return;
 
-  // gate recording as well
   if (!requireConsentOrBlock()) return;
   if (!requireTurnstileOrBlock()) return;
 
@@ -361,7 +355,6 @@ function showAudioPreview(blob) {
   const audio = document.getElementById('audioPlayback');
   if (!preview || !audio) return;
 
-  // Revoke previous URL to avoid leaks.
   if (appState.audioObjectUrl) URL.revokeObjectURL(appState.audioObjectUrl);
   appState.audioObjectUrl = URL.createObjectURL(blob);
 
@@ -407,7 +400,6 @@ function goToStory() {
     return;
   }
 
-  // If Script step exists and you're on it, continue to Voice; otherwise leave as-is.
   if (appState.currentScreen === 'scriptScreen' && document.getElementById('voiceScreen')) {
     navigateToScreen('voiceScreen');
   }
@@ -420,7 +412,6 @@ async function generatePreview() {
   const briefDescEl = document.getElementById('briefDesc');
   const briefDesc = briefDescEl ? briefDescEl.value.trim() : '';
 
-  // Compliance gates before we spend API
   if (!hasConsent()) {
     if (typeof showConsentModal === 'function') showConsentModal();
     if (typeof showToast === 'function') {
@@ -434,7 +425,6 @@ async function generatePreview() {
     }
     return;
   }
-
   if (!briefDesc) {
     if (typeof showToast === 'function') showToast('Please enter a brief description', 'error');
     return;
@@ -485,7 +475,7 @@ async function generatePreview() {
 }
 
 async function uploadPhotos() {
-  // Placeholder: return fake URLs based on count
+  // TODO: replace with real upload
   return appState.photos.map((photo, i) => `photo_${i}_${Date.now()}`);
 }
 
@@ -543,8 +533,8 @@ async function generatePreviewRequest(photoUrls, voiceId, briefDesc) {
     headers,
     body: JSON.stringify({
       prompt: briefDesc,
-      photoUrls: photoUrls,
-      voiceId: voiceId,
+      photoUrls,
+      voiceId,
       photoCount: photoUrls.length,
       language,
       mood,
@@ -559,7 +549,7 @@ async function generatePreviewRequest(photoUrls, voiceId, briefDesc) {
     try {
       error = await response.json();
     } catch {}
-    throw new Error(error.error || error.message || 'Preview generation failed');
+      throw new Error(error.error || error.message || 'Preview generation failed');
   }
 
   return await response.json();
@@ -577,7 +567,7 @@ async function initAuthenticatedApp() {
     });
 
     if (!response.ok) {
-      logout(true); // silent
+      logout(true);
       return;
     }
 
@@ -597,7 +587,6 @@ async function initAuthenticatedApp() {
     if (balanceEl) balanceEl.textContent = appState.userBalance.toFixed(2);
   } catch (error) {
     console.error('Auth check error:', error);
-    // Don’t force logout on transient network errors.
   }
 }
 
@@ -609,7 +598,7 @@ function updateBalanceDisplay() {
 }
 
 // ============================================
-// MENU
+// MENU & AUTH MODAL
 // ============================================
 function openMenu() {
   const overlay = document.getElementById('menuOverlay');
@@ -625,6 +614,22 @@ function closeMenu() {
 
   overlay.classList.remove('open');
   overlay.style.display = 'none';
+}
+
+function showLogin() {
+  const modal = document.getElementById('authModal');
+  if (!modal) return;
+
+  modal.style.display = 'flex';
+  modal.classList.add('active');
+}
+
+function closeLogin() {
+  const modal = document.getElementById('authModal');
+  if (!modal) return;
+
+  modal.classList.remove('active');
+  modal.style.display = 'none';
 }
 
 function logout(silent = false) {
@@ -644,11 +649,13 @@ function logout(silent = false) {
   const header = document.querySelector('.app-header');
   if (header) header.classList.add('hidden');
 
-  if (!silent) showToast('Logged out successfully', 'success');
+  if (!silent && typeof showToast === 'function') {
+    showToast('Logged out successfully', 'success');
+  }
 }
 
 // ============================================
-// CREDITS/WALLET (guarded for missing DOM)
+// CREDITS / WALLET
 // ============================================
 function showAddCredits() {
   closeMenu();
@@ -743,7 +750,7 @@ function animateFilmCounter() {
 }
 
 // ============================================
-// ERROR HANDLING
+// GLOBAL ERROR HANDLING
 // ============================================
 window.addEventListener('error', function (e) {
   console.error('Global error:', e?.error || e?.message || e);
@@ -759,4 +766,3 @@ window.addEventListener('unhandledrejection', function (e) {
     showToast('Network error. Please check your connection.', 'error');
   }
 });
-

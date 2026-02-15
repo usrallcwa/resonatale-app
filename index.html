@@ -227,6 +227,7 @@
       <p class="menu-balance">$<span id="menuBalance">0</span></p>
     </div>
     <div class="menu-items">
+      <!-- IMPORTANT: type="button" so it never submits a form / reloads -->
       <button class="menu-item" type="button" onclick="showAddCredits()">💳 Add Credits</button>
       <button class="menu-item danger" type="button" onclick="logout()">🚪 Logout</button>
     </div>
@@ -242,11 +243,15 @@
 <!-- helper to toggle legal/contact panels -->
 <script>
   function showPage(id) {
+    // hide all inline legal/contact sections
     document.querySelectorAll(".page").forEach(function (el) {
       el.style.display = "none";
     });
+    // show the requested one
     var target = document.getElementById(id);
-    if (target) target.style.display = "block";
+    if (target) {
+      target.style.display = "block";
+    }
   }
 
   function openContactEmail() {
@@ -263,3 +268,4 @@
 <script src="js/render.js"></script>
 </body>
 </html>
+

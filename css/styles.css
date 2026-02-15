@@ -16,21 +16,26 @@
   --bg-panel: radial-gradient(circle at top left, #1b1b2c 0%, #0b0b15 55%, #05050a 100%);
 }
 
-html,
-body {
-  margin: 0;
-  padding: 0;
+html {
   height: 100%;
 }
 
 body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+
+  /* Fallback color (in case gradients fail) */
+  background-color: #000;
   background: radial-gradient(circle at top, #060615 0%, #020208 55%, #000000 100%);
+
   color: var(--text-main);
 }
 
 .app-root {
-  min-height: 100vh;
+  min-height: 100vh;  /* fallback */
+  min-height: 100dvh; /* mobile-safe when supported */
   display: flex;
   flex-direction: column;
 }
@@ -41,10 +46,20 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   padding: 1rem 1.5rem;
+
+  /* Prevent flex parent (.app-root) from shrinking the header */
+  flex-shrink: 0;
+
+  /* Sticky header */
   position: sticky;
   top: 0;
   z-index: 50;
+  width: 100%;
+
+  /* Fallback background so header area is always readable */
+  background-color: rgba(0, 0, 0, 0.9);
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent);
 }
 
@@ -61,8 +76,8 @@ body {
 }
 
 .brand-logo-img {
-  width: 40px;      /* tweak to match your design */
-  height: auto;
+  width: 40px;
+  height: 40px; /* ensures consistent header height for both <img> and inline <svg> */
   display: block;
 }
 
@@ -98,6 +113,9 @@ body {
 .screen {
   display: none;
   padding: 0 1.5rem 2.5rem;
+
+  /* lets the active screen fill available space under the header */
+  flex: 1 0 auto;
 }
 
 .screen.active {
@@ -107,13 +125,19 @@ body {
 /* HERO / WELCOME */
 
 #heroScreen {
+  /* NOTE: .screen.active sets display:block globally; we override below when active */
   min-height: calc(100vh - 72px);
-  display: flex;
+  min-height: calc(100dvh - 72px); /* better on mobile when supported */
   flex-direction: column;
   align-items: center;
   justify-content: center;
   position: relative;
   padding-top: 3.5rem;
+}
+
+/* Ensure hero screen actually uses flex when it is the active screen */
+#heroScreen.screen.active {
+  display: flex;
 }
 
 /* Floating card panel + typography */
@@ -130,7 +154,11 @@ body {
     0 26px 70px rgba(0, 0, 0, 0.85),
     0 0 0 1px rgba(255, 255, 255, 0.02);
   position: relative;
+
+  /* Safari needs the -webkit- prefix in practice in some cases */
+  -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
+
   text-align: center;
 }
 
@@ -304,25 +332,40 @@ body {
   cursor: pointer;
 }
 
+/* OVERLAY Z-INDEX POLICY
+   Keep overlays ABOVE header (your header uses z-index ~50).
+   Loading should be top-most. */
+:root {
+  --z-menu: 900;
+  --z-auth: 950;
+  --z-loading: 1000;
+}
+
 /* AUTH MODAL / LOGIN CARD */
 
 .auth-modal {
   position: fixed;
   inset: 0;
-  z-index: 40;
+  z-index: var(--z-auth);
+
   display: none;
   align-items: center;
   justify-content: center;
+
+  padding: 1.5rem;
   background: radial-gradient(circle at top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.96));
 }
 
 .auth-modal.active {
-  display: flex;
+  display: flex !important; /* overrides any inline display:none */
 }
 
 .auth-card {
   width: 100%;
   max-width: 420px;
+  max-height: calc(100dvh - 3rem);
+  overflow: auto;
+
   padding: 2.4rem 2.1rem;
   background: var(--bg-panel);
   border-radius: 18px;
@@ -331,6 +374,8 @@ body {
     0 26px 70px rgba(0, 0, 0, 0.95),
     0 0 0 1px rgba(255, 255, 255, 0.03);
   position: relative;
+
+  -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
 }
 
@@ -364,21 +409,26 @@ body {
 .menu-overlay {
   position: fixed;
   inset: 0;
-  z-index: 35;
+  z-index: var(--z-menu);
+
   display: none;
   align-items: center;
   justify-content: flex-end;
+
   padding: 1.5rem;
   background: radial-gradient(circle at top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.96));
 }
 
 .menu-overlay.open {
-  display: flex;
+  display: flex !important; /* overrides any inline display:none */
 }
 
 .menu-content {
   width: 260px;
   max-width: 80vw;
+  max-height: calc(100dvh - 3rem);
+  overflow: auto;
+
   padding: 1.8rem 1.4rem;
   background: var(--bg-panel);
   border-radius: 18px;
@@ -387,6 +437,8 @@ body {
     0 26px 70px rgba(0, 0, 0, 0.9),
     0 0 0 1px rgba(255, 255, 255, 0.03);
   position: relative;
+
+  -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
 }
 
@@ -453,16 +505,19 @@ body {
 .loading-overlay {
   position: fixed;
   inset: 0;
-  z-index: 30;
+  z-index: var(--z-loading);
+
   display: none;
   align-items: center;
   justify-content: center;
   flex-direction: column;
+
+  padding: 1.5rem;
   background: radial-gradient(circle at top, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0.97));
 }
 
 .loading-overlay.active {
-  display: flex;
+  display: flex !important; /* overrides any inline display:none */
 }
 
 .spinner {
@@ -493,3 +548,4 @@ body {
     padding-bottom: 3.5rem;
   }
 }
+

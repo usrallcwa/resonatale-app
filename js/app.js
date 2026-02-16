@@ -21,7 +21,7 @@ let appState = {
   authToken: localStorage.getItem('authToken'),
   userId: localStorage.getItem('userId'),
   userBalance: 0,
-  previewVideoUrl: null,   // used as generic media URL (audio/video)
+  previewVideoUrl: null,
   audioObjectUrl: null
 };
 
@@ -85,18 +85,8 @@ function updateHeaderVisibility(screenId) {
   const header = document.querySelector('.app-header');
   if (!header) return;
 
-  // Header always visible
+  // Header always visible, including menu button
   header.classList.remove('hidden');
-
-  // Only hide the menu button when logged out (optional)
-  const menuBtn = document.querySelector('.header-menu-btn');
-  if (menuBtn) {
-    if (appState.authToken) {
-      menuBtn.style.display = '';
-    } else {
-      menuBtn.style.display = 'none';
-    }
-  }
 }
 
 function navigateToScreen(screenId) {
@@ -146,6 +136,38 @@ function requireTurnstileOrBlock() {
     showToast('Please complete the verification check.', 'error');
   }
   return false;
+}
+
+// Consent modal helpers
+function showConsentModal() {
+  const modal = document.getElementById('consentModal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  modal.classList.add('active');
+}
+
+function closeConsentModal() {
+  const modal = document.getElementById('consentModal');
+  if (!modal) return;
+  modal.classList.remove('active');
+  modal.style.display = 'none';
+}
+
+function acceptConsent() {
+  const checkbox = document.getElementById('consentCheckbox');
+  if (!checkbox || !checkbox.checked) {
+    if (typeof showToast === 'function') {
+      showToast('Please confirm you are 18+ and accept the terms.', 'error');
+    }
+    return;
+  }
+
+  localStorage.setItem(CONSENT_KEY, 'true');
+  closeConsentModal();
+
+  if (typeof showToast === 'function') {
+    showToast('Thank you, you can continue.', 'success');
+  }
 }
 
 // ============================================
@@ -439,21 +461,17 @@ async function generatePreview() {
   if (typeof showLoading === 'function') showLoading('Uploading photos...');
 
   try {
-    // 1) Upload photos (stub; replace with real upload later)
     const photoUrls = await uploadPhotos();
 
-    // 2) Ensure voice is cloned and we have a voiceId
     if (!appState.voiceId) {
       if (typeof showLoading === 'function') showLoading('Cloning your voice...');
       const voiceId = await uploadVoice();
       appState.voiceId = voiceId;
     }
 
-    // 3) Ask Worker to generate preview (script + audioUrl)
     if (typeof showLoading === 'function') showLoading('Creating your preview film...');
     const previewData = await generatePreviewRequest(photoUrls, appState.voiceId, briefDesc);
 
-    // Worker returns { success, previewId, audioUrl, script, message }
     const audioUrl = previewData.audioUrl || null;
     const scriptText = previewData.script || '';
 
@@ -485,7 +503,6 @@ async function generatePreview() {
 }
 
 async function uploadPhotos() {
-  // TODO: replace with real upload to storage if needed
   return appState.photos.map((photo, i) => `photo_${i}_${Date.now()}`);
 }
 
@@ -525,7 +542,6 @@ async function uploadVoice() {
   return data.voiceId;
 }
 
-// Body matches Worker’s /api/render/preview contract
 async function generatePreviewRequest(photoUrls, voiceId, briefDesc) {
   const headers = { 'Content-Type': 'application/json' };
   if (appState.authToken) headers['Authorization'] = `Bearer ${appState.authToken}`;

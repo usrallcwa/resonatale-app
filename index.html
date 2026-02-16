@@ -14,6 +14,7 @@
 
   <!-- Turnstile config + callbacks -->
   <script>
+    // Make sure this matches the site key configured in your Worker
     window.TURNSTILE_SITE_KEY = "0x4AAAAAACLI9vyJZYGLg9lS";
     window.turnstileToken = null;
 
@@ -120,13 +121,17 @@
 
         <!-- Turnstile widget for verification -->
         <div
-          class="cf-turnstile"
-          data-sitekey="0x4AAAAAACLI9vyJZYGLg9lS"
-          data-callback="onTurnstileSuccess"
-          data-error-callback="onTurnstileError"
-          data-expired-callback="onTurnstileExpired"
-          style="margin-bottom:1rem;"
-        ></div>
+          class="hero-turnstile-wrapper"
+          style="display:flex;justify-content:center;margin-bottom:1rem;"
+        >
+          <div
+            class="cf-turnstile"
+            data-sitekey="0x4AAAAAACLI9vyJZYGLg9lS"
+            data-callback="onTurnstileSuccess"
+            data-error-callback="onTurnstileError"
+            data-expired-callback="onTurnstileExpired"
+          ></div>
+        </div>
 
         <button class="btn primary-btn pulse" type="button" onclick="startApp()">
           Start Creating
@@ -142,9 +147,24 @@
         >
           Contact
         </a>
-        <!-- These assume physical files exist at /terms/index.html and /privacy/index.html -->
-        <a class="link-btn" href="terms/index.html" target="_blank">Terms</a>
-        <a class="link-btn" href="privacy/index.html" target="_blank">Privacy</a>
+
+        <!-- Force full navigation to static HTML files, not SPA routing -->
+        <a
+          class="link-btn"
+          href="/terms/index.html"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Terms
+        </a>
+        <a
+          class="link-btn"
+          href="/privacy/index.html"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Privacy
+        </a>
       </div>
     </div>
 

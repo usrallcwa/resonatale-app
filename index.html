@@ -145,6 +145,7 @@
           Contact
         </a>
 
+        <!-- Try terms.html first; if your deployment uses terms.index instead, you can add a redirect or serve that file as /terms.html -->
         <a
           class="link-btn"
           href="/terms.html"
@@ -164,12 +165,12 @@
       </div>
     </div>
 
-    <!-- UPLOAD SCREEN -->
+    <!-- UPLOAD SCREEN (Step 1: photos) -->
     <div id="uploadScreen" class="screen">
       <div class="screen-header">
         <button class="back-btn" type="button" onclick="goBack('heroScreen');">←</button>
         <h2 class="screen-title">Upload Photos</h2>
-        <span class="step">1/4</span>
+        <span class="step">1/3</span>
       </div>
 
       <section>
@@ -198,15 +199,23 @@
           Selected photos: <span id="photoCount">0</span>/12
         </p>
 
+        <!-- scrollable grid so Continue stays visible -->
         <div
-          id="photoGrid"
           style="
-            display:grid;
-            grid-template-columns:repeat(3,minmax(0,1fr));
-            gap:0.5rem;
-            margin-bottom:1.2rem;
+            max-height:260px;
+            overflow-y:auto;
+            margin-bottom:1rem;
           "
-        ></div>
+        >
+          <div
+            id="photoGrid"
+            style="
+              display:grid;
+              grid-template-columns:repeat(3,minmax(0,1fr));
+              gap:0.5rem;
+            "
+          ></div>
+        </div>
 
         <button
           id="photoContinueBtn"
@@ -220,34 +229,149 @@
       </section>
     </div>
 
-    <!-- SCRIPT SCREEN -->
-    <div id="scriptScreen" class="screen">
-      <div class="screen-header">
-        <button class="back-btn" type="button" onclick="goBack('uploadScreen');">←</button>
-        <h2 class="screen-title">Script</h2>
-        <span class="step">2/4</span>
-      </div>
-      <!-- script UI -->
-    </div>
-
-    <!-- VOICE SCREEN -->
+    <!-- VOICE & STORY SCREEN (Step 2: voice + script + generate) -->
     <div id="voiceScreen" class="screen">
       <div class="screen-header">
-        <button class="back-btn" type="button" onclick="goBack('scriptScreen');">←</button>
-        <h2 class="screen-title">Voice</h2>
-        <span class="step">3/4</span>
+        <button class="back-btn" type="button" onclick="goBack('uploadScreen');">←</button>
+        <h2 class="screen-title">Voice &amp; Story</h2>
+        <span class="step">2/3</span>
       </div>
-      <!-- voice UI -->
+
+      <section style="margin-bottom:1.5rem;">
+        <p id="recordingHint" style="font-size:0.9rem;color:rgba(255,255,255,0.75);margin-bottom:0.75rem;">
+          Record 20–30 seconds of you speaking naturally. This will be used to clone your voice.
+        </p>
+
+        <button
+          id="recordBtn"
+          class="btn primary-btn"
+          type="button"
+          onclick="toggleRecording()"
+          style="display:flex;align-items:center;justify-content:center;gap:0.5rem;"
+        >
+          <span class="record-icon">⏺</span>
+          <span class="record-text">Start Recording</span>
+        </button>
+
+        <p
+          id="recordTimer"
+          style="font-size:0.85rem;color:rgba(255,255,255,0.7);margin-top:0.5rem;margin-bottom:1rem;"
+        >
+          0:00 / 0:30
+        </p>
+
+        <div
+          id="audioPreview"
+          class="hidden"
+          style="
+            margin-top:0.5rem;
+            padding:0.75rem 0.9rem;
+            border-radius:10px;
+            border:1px solid rgba(255,255,255,0.2);
+            background:rgba(0,0,0,0.5);
+          "
+        >
+          <p style="font-size:0.85rem;color:rgba(255,255,255,0.8);margin:0 0 0.5rem;">
+            Preview your recording:
+          </p>
+          <audio
+            id="audioPlayback"
+            controls
+            style="width:100%;margin-bottom:0.5rem;"
+          ></audio>
+          <button
+            type="button"
+            class="link-btn"
+            onclick="reRecord()"
+          >
+            Re-record
+          </button>
+        </div>
+      </section>
+
+      <section>
+        <p style="font-size:0.9rem;color:rgba(255,255,255,0.75);margin-bottom:0.75rem;">
+          Describe the story you want your AI film to tell. A few sentences is enough.
+        </p>
+
+        <textarea
+          id="briefDesc"
+          rows="5"
+          maxlength="600"
+          style="
+            width:100%;
+            resize:vertical;
+            min-height:120px;
+            padding:0.75rem;
+            border-radius:10px;
+            border:1px solid rgba(255,255,255,0.2);
+            background:rgba(0,0,0,0.5);
+            color:#fff;
+            font-size:0.95rem;
+          "
+          placeholder="Example: I’m hiking with friends in the mountains, then reaching the summit at sunset..."
+        ></textarea>
+
+        <p style="font-size:0.8rem;color:rgba(255,255,255,0.65);margin-top:0.35rem;margin-bottom:1rem;">
+          <span id="briefCount">0</span>/600 characters
+        </p>
+
+        <button
+          id="voiceContinueBtn"
+          class="btn primary-btn"
+          type="button"
+          onclick="generatePreview()"
+          disabled
+        >
+          Generate Preview
+        </button>
+      </section>
     </div>
 
-    <!-- PREVIEW SCREEN -->
+    <!-- PREVIEW SCREEN (Step 3: preview result; full film comes later) -->
     <div id="previewScreen" class="screen">
       <div class="screen-header">
         <button class="back-btn" type="button" onclick="goBack('voiceScreen');">←</button>
-        <h2 class="screen-title">Preview &amp; Export</h2>
-        <span class="step">4/4</span>
+        <h2 class="screen-title">Preview</h2>
+        <span class="step">3/3</span>
       </div>
-      <!-- preview UI -->
+
+      <section>
+        <p style="font-size:0.9rem;color:rgba(255,255,255,0.8);margin-bottom:0.75rem;">
+          Here’s a short preview of your AI film. Create a full film by signing up and adding credits.
+        </p>
+
+        <audio
+          id="previewVideo"
+          controls
+          style="width:100%;margin-bottom:1rem;"
+        ></audio>
+
+        <pre
+          id="previewScript"
+          style="
+            white-space:pre-wrap;
+            background:rgba(0,0,0,0.5);
+            border-radius:10px;
+            padding:0.75rem;
+            border:1px solid rgba(255,255,255,0.2);
+            font-size:0.9rem;
+            color:rgba(255,255,255,0.85);
+            max-height:220px;
+            overflow-y:auto;
+            margin-bottom:1rem;
+          "
+        ></pre>
+
+        <!-- This button is where you later enforce login + credits in JS -->
+        <button
+          class="btn primary-btn"
+          type="button"
+          onclick="requestFullFilm && requestFullFilm()"
+        >
+          Make Full Film
+        </button>
+      </section>
     </div>
 
     <!-- LOGIN MODAL -->

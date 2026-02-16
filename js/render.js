@@ -1,223 +1,271 @@
-// render.js - Full Film Rendering
+import { generateScript } from '../services/openai';
+import { generateVoiceover } from '../services/elevenlabs';
+import { createShotstackRender, getShotstackStatus } from '../services/shortstack';
+import { generateRunwayClips } from '../services/runway';
+import { AuthService } from '../services/auth';
+import { getBalance, deductCredits, hasBalance, VIDEO_PRICE } from '../services/wallet';
 
-async function startFullRender() {
-  // Require auth + credits
-  if (!appState.authToken) {
-    if (typeof showToast === 'function') {
-      showToast('Please log in to render a full film.', 'error');
+export async function handleRenderRoutes(request: Request, env: any): Promise<Response | null> {
+  const url = new URL(request.url);
+  const path = url.pathname;
+
+  if (!path.startsWith('/api/render')) return null;
+
+  const authService = new AuthService(env.DB);
+
+  // Helper: Get authenticated user
+  async function getAuthenticatedUser(request: Request) {
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return null;
     }
-    if (typeof showLogin === 'function') showLogin();
-    return;
+    const token = authHeader.substring(7);
+    return await authService.verifySession(token);
   }
 
-  // Basic credit check (adjust threshold as needed)
-  if (appState.userBalance < 19.99) {
-    if (typeof showAddCredits === 'function') showAddCredits();
-    if (typeof showToast === 'function') {
-      showToast('Insufficient credits', 'error');
-    }
-    return;
-  }
-
-  // Compliance + verification
-  if (!hasConsent()) {
-    if (typeof showConsentModal === 'function') showConsentModal();
-    if (typeof showToast === 'function') {
-      showToast('Please confirm you are 18+ before rendering.', 'error');
-    }
-    return;
-  }
-  if (!appState.turnstileToken) {
-    if (typeof showToast === 'function') {
-      showToast('Please complete the verification check.', 'error');
-    }
-    return;
-  }
-
-  if (!appState.photos.length) {
-    if (typeof showToast === 'function') {
-      showToast('Please upload photos first.', 'error');
-    }
-    return;
-  }
-  if (!appState.voiceId) {
-    if (typeof showToast === 'function') {
-      showToast('Missing voice clone. Generate a preview first.', 'error');
-    }
-    return;
-  }
-
-  if (typeof showLoading === 'function') showLoading('Uploading photos...');
-
-  try {
-    // Upload photos
-    const formData = new FormData();
-    appState.photos.forEach((photo, i) => {
-      formData.append('photos', photo.file, `photo_${i}.jpg`);
-    });
-    formData.append('turnstileToken', appState.turnstileToken);
-
-    const uploadRes = await fetch(`${API_BASE}/api/render/upload-photos`, {
-      method: 'POST',
-      headers: appState.authToken
-        ? { Authorization: `Bearer ${appState.authToken}` }
-        : undefined,
-      body: formData
-    });
-
-    if (!uploadRes.ok) throw new Error('Photo upload failed');
-    const uploadData = await uploadRes.json();
-
-    // Start render job
-    if (typeof showLoading === 'function') showLoading('Starting render...');
-    const briefDescEl = document.getElementById('briefDesc');
-    const briefDesc = briefDescEl ? briefDescEl.value : '';
-
-    const renderRes = await fetch(`${API_BASE}/api/render/full`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(appState.authToken
-          ? { Authorization: `Bearer ${appState.authToken}` }
-          : {})
-      },
-      body: JSON.stringify({
-        photoUrls: uploadData.photoUrls,
-        voiceId: appState.voiceId,
-        prompt: briefDesc,
-        language: document.getElementById('languageSelect')?.value || 'en',
-        mood: document.getElementById('moodSelect')?.value || 'default',
-        genre: document.getElementById('genreSelect')?.value || 'default',
-        orientation:
-          document.getElementById('orientationSelect')?.value || 'landscape',
-        turnstileToken: appState.turnstileToken
-      })
-    });
-
-    if (!renderRes.ok) throw new Error('Render failed');
-    const renderData = await renderRes.json();
-
-    await pollRenderStatus(renderData.jobId);
-  } catch (e) {
-    console.error('Full render error:', e);
-    if (typeof hideLoading === 'function') hideLoading();
-    if (typeof showToast === 'function') {
-      showToast(e.message || 'Full render failed', 'error');
-    }
-  }
-}
-
-async function pollRenderStatus(jobId) {
-  if (typeof showLoading === 'function') {
-    showLoading('Rendering your film... (1–3 min)');
-  }
-
-  const interval = setInterval(async () => {
+  // POST /api/render/preview (NO AUTH - Free 30-sec preview)
+  if (path === '/api/render/preview' && request.method === 'POST') {
     try {
-      const res = await fetch(`${API_BASE}/api/render/status/${jobId}`, {
-        headers: appState.authToken
-          ? { Authorization: `Bearer ${appState.authToken}` }
-          : undefined
-      });
-
-      if (!res.ok) {
-        clearInterval(interval);
-        throw new Error('Status check failed');
+      // Safe JSON parsing
+      let body: any;
+      try {
+        body = await request.json();
+      } catch {
+        return new Response(
+          JSON.stringify({ error: 'Invalid JSON body' }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } }
+        );
       }
 
-      const data = await res.json();
+      const {
+        prompt,
+        photoUrls,
+        voiceId,
+        photoCount,
+      }: {
+        prompt?: string;
+        photoUrls?: string[];
+        voiceId?: string;
+        photoCount?: number;
+      } = body;
 
-      if (data.status === 'completed') {
-        clearInterval(interval);
-        if (typeof hideLoading === 'function') hideLoading();
-        showCompletedFilm(data.videoUrl);
-        if (typeof initAuthenticatedApp === 'function') {
-          initAuthenticatedApp(); // refresh balance
-        }
-      } else if (data.status === 'failed') {
-        clearInterval(interval);
-        if (typeof hideLoading === 'function') hideLoading();
-        if (typeof showToast === 'function') {
-          showToast('Render failed. Credits refunded.', 'error');
-        }
-        if (typeof initAuthenticatedApp === 'function') {
-          initAuthenticatedApp();
-        }
-      } else {
-        const progress = data.progress || 0;
-        const loadingText = document.getElementById('loadingText');
-        if (loadingText) loadingText.textContent = `Rendering... ${progress}%`;
+      if (!prompt) {
+        return new Response(
+          JSON.stringify({ error: 'Prompt required' }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } }
+        );
       }
-    } catch (e) {
-      console.error('Polling error:', e);
-      clearInterval(interval);
-      if (typeof hideLoading === 'function') hideLoading();
-      if (typeof showToast === 'function') {
-        showToast(e.message || 'Render status check failed', 'error');
+
+      if (!voiceId) {
+        return new Response(
+          JSON.stringify({ error: 'Voice not cloned. Please record voice first.' }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } }
+        );
       }
+
+      // Generate script (short preview)
+      const script = await generateScript(env, prompt, photoCount || 6);
+
+      // Generate voiceover using cloned voice
+      const audioUrl = await generateVoiceover(env, voiceId, script);
+
+      // Generate visual clips via Runway (stub/real implementation)
+      const clipUrls = await generateRunwayClips(env, script);
+
+      // Render 30-sec preview with watermark via Shotstack
+      const renderResult = await createShotstackRender(env, clipUrls, audioUrl) as any;
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          previewId: renderResult?.response?.id || 'preview_' + Date.now(),
+          audioUrl,
+          script,
+          message: 'Preview generated successfully'
+        }),
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+    } catch (error: any) {
+      console.error('Preview render error:', error);
+      return new Response(
+        JSON.stringify({ error: error.message || 'Failed to render preview' }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      );
     }
-  }, 5000);
-}
+  }
 
-function showCompletedFilm(videoUrl) {
-  const root = document.querySelector('.app-root');
-  if (!root) return;
+  // POST /api/render/video (PROTECTED - Requires payment)
+  if (path === '/api/render/video' && request.method === 'POST') {
+    const user = await getAuthenticatedUser(request);
 
-  const existing = document.getElementById('completionScreen');
-  if (existing) existing.remove();
+    if (!user) {
+      return new Response(
+        JSON.stringify({
+          error: 'Please create an account to view full video',
+          requiresAuth: true
+        }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
 
-  const completionHTML = `
-    <div class="screen active" id="completionScreen">
-      <div class="screen-header">
-        <h2 class="screen-title">Your Film is Ready!</h2>
-      </div>
-      <div class="screen-content">
-        <div class="video-container">
-          <video controls playsinline src="${videoUrl}"></video>
-        </div>
-        <div class="preview-info">
-          <p class="preview-title">🎉 Film Complete!</p>
-          <p class="preview-desc">Download or share your masterpiece</p>
-        </div>
-      </div>
-      <div class="screen-footer">
-        <button class="btn" type="button" onclick="downloadFilm('${videoUrl}')">⬇️ Download</button>
-        <button
-          class="btn"
-          type="button"
-          style="margin-top:1rem;background:transparent;border:1px solid rgba(255,255,255,0.2);"
-          onclick="createAnother()"
-        >
-          Create Another
-        </button>
-      </div>
-    </div>
-  `;
+    try {
+      // Safe JSON parsing
+      let body: any;
+      try {
+        body = await request.json();
+      } catch {
+        return new Response(
+          JSON.stringify({ error: 'Invalid JSON body' }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
 
-  root.insertAdjacentHTML('beforeend', completionHTML);
-  if (typeof navigateToScreen === 'function') navigateToScreen('completionScreen');
-  if (typeof showToast === 'function') showToast('Film ready!', 'success');
-}
+      const {
+        prompt,
+        photoCount,
+      }: {
+        prompt?: string;
+        photoCount?: number;
+      } = body;
 
-function downloadFilm(url) {
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'resonatale_film.mp4';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  if (typeof showToast === 'function') showToast('Download started', 'success');
-}
+      if (!prompt) {
+        return new Response(
+          JSON.stringify({ error: 'Prompt required' }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
 
-function createAnother() {
-  appState.photos = [];
-  appState.voiceBlob = null;
-  appState.voiceId = null;
+      if (!user.voice_id) {
+        return new Response(
+          JSON.stringify({ error: 'Voice not cloned. Please upload voice first.' }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
 
-  const screen = document.getElementById('completionScreen');
-  if (screen) screen.remove();
+      // Check wallet balance
+      const balance = await getBalance(env, user.id);
+      const canAfford = await hasBalance(env, user.id, VIDEO_PRICE);
 
-  if (typeof navigateToScreen === 'function') navigateToScreen('uploadScreen');
-  if (typeof updatePhotoGrid === 'function') updatePhotoGrid();
-  if (typeof showToast === 'function') showToast('Ready for new film', 'success');
+      if (!canAfford) {
+        return new Response(
+          JSON.stringify({
+            error: 'Insufficient balance',
+            balance,
+            required: VIDEO_PRICE,
+            shortfall: VIDEO_PRICE - balance,
+            needsPayment: true
+          }),
+          { status: 402, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Deduct credits BEFORE rendering
+      const newBalance = await deductCredits(
+        env,
+        user.id,
+        VIDEO_PRICE,
+        `Full 3-min AI Film - ${prompt.substring(0, 50)}`
+      );
+
+      console.log(`✅ Charged user ${user.id} $${VIDEO_PRICE}. New balance: $${newBalance}`);
+
+      // Generate script (full video)
+      const script = await generateScript(env, prompt, photoCount || 5);
+
+      // Generate voiceover
+      const audioUrl = await generateVoiceover(env, user.voice_id, script);
+
+      // Generate visual clips via Runway
+      const clipUrls = await generateRunwayClips(env, script);
+
+      // Render video via Shotstack
+      const renderResult = await createShotstackRender(env, clipUrls, audioUrl) as any;
+
+      const videoData = {
+        id: renderResult?.response?.id || `video_${Date.now()}`,
+        url: null,            // real URL comes from status endpoint when done
+        status: 'rendering',
+        duration: clipUrls.length * 6, // seconds, based on per-clip length
+      };
+
+      // Update user stats
+      await env.DB
+        .prepare('UPDATE users SET videos_created = videos_created + 1, updated_at = ? WHERE id = ?')
+        .bind(Date.now(), user.id)
+        .run();
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          video: videoData,
+          newBalance,
+          charged: VIDEO_PRICE,
+          message: 'Full video render started'
+        }),
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+    } catch (error: any) {
+      console.error('Full render error:', error);
+
+      // If render fails AFTER payment, refund the user
+      if (user) {
+        try {
+          const { addCredits } = await import('../services/wallet');
+          await addCredits(env, user.id, VIDEO_PRICE, 'Refund - Render failed');
+          console.log(`✅ Refunded $${VIDEO_PRICE} to user ${user.id}`);
+
+          return new Response(
+            JSON.stringify({
+              error: error.message || 'Failed to render video',
+              refunded: true,
+              refundAmount: VIDEO_PRICE,
+              message: 'Payment has been refunded to your wallet'
+            }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+          );
+        } catch (refundError) {
+          console.error('Refund failed:', refundError);
+        }
+      }
+
+      return new Response(
+        JSON.stringify({ error: error.message || 'Failed to render video' }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+  }
+
+  // GET /api/render/status/:id (Check render status)
+  if (path.startsWith('/api/render/status/') && request.method === 'GET') {
+    try {
+      const renderId = path.split('/').pop();
+
+      if (!renderId) {
+        return new Response(
+          JSON.stringify({ error: 'Render ID required' }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const statusResult = await getShotstackStatus(env, renderId) as any;
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          status: statusResult?.response?.status || 'unknown',
+          url: statusResult?.response?.url || null,
+          progress: statusResult?.response?.progress || 0
+        }),
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+    } catch (error: any) {
+      console.error('Status check error:', error);
+      return new Response(
+        JSON.stringify({ error: error.message || 'Failed to check status' }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+  }
+
+  return null;
 }

@@ -85,13 +85,16 @@ function updateHeaderVisibility(screenId) {
   const header = document.querySelector('.app-header');
   if (!header) return;
 
-  if (screenId === 'heroScreen') {
-    header.classList.add('hidden');
-  } else {
+  // Header always visible
+  header.classList.remove('hidden');
+
+  // Only hide the menu button when logged out (optional)
+  const menuBtn = document.querySelector('.header-menu-btn');
+  if (menuBtn) {
     if (appState.authToken) {
-      header.classList.remove('hidden');
+      menuBtn.style.display = '';
     } else {
-      header.classList.add('hidden');
+      menuBtn.style.display = 'none';
     }
   }
 }

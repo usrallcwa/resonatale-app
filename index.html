@@ -145,7 +145,6 @@
           Contact
         </a>
 
-        <!-- Direct links to static HTML legal pages -->
         <a
           class="link-btn"
           href="/terms.html"
@@ -165,7 +164,7 @@
       </div>
     </div>
 
-        <!-- UPLOAD SCREEN -->
+    <!-- UPLOAD SCREEN -->
     <div id="uploadScreen" class="screen">
       <div class="screen-header">
         <button class="back-btn" type="button" onclick="goBack('heroScreen');">←</button>
@@ -178,7 +177,6 @@
           Add 6–12 clear photos of yourself. These will be used to create your AI film.
         </p>
 
-        <!-- hidden file input -->
         <input
           id="photoInput"
           type="file"
@@ -187,7 +185,6 @@
           style="display:none;"
         />
 
-        <!-- upload button -->
         <button
           class="btn primary-btn"
           type="button"
@@ -197,12 +194,10 @@
           Upload Photos
         </button>
 
-        <!-- photo count -->
         <p style="font-size:0.85rem;color:rgba(255,255,255,0.7);margin:0 0 0.5rem;">
           Selected photos: <span id="photoCount">0</span>/12
         </p>
 
-        <!-- photo grid -->
         <div
           id="photoGrid"
           style="
@@ -213,7 +208,6 @@
           "
         ></div>
 
-        <!-- continue button -->
         <button
           id="photoContinueBtn"
           class="btn primary-btn"
@@ -363,6 +357,34 @@
             Log in
           </button>
         </p>
+      </div>
+    </div>
+
+    <!-- 18+ CONSENT MODAL (for uploads/recording) -->
+    <div id="consentModal" class="auth-modal" style="display:none;">
+      <div class="auth-card">
+        <button class="auth-close" type="button" onclick="closeConsentModal()">×</button>
+        <h2 class="auth-title">Age Confirmation</h2>
+        <p style="font-size:0.9rem;color:rgba(255,255,255,0.8);margin-bottom:1rem;">
+          To continue, please confirm you are 18 years or older and agree to our Terms and Privacy Policy.
+        </p>
+
+        <div style="display:flex;flex-direction:row;align-items:flex-start;gap:0.5rem;margin-bottom:1rem;">
+          <input id="consentCheckbox" type="checkbox" />
+          <label
+            for="consentCheckbox"
+            style="margin:0;font-size:0.8rem;color:rgba(255,255,255,0.75);"
+          >
+            I am 18+ and I have read and agree to the
+            <a href="/terms.html" target="_blank" rel="noopener noreferrer" class="link-btn">Terms</a>
+            and
+            <a href="/privacy.html" target="_blank" rel="noopener noreferrer" class="link-btn">Privacy Policy</a>.
+          </label>
+        </div>
+
+        <button class="btn primary-btn" type="button" onclick="acceptConsent()">
+          Confirm &amp; Continue
+        </button>
       </div>
     </div>
 

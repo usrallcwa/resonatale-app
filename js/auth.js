@@ -1,6 +1,8 @@
-// auth.js - Authentication & Signup
+// auth.js – Authentication & Signup
 
-// Simple login modal controls (matches #authModal in index.html)
+// ============================================
+// MODAL CONTROLS
+// ============================================
 function showLogin() {
   const modal = document.getElementById('authModal');
   if (!modal) return;
@@ -15,7 +17,6 @@ function closeLogin() {
   modal.style.display = 'none';
 }
 
-// If you add a separate signup modal later, these stubs are safe no-ops
 function showSignup() {
   const modal = document.getElementById('signupModal');
   if (!modal) return;
@@ -40,7 +41,9 @@ function switchToLogin() {
   showLogin();
 }
 
-// ----- LOGIN -----
+// ============================================
+// LOGIN
+// ============================================
 async function handleLoginSubmit(event) {
   event.preventDefault();
   const emailEl = document.getElementById('loginEmail');
@@ -65,26 +68,31 @@ async function handleLogin(email, password) {
     const res = await fetch(`${API_BASE}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email, password })   // matches handleLogin in Worker
     });
 
     const data = await res.json().catch(() => ({}));
 
+    // Worker returns { success, user, tokens } or { success:false, error }
     if (!res.ok || data.success === false) {
       throw new Error(data.error || data.message || 'Login failed');
     }
 
-    if (!data.user || !data.accessToken) {
+    const user = data.user;
+    const tokens = data.tokens || {};
+    const accessToken = tokens.accessToken || data.accessToken; // support either shape
+
+    if (!user || !accessToken) {
       throw new Error('Invalid login response');
     }
 
-    // Normalized auth state
-    appState.authToken = data.accessToken;
-    appState.userId = data.user.id;
-    appState.userBalance = data.user.balance || 0;
+    appState.authToken = accessToken;
+    appState.userId = user.id;
+    // walletbalance in DB is exposed as walletBalance by toPublicUser
+    appState.userBalance = Number(user.walletBalance ?? user.balance ?? 0);
 
-    localStorage.setItem('authToken', data.accessToken);
-    localStorage.setItem('userId', data.user.id);
+    localStorage.setItem('authToken', accessToken);
+    localStorage.setItem('userId', user.id);
 
     if (typeof updateBalanceDisplay === 'function') updateBalanceDisplay();
     if (typeof updateHeaderVisibility === 'function') {
@@ -92,7 +100,7 @@ async function handleLogin(email, password) {
     }
 
     const emailEl = document.getElementById('menuEmail');
-    if (emailEl) emailEl.textContent = data.user.email || email;
+    if (emailEl) emailEl.textContent = user.email || email;
 
     closeLogin();
     if (typeof hideLoading === 'function') hideLoading();
@@ -106,7 +114,9 @@ async function handleLogin(email, password) {
   }
 }
 
-// ----- SIGNUP -----
+// ============================================
+// SIGNUP
+// ============================================
 async function handleSignup(event) {
   event.preventDefault();
 
@@ -145,31 +155,38 @@ async function handleSignup(event) {
     const res = await fetch(`${API_BASE}/api/auth/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      // Worker’s handleSignup expects { email, password, name }
       body: JSON.stringify({
         email,
         password,
-        name,
-        consentAccepted: true,
-        turnstileToken: appState.turnstileToken
+        name
+        // Turnstile is enforced at preview/voice routes, not here in Worker,
+        // but sending it is harmless; if you later add server-side Turnstile, you can add it back.
+        // turnstileToken: appState.turnstileToken
       })
     });
 
     const data = await res.json().catch(() => ({}));
 
+    // Worker returns { success, user, tokens } or { success:false, error }
     if (!res.ok || data.success === false) {
       throw new Error(data.error || data.message || 'Signup failed');
     }
 
-    if (!data.user || !data.accessToken) {
+    const user = data.user;
+    const tokens = data.tokens || {};
+    const accessToken = tokens.accessToken || data.accessToken;
+
+    if (!user || !accessToken) {
       throw new Error('Invalid signup response');
     }
 
-    appState.authToken = data.accessToken;
-    appState.userId = data.user.id;
-    appState.userBalance = data.user.balance || 0;
+    appState.authToken = accessToken;
+    appState.userId = user.id;
+    appState.userBalance = Number(user.walletBalance ?? user.balance ?? 0);
 
-    localStorage.setItem('authToken', data.accessToken);
-    localStorage.setItem('userId', data.user.id);
+    localStorage.setItem('authToken', accessToken);
+    localStorage.setItem('userId', user.id);
 
     if (typeof updateBalanceDisplay === 'function') updateBalanceDisplay();
     if (typeof updateHeaderVisibility === 'function') {
@@ -177,7 +194,7 @@ async function handleSignup(event) {
     }
 
     const emailMenuEl = document.getElementById('menuEmail');
-    if (emailMenuEl) emailMenuEl.textContent = data.user.email || email;
+    if (emailMenuEl) emailMenuEl.textContent = user.email || email;
 
     closeSignup();
     if (typeof hideLoading === 'function') hideLoading();

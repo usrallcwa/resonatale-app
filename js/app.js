@@ -21,7 +21,7 @@ let appState = {
   authToken: localStorage.getItem('authToken'),
   userId: localStorage.getItem('userId'),
   userBalance: 0,
-  previewVideoUrl: null,
+  previewVideoUrl: null,   // used as generic media URL (audio/video)
   audioObjectUrl: null
 };
 
@@ -111,7 +111,6 @@ function navigateToScreen(screenId) {
   }
 
   nextScreen.classList.add('active');
-
   updateHeaderVisibility(screenId);
 }
 
@@ -402,7 +401,7 @@ function goToStory() {
 }
 
 // ============================================
-// GENERATE PREVIEW
+// GENERATE PREVIEW (aligned with Worker)
 // ============================================
 async function generatePreview() {
   const briefDescEl = document.getElementById('briefDesc');
@@ -429,7 +428,7 @@ async function generatePreview() {
     if (typeof showToast === 'function') showToast('Please upload at least 6 photos', 'error');
     return;
   }
-  if (!appState.voiceBlob) {
+  if (!appState.voiceBlob && !appState.voiceId) {
     if (typeof showToast === 'function') showToast('Please record your voice', 'error');
     return;
   }
@@ -437,30 +436,42 @@ async function generatePreview() {
   if (typeof showLoading === 'function') showLoading('Uploading photos...');
 
   try {
+    // 1) Upload photos (stub; replace with real upload later)
     const photoUrls = await uploadPhotos();
 
-    if (typeof showLoading === 'function') showLoading('Cloning your voice...');
-    const voiceId = await uploadVoice();
-    appState.voiceId = voiceId;
+    // 2) Ensure voice is cloned and we have a voiceId
+    if (!appState.voiceId) {
+      if (typeof showLoading === 'function') showLoading('Cloning your voice...');
+      const voiceId = await uploadVoice();
+      appState.voiceId = voiceId;
+    }
 
+    // 3) Ask Worker to generate preview (script + audioUrl)
     if (typeof showLoading === 'function') showLoading('Creating your preview film...');
-    const previewData = await generatePreviewRequest(photoUrls, voiceId, briefDesc);
+    const previewData = await generatePreviewRequest(photoUrls, appState.voiceId, briefDesc);
 
-    const mediaUrl =
-      previewData.videoUrl ||
-      previewData.previewUrl ||
-      previewData.url ||
-      previewData.audioUrl;
+    // Worker returns { success, previewId, audioUrl, script, message }
+    const audioUrl = previewData.audioUrl || null;
+    const scriptText = previewData.script || '';
 
-    appState.previewVideoUrl = mediaUrl || null;
+    appState.previewVideoUrl = audioUrl;
 
     navigateToScreen('previewScreen');
 
-    const video = document.getElementById('previewVideo');
-    if (video && mediaUrl) video.src = mediaUrl;
+    const mediaEl = document.getElementById('previewVideo');
+    if (mediaEl && audioUrl) {
+      mediaEl.src = audioUrl;
+    }
+
+    const scriptEl = document.getElementById('previewScript');
+    if (scriptEl) {
+      scriptEl.textContent = scriptText;
+    }
 
     if (typeof hideLoading === 'function') hideLoading();
-    if (typeof showToast === 'function') showToast('Preview ready!', 'success');
+    if (typeof showToast === 'function') {
+      showToast(previewData.message || 'Preview ready!', 'success');
+    }
   } catch (error) {
     console.error('Preview generation error:', error);
     if (typeof hideLoading === 'function') hideLoading();
@@ -471,7 +482,7 @@ async function generatePreview() {
 }
 
 async function uploadPhotos() {
-  // TODO: replace with real upload
+  // TODO: replace with real upload to storage if needed
   return appState.photos.map((photo, i) => `photo_${i}_${Date.now()}`);
 }
 
@@ -511,16 +522,8 @@ async function uploadVoice() {
   return data.voiceId;
 }
 
+// Body matches Worker’s /api/render/preview contract
 async function generatePreviewRequest(photoUrls, voiceId, briefDesc) {
-  if (!appState.turnstileToken) {
-    throw new Error('Verification required');
-  }
-
-  const language = document.getElementById('languageSelect')?.value || 'en';
-  const mood = document.getElementById('moodSelect')?.value || 'default';
-  const genre = document.getElementById('genreSelect')?.value || 'default';
-  const orientation = document.getElementById('orientationSelect')?.value || 'landscape';
-
   const headers = { 'Content-Type': 'application/json' };
   if (appState.authToken) headers['Authorization'] = `Bearer ${appState.authToken}`;
 
@@ -531,12 +534,7 @@ async function generatePreviewRequest(photoUrls, voiceId, briefDesc) {
       prompt: briefDesc,
       photoUrls,
       voiceId,
-      photoCount: photoUrls.length,
-      language,
-      mood,
-      genre,
-      orientation,
-      turnstileToken: appState.turnstileToken
+      photoCount: photoUrls.length
     })
   });
 

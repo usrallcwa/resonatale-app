@@ -1,6 +1,14 @@
 // wallet.js - Payment & Credits (Stripe + credits service)
 
-// Amount slider -> wallet credits via Stripe Checkout
+/**
+ * processPayment
+ * - Reads amount from #creditSlider
+ * - Validates amount ($20–$500)
+ * - Ensures user is logged in
+ * - Fetches current user via /api/auth/me
+ * - Creates Stripe Checkout session via /api/credits/checkout/create
+ * - Redirects browser to Stripe checkout URL
+ */
 async function processPayment() {
   const slider = document.getElementById('creditSlider');
   if (!slider) {
@@ -25,7 +33,7 @@ async function processPayment() {
   if (typeof showLoading === 'function') showLoading('Processing payment...');
 
   try {
-    // First get the authenticated user so we have id + email
+    // 1) Get authenticated user so we have id + email
     const meRes = await fetch(`${API_BASE}/api/auth/me`, {
       headers: { Authorization: `Bearer ${appState.authToken}` }
     });
@@ -37,6 +45,7 @@ async function processPayment() {
 
     const user = meData.user;
 
+    // 2) Create a Stripe Checkout session for wallet credits
     // Backend route: POST /api/credits/checkout/create
     // Body: { userId, email, amount, credits, type }
     const checkoutRes = await fetch(`${API_BASE}/api/credits/checkout/create`, {
@@ -49,7 +58,7 @@ async function processPayment() {
         userId: user.id,
         email: user.email,
         amount,          // dollars
-        credits: amount, // for simplicity: 1 wallet credit == $1
+        credits: amount, // 1 wallet credit == $1
         type: 'wallet'
       })
     });
@@ -74,7 +83,12 @@ async function processPayment() {
   }
 }
 
-// Refresh wallet balance using /api/credits
+/**
+ * refreshBalance
+ * - Calls /api/credits
+ * - Expects { success, balance: { wallet, videos } }
+ * - Updates appState.userBalance and UI
+ */
 async function refreshBalance() {
   if (!appState.authToken) return;
 
@@ -89,7 +103,6 @@ async function refreshBalance() {
       return;
     }
 
-    // CreditsService.getBalance returns { success, balance: { wallet, videos } }
     const walletBalance = Number(data.balance?.wallet ?? 0);
     appState.userBalance = Number.isFinite(walletBalance) ? walletBalance : 0;
 
@@ -99,7 +112,12 @@ async function refreshBalance() {
   }
 }
 
-// Handle Stripe return redirect: verify and update balance
+/**
+ * Stripe return handler
+ * - On DOMContentLoaded, checks for session_id/sessionId or ?payment=...
+ * - If session id present, verifies via /api/credits/checkout/verify
+ * - On success, shows toast and refreshes balance
+ */
 document.addEventListener('DOMContentLoaded', async () => {
   const params = new URLSearchParams(window.location.search);
   const sessionId = params.get('session_id') || params.get('sessionId');
@@ -108,13 +126,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   // If we have a Stripe session id, verify with backend
   if (sessionId) {
     try {
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      if (appState.authToken) {
+        headers.Authorization = `Bearer ${appState.authToken}`;
+      }
+
       const verifyRes = await fetch(`${API_BASE}/api/credits/checkout/verify`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // verification endpoint does not require auth in Worker, but header is harmless
-          Authorization: appState.authToken ? `Bearer ${appState.authToken}` : undefined
-        },
+        headers,
         body: JSON.stringify({ sessionId })
       });
 

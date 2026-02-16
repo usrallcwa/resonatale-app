@@ -165,14 +165,65 @@
       </div>
     </div>
 
-    <!-- UPLOAD SCREEN -->
+        <!-- UPLOAD SCREEN -->
     <div id="uploadScreen" class="screen">
       <div class="screen-header">
         <button class="back-btn" type="button" onclick="goBack('heroScreen');">←</button>
         <h2 class="screen-title">Upload Photos</h2>
         <span class="step">1/4</span>
       </div>
-      <!-- upload UI goes here -->
+
+      <section>
+        <p style="font-size:0.9rem;color:rgba(255,255,255,0.75);margin-bottom:0.75rem;">
+          Add 6–12 clear photos of yourself. These will be used to create your AI film.
+        </p>
+
+        <!-- hidden file input -->
+        <input
+          id="photoInput"
+          type="file"
+          accept="image/*"
+          multiple
+          style="display:none;"
+        />
+
+        <!-- upload button -->
+        <button
+          class="btn primary-btn"
+          type="button"
+          onclick="triggerFileInput()"
+          style="margin-bottom:1rem;"
+        >
+          Upload Photos
+        </button>
+
+        <!-- photo count -->
+        <p style="font-size:0.85rem;color:rgba(255,255,255,0.7);margin:0 0 0.5rem;">
+          Selected photos: <span id="photoCount">0</span>/12
+        </p>
+
+        <!-- photo grid -->
+        <div
+          id="photoGrid"
+          style="
+            display:grid;
+            grid-template-columns:repeat(3,minmax(0,1fr));
+            gap:0.5rem;
+            margin-bottom:1.2rem;
+          "
+        ></div>
+
+        <!-- continue button -->
+        <button
+          id="photoContinueBtn"
+          class="btn primary-btn"
+          type="button"
+          onclick="goToVoice()"
+          disabled
+        >
+          Continue
+        </button>
+      </section>
     </div>
 
     <!-- SCRIPT SCREEN -->

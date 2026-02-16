@@ -1,4 +1,4 @@
-// auth.js – Authentication & Signup
+// auth.js – Authentication, Signup & Password Reset
 
 // ============================================
 // MODAL CONTROLS
@@ -42,6 +42,118 @@ function switchToLogin() {
 }
 
 // ============================================
+// FORGOT PASSWORD (REQUEST RESET EMAIL)
+// ============================================
+// Hook this to a "Forgot password?" link, e.g.:
+// <a href="javascript:void(0)" onclick="handleForgotPasswordClick()">Forgot password?</a>
+async function handleForgotPasswordClick() {
+  const email = window.prompt('Enter your account email to reset your password:');
+  if (!email) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.trim() })
+    });
+
+    let data = {};
+    try {
+      data = await res.json();
+    } catch (_) {
+      data = {};
+    }
+
+    if (!res.ok || data.success === false) {
+      throw new Error(data.error || data.message || 'Failed to start password reset');
+    }
+
+    if (typeof showToast === 'function') {
+      showToast('If that email is registered, a reset link has been sent.', 'info');
+    }
+  } catch (e) {
+    console.error('Forgot password error:', e);
+    if (typeof showToast === 'function') {
+      showToast(e.message || 'Could not start password reset', 'error');
+    }
+  }
+}
+
+// ============================================
+// RESET PASSWORD (SUBMIT NEW PASSWORD)
+// ============================================
+// This assumes a dedicated reset page with a form like:
+// <form onsubmit="handleResetPasswordSubmit(event)">
+//   <input type="hidden" id="resetToken" value="...from URL...">
+//   <input id="resetPassword" type="password">
+//   <input id="resetPasswordConfirm" type="password">
+// </form>
+async function handleResetPasswordSubmit(event) {
+  event.preventDefault();
+
+  const tokenEl = document.getElementById('resetToken');
+  const passwordEl = document.getElementById('resetPassword');
+  const confirmEl = document.getElementById('resetPasswordConfirm');
+
+  if (!tokenEl || !passwordEl || !confirmEl) {
+    if (typeof showToast === 'function') showToast('Reset form is incomplete.', 'error');
+    return;
+  }
+
+  const token = tokenEl.value.trim();
+  const password = passwordEl.value;
+  const confirm = confirmEl.value;
+
+  if (!token || !password || !confirm) {
+    if (typeof showToast === 'function') showToast('Please fill in all fields.', 'error');
+    return;
+  }
+
+  if (password !== confirm) {
+    if (typeof showToast === 'function') showToast('Passwords do not match.', 'error');
+    return;
+  }
+
+  if (typeof showLoading === 'function') showLoading('Resetting password...');
+
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, password })
+    });
+
+    let data = {};
+    try {
+      data = await res.json();
+    } catch (_) {
+      data = {};
+    }
+
+    if (!res.ok || data.success === false) {
+      throw new Error(data.error || data.message || 'Password reset failed');
+    }
+
+    if (typeof hideLoading === 'function') hideLoading();
+    if (typeof showToast === 'function') {
+      showToast('Password reset successfully. Please log in.', 'success');
+    }
+
+    // Redirect back to login UI
+    if (typeof navigateToScreen === 'function') {
+      navigateToScreen('landing'); // adjust to your login/landing screen id
+    }
+    showLogin();
+  } catch (e) {
+    console.error('Reset password error:', e);
+    if (typeof hideLoading === 'function') hideLoading();
+    if (typeof showToast === 'function') {
+      showToast(e.message || 'Password reset failed', 'error');
+    }
+  }
+}
+
+// ============================================
 // LOGIN
 // ============================================
 async function handleLoginSubmit(event) {
@@ -71,7 +183,12 @@ async function handleLogin(email, password) {
       body: JSON.stringify({ email, password })   // matches handleLogin in Worker
     });
 
-    const data = await res.json().catch(() => ({}));
+    let data = {};
+    try {
+      data = await res.json();
+    } catch (_) {
+      data = {};
+    }
 
     // Worker returns { success, user, tokens } or { success:false, error }
     if (!res.ok || data.success === false) {
@@ -86,9 +203,10 @@ async function handleLogin(email, password) {
       throw new Error('Invalid login response');
     }
 
+    window.appState = window.appState || {};
     appState.authToken = accessToken;
     appState.userId = user.id;
-    // walletbalance in DB is exposed as walletBalance by toPublicUser
+    // walletBalance in DB is exposed as walletBalance by toPublicUser
     appState.userBalance = Number(user.walletBalance ?? user.balance ?? 0);
 
     localStorage.setItem('authToken', accessToken);
@@ -160,13 +278,15 @@ async function handleSignup(event) {
         email,
         password,
         name
-        // Turnstile is enforced at preview/voice routes, not here in Worker,
-        // but sending it is harmless; if you later add server-side Turnstile, you can add it back.
-        // turnstileToken: appState.turnstileToken
       })
     });
 
-    const data = await res.json().catch(() => ({}));
+    let data = {};
+    try {
+      data = await res.json();
+    } catch (_) {
+      data = {};
+    }
 
     // Worker returns { success, user, tokens } or { success:false, error }
     if (!res.ok || data.success === false) {
@@ -181,6 +301,7 @@ async function handleSignup(event) {
       throw new Error('Invalid signup response');
     }
 
+    window.appState = window.appState || {};
     appState.authToken = accessToken;
     appState.userId = user.id;
     appState.userBalance = Number(user.walletBalance ?? user.balance ?? 0);

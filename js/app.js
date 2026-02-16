@@ -171,7 +171,7 @@ function acceptConsent() {
 }
 
 // ============================================
-// PHOTO UPLOAD
+// PHOTO UPLOAD (Step 1)
 // ============================================
 function triggerFileInput() {
   if (!requireConsentOrBlock()) return;
@@ -240,21 +240,18 @@ function updatePhotoContinueButton() {
   btn.disabled = appState.photos.length < 6;
 }
 
+// Upload → Voice & Story
 function goToVoice() {
   if (appState.photos.length < 6) {
     if (typeof showToast === 'function') showToast('Please upload at least 6 photos', 'error');
     return;
   }
 
-  if (appState.currentScreen === 'uploadScreen' && document.getElementById('scriptScreen')) {
-    navigateToScreen('scriptScreen');
-  } else {
-    navigateToScreen('voiceScreen');
-  }
+  navigateToScreen('voiceScreen');
 }
 
 // ============================================
-// VOICE RECORDING
+// VOICE RECORDING (Step 2 - part 1)
 // ============================================
 function pickBestAudioMimeType() {
   if (!window.MediaRecorder || typeof MediaRecorder.isTypeSupported !== 'function') return null;
@@ -307,7 +304,8 @@ async function toggleRecording() {
       };
 
       appState.mediaRecorder.onstop = () => {
-        const type = appState.voiceMimeType || (audioChunks[0] && audioChunks[0].type) || 'audio/webm';
+        const type =
+          appState.voiceMimeType || (audioChunks[0] && audioChunks[0].type) || 'audio/webm';
         const audioBlob = new Blob(audioChunks, { type });
         appState.voiceBlob = audioBlob;
 
@@ -357,7 +355,11 @@ function startRecordingTimer() {
   if (!timerEl) return;
 
   const interval = setInterval(() => {
-    if (!appState.recordingStartTime || !appState.mediaRecorder || appState.mediaRecorder.state !== 'recording') {
+    if (
+      !appState.recordingStartTime ||
+      !appState.mediaRecorder ||
+      appState.mediaRecorder.state !== 'recording'
+    ) {
       clearInterval(interval);
       timerEl.textContent = '0:00 / 0:30';
       return;
@@ -414,6 +416,7 @@ function stopAllStreams() {
   }
 }
 
+// Legacy helper (not used in new flow, kept harmless)
 function goToStory() {
   if (!appState.voiceBlob) {
     if (typeof showToast === 'function') showToast('Please record your voice first', 'error');
@@ -426,7 +429,7 @@ function goToStory() {
 }
 
 // ============================================
-// GENERATE PREVIEW (aligned with Worker)
+// GENERATE PREVIEW (Step 2 - part 2 → Step 3)
 // ============================================
 async function generatePreview() {
   const briefDescEl = document.getElementById('briefDesc');
@@ -503,6 +506,7 @@ async function generatePreview() {
 }
 
 async function uploadPhotos() {
+  // TODO: replace with real upload to storage if needed
   return appState.photos.map((photo, i) => `photo_${i}_${Date.now()}`);
 }
 

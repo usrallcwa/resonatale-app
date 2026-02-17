@@ -527,8 +527,8 @@ async function uploadVoice() {
   const headers = {};
   if (appState.authToken) headers['Authorization'] = `Bearer ${appState.authToken}`;
 
-  // CHANGE: use the Worker route you actually have
-  const response = await fetch(`${API_BASE}/api/user/voice/upload`, {
+  // Match the route used by the deployed Worker bundle
+  const response = await fetch(`${API_BASE}/apiuservoiceupload`, {
     method: 'POST',
     headers,
     body: formData

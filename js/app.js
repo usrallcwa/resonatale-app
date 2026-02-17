@@ -527,7 +527,8 @@ async function uploadVoice() {
   const headers = {};
   if (appState.authToken) headers['Authorization'] = `Bearer ${appState.authToken}`;
 
-  const response = await fetch(`${API_BASE}/api/voice/clone`, {
+  // CHANGE: use the Worker route you actually have
+  const response = await fetch(`${API_BASE}/api/user/voice/upload`, {
     method: 'POST',
     headers,
     body: formData
@@ -537,8 +538,11 @@ async function uploadVoice() {
     let msg = 'Voice upload failed';
     try {
       const err = await response.json();
+      console.error('Voice upload error body:', err);
       if (err && (err.error || err.message)) msg = err.error || err.message;
-    } catch {}
+    } catch (e) {
+      console.error('Voice upload non-JSON error:', e);
+    }
     throw new Error(msg);
   }
 

@@ -6,7 +6,7 @@
  * - Validates amount ($20–$500)
  * - Ensures user is logged in
  * - Fetches current user via /api/auth/me
- * - Creates Stripe Checkout session via /api/credits/checkout/create
+ * - Creates Stripe Checkout session via /apicreditscheckoutcreate
  * - Redirects browser to Stripe checkout URL
  */
 async function processPayment() {
@@ -46,9 +46,9 @@ async function processPayment() {
     const user = meData.user;
 
     // 2) Create a Stripe Checkout session for wallet credits
-    // Backend route: POST /api/credits/checkout/create
+    // Deployed backend route: POST /apicreditscheckoutcreate
     // Body: { userId, email, amount, credits, type }
-    const checkoutRes = await fetch(`${API_BASE}/api/credits/checkout/create`, {
+    const checkoutRes = await fetch(`${API_BASE}/apicreditscheckoutcreate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -85,7 +85,7 @@ async function processPayment() {
 
 /**
  * refreshBalance
- * - Calls /api/credits
+ * - Calls /apicredits
  * - Expects { success, balance: { wallet, videos } }
  * - Updates appState.userBalance and UI
  */
@@ -93,7 +93,7 @@ async function refreshBalance() {
   if (!appState.authToken) return;
 
   try {
-    const res = await fetch(`${API_BASE}/api/credits`, {
+    const res = await fetch(`${API_BASE}/apicredits`, {
       headers: { Authorization: `Bearer ${appState.authToken}` }
     });
 
@@ -115,7 +115,7 @@ async function refreshBalance() {
 /**
  * Stripe return handler
  * - On DOMContentLoaded, checks for session_id/sessionId or ?payment=...
- * - If session id present, verifies via /api/credits/checkout/verify
+ * - If session id present, verifies via /apicreditscheckoutverify
  * - On success, shows toast and refreshes balance
  */
 document.addEventListener('DOMContentLoaded', async () => {
@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         headers.Authorization = `Bearer ${appState.authToken}`;
       }
 
-      const verifyRes = await fetch(`${API_BASE}/api/credits/checkout/verify`, {
+      const verifyRes = await fetch(`${API_BASE}/apicreditscheckoutverify`, {
         method: 'POST',
         headers,
         body: JSON.stringify({ sessionId })

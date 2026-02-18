@@ -45,23 +45,23 @@ async function processPayment() {
 
     const user = meData.user;
 
-    // 2) Create a Stripe Checkout session for wallet credits
-    // Backend route: POST /apicreditscheckoutcreate
-    // Body: { userId, email, amount, credits, type }
-    const checkoutRes = await fetch(`${API_BASE}/apicreditscheckoutcreate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${appState.authToken}`
-      },
-      body: JSON.stringify({
-        userId: user.id,
-        email: user.email,
-        amount,          // dollars
-        credits: amount, // 1 wallet credit == $1
-        type: 'wallet'
-      })
-    });
+   // 2) Create a Stripe Checkout session for wallet credits
+// Backend route: POST /api/credits/checkout/create
+// Body: { userId, email, amount, credits, type }
+const checkoutRes = await fetch(`${API_BASE}/api/credits/checkout/create`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${appState.authToken}`
+  },
+  body: JSON.stringify({
+    userId: user.id,
+    email: user.email,
+    amount,          // dollars
+    credits: amount, // 1 wallet credit == $1
+    type: 'wallet'
+  })
+});
 
     const checkoutData = await checkoutRes.json().catch(() => ({}));
 

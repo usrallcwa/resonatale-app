@@ -46,7 +46,7 @@ async function processPayment() {
     const user = meData.user;
 
     // 2) Create a Stripe Checkout session for wallet credits
-    // Deployed backend route: POST /apicreditscheckoutcreate
+    // Backend route: POST /apicreditscheckoutcreate
     // Body: { userId, email, amount, credits, type }
     const checkoutRes = await fetch(`${API_BASE}/apicreditscheckoutcreate`, {
       method: 'POST',
@@ -114,14 +114,16 @@ async function refreshBalance() {
 
 /**
  * Stripe return handler
- * - On DOMContentLoaded, checks for session_id/sessionId or ?payment=...
+ * - On DOMContentLoaded, checks for session_id or ?payment=...
  * - If session id present, verifies via /apicreditscheckoutverify
  * - On success, shows toast and refreshes balance
  */
 document.addEventListener('DOMContentLoaded', async () => {
   const params = new URLSearchParams(window.location.search);
-  const sessionId = params.get('session_id') || params.get('sessionId');
-  const statusFlag = params.get('payment'); // legacy flag, keep for now
+
+  // Worker successUrl will be .../wallet?session_id={CHECKOUT_SESSION_ID}
+  const sessionId = params.get('session_id');
+  const statusFlag = params.get('payment'); // ?payment=success|cancelled
 
   // If we have a Stripe session id, verify with backend
   if (sessionId) {

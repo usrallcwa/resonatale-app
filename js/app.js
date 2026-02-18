@@ -1,3 +1,16 @@
+// app.js (top of file)
+
+// restore appState from localStorage on page load
+window.appState = window.appState || {};
+
+const savedToken = localStorage.getItem('authToken');
+const savedUserId = localStorage.getItem('userId');
+
+if (savedToken) {
+  appState.authToken = savedToken;
+  appState.userId = savedUserId;
+}
+
 // ============================================
 // GLOBAL STATE & CONFIGURATION
 // ============================================

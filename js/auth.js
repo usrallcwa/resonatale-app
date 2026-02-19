@@ -1,34 +1,37 @@
 // auth.js – Authentication, Signup & Password Reset
 
+// Make sure this is defined somewhere globally, e.g. in app.js:
+// const API_BASE = "https://api.resonatale.com";
+
 // ============================================
 // MODAL CONTROLS
 // ============================================
 function showLogin() {
-  const modal = document.getElementById('authModal');
+  const modal = document.getElementById("authModal");
   if (!modal) return;
-  modal.style.display = 'flex';
-  modal.classList.add('active');
+  modal.style.display = "flex";
+  modal.classList.add("active");
 }
 
 function closeLogin() {
-  const modal = document.getElementById('authModal');
+  const modal = document.getElementById("authModal");
   if (!modal) return;
-  modal.classList.remove('active');
-  modal.style.display = 'none';
+  modal.classList.remove("active");
+  modal.style.display = "none";
 }
 
 function showSignup() {
-  const modal = document.getElementById('signupModal');
+  const modal = document.getElementById("signupModal");
   if (!modal) return;
-  modal.style.display = 'flex';
-  modal.classList.add('active');
+  modal.style.display = "flex";
+  modal.classList.add("active");
 }
 
 function closeSignup() {
-  const modal = document.getElementById('signupModal');
+  const modal = document.getElementById("signupModal");
   if (!modal) return;
-  modal.classList.remove('active');
-  modal.style.display = 'none';
+  modal.classList.remove("active");
+  modal.style.display = "none";
 }
 
 function switchToSignup() {
@@ -44,16 +47,16 @@ function switchToLogin() {
 // ============================================
 // FORGOT PASSWORD (REQUEST RESET EMAIL)
 // ============================================
-// Hook this to a "Forgot password?" link, e.g.:
-// <a href="javascript:void(0)" onclick="handleForgotPasswordClick()">Forgot password?</a>
 async function handleForgotPasswordClick() {
-  const email = window.prompt('Enter your account email to reset your password:');
+  const email = window.prompt(
+    "Enter your account email to reset your password:"
+  );
   if (!email) return;
 
   try {
     const res = await fetch(`${API_BASE}/api/auth/forgot-password`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: email.trim() })
     });
 
@@ -65,16 +68,21 @@ async function handleForgotPasswordClick() {
     }
 
     if (!res.ok || data.success === false) {
-      throw new Error(data.error || data.message || 'Failed to start password reset');
+      throw new Error(
+        data.error || data.message || "Failed to start password reset"
+      );
     }
 
-    if (typeof showToast === 'function') {
-      showToast('If that email is registered, a reset link has been sent.', 'info');
+    if (typeof showToast === "function") {
+      showToast(
+        "If that email is registered, a reset link has been sent.",
+        "info"
+      );
     }
   } catch (e) {
-    console.error('Forgot password error:', e);
-    if (typeof showToast === 'function') {
-      showToast(e.message || 'Could not start password reset', 'error');
+    console.error("Forgot password error:", e);
+    if (typeof showToast === "function") {
+      showToast(e.message || "Could not start password reset", "error");
     }
   }
 }
@@ -82,21 +90,16 @@ async function handleForgotPasswordClick() {
 // ============================================
 // RESET PASSWORD (SUBMIT NEW PASSWORD)
 // ============================================
-// This assumes a dedicated reset page with a form like:
-// <form onsubmit="handleResetPasswordSubmit(event)">
-//   <input type="hidden" id="resetToken" value="...from URL...">
-//   <input id="resetPassword" type="password">
-//   <input id="resetPasswordConfirm" type="password">
-// </form>
 async function handleResetPasswordSubmit(event) {
   event.preventDefault();
 
-  const tokenEl = document.getElementById('resetToken');
-  const passwordEl = document.getElementById('resetPassword');
-  const confirmEl = document.getElementById('resetPasswordConfirm');
+  const tokenEl = document.getElementById("resetToken");
+  const passwordEl = document.getElementById("resetPassword");
+  const confirmEl = document.getElementById("resetPasswordConfirm");
 
   if (!tokenEl || !passwordEl || !confirmEl) {
-    if (typeof showToast === 'function') showToast('Reset form is incomplete.', 'error');
+    if (typeof showToast === "function")
+      showToast("Reset form is incomplete.", "error");
     return;
   }
 
@@ -105,21 +108,24 @@ async function handleResetPasswordSubmit(event) {
   const confirm = confirmEl.value;
 
   if (!token || !password || !confirm) {
-    if (typeof showToast === 'function') showToast('Please fill in all fields.', 'error');
+    if (typeof showToast === "function")
+      showToast("Please fill in all fields.", "error");
     return;
   }
 
   if (password !== confirm) {
-    if (typeof showToast === 'function') showToast('Passwords do not match.', 'error');
+    if (typeof showToast === "function")
+      showToast("Passwords do not match.", "error");
     return;
   }
 
-  if (typeof showLoading === 'function') showLoading('Resetting password...');
+  if (typeof showLoading === "function")
+    showLoading("Resetting password...");
 
   try {
     const res = await fetch(`${API_BASE}/api/auth/reset-password`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token, password })
     });
 
@@ -131,24 +137,25 @@ async function handleResetPasswordSubmit(event) {
     }
 
     if (!res.ok || data.success === false) {
-      throw new Error(data.error || data.message || 'Password reset failed');
+      throw new Error(
+        data.error || data.message || "Password reset failed"
+      );
     }
 
-    if (typeof hideLoading === 'function') hideLoading();
-    if (typeof showToast === 'function') {
-      showToast('Password reset successfully. Please log in.', 'success');
+    if (typeof hideLoading === "function") hideLoading();
+    if (typeof showToast === "function") {
+      showToast("Password reset successfully. Please log in.", "success");
     }
 
-    // Redirect back to login UI
-    if (typeof navigateToScreen === 'function') {
-      navigateToScreen('landing'); // adjust to your login/landing screen id
+    if (typeof navigateToScreen === "function") {
+      navigateToScreen("landing"); // your login/landing screen ID
     }
     showLogin();
   } catch (e) {
-    console.error('Reset password error:', e);
-    if (typeof hideLoading === 'function') hideLoading();
-    if (typeof showToast === 'function') {
-      showToast(e.message || 'Password reset failed', 'error');
+    console.error("Reset password error:", e);
+    if (typeof hideLoading === "function") hideLoading();
+    if (typeof showToast === "function") {
+      showToast(e.message || "Password reset failed", "error");
     }
   }
 }
@@ -158,8 +165,8 @@ async function handleResetPasswordSubmit(event) {
 // ============================================
 async function handleLoginSubmit(event) {
   event.preventDefault();
-  const emailEl = document.getElementById('loginEmail');
-  const passwordEl = document.getElementById('loginPassword');
+  const emailEl = document.getElementById("loginEmail");
+  const passwordEl = document.getElementById("loginPassword");
   if (!emailEl || !passwordEl) return;
 
   const email = emailEl.value.trim();
@@ -170,17 +177,18 @@ async function handleLoginSubmit(event) {
 
 async function handleLogin(email, password) {
   if (!email || !password) {
-    if (typeof showToast === 'function') showToast('Please enter email and password', 'error');
+    if (typeof showToast === "function")
+      showToast("Please enter email and password", "error");
     return;
   }
 
-  if (typeof showLoading === 'function') showLoading('Logging in...');
+  if (typeof showLoading === "function") showLoading("Logging in...");
 
   try {
     const res = await fetch(`${API_BASE}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })   // matches handleLogin in Worker
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }) // matches Worker handleLogin
     });
 
     let data = {};
@@ -190,45 +198,49 @@ async function handleLogin(email, password) {
       data = {};
     }
 
-    // Worker returns { success, user, tokens } or { success:false, error }
     if (!res.ok || data.success === false) {
-      throw new Error(data.error || data.message || 'Login failed');
+      throw new Error(data.error || data.message || "Login failed");
     }
 
     const user = data.user;
     const tokens = data.tokens || {};
-    const accessToken = tokens.accessToken || data.accessToken; // support either shape
+    const accessToken = tokens.accessToken || data.accessToken;
 
     if (!user || !accessToken) {
-      throw new Error('Invalid login response');
+      throw new Error("Invalid login response");
     }
 
     window.appState = window.appState || {};
     appState.authToken = accessToken;
     appState.userId = user.id;
-    // walletBalance in DB is exposed as walletBalance by toPublicUser
-    appState.userBalance = Number(user.walletBalance ?? user.balance ?? 0);
+    appState.userBalance = Number(
+      user.walletBalance ?? user.balance ?? 0
+    );
 
-    localStorage.setItem('authToken', accessToken);
-    localStorage.setItem('userId', user.id);
+    localStorage.setItem("authToken", accessToken);
+    localStorage.setItem("userId", user.id);
 
-    if (typeof updateBalanceDisplay === 'function') updateBalanceDisplay();
-    if (typeof updateHeaderVisibility === 'function') {
+    if (typeof updateBalanceDisplay === "function")
+      updateBalanceDisplay();
+    if (typeof updateHeaderVisibility === "function") {
       updateHeaderVisibility(appState.currentScreen);
     }
 
-    const emailEl = document.getElementById('menuEmail');
+    const emailEl = document.getElementById("menuEmail");
     if (emailEl) emailEl.textContent = user.email || email;
 
     closeLogin();
-    if (typeof hideLoading === 'function') hideLoading();
-    if (typeof showToast === 'function') showToast('Logged in!', 'success');
+    if (typeof hideLoading === "function") hideLoading();
+    if (typeof showToast === "function")
+      showToast("Logged in!", "success");
 
-    if (typeof navigateToScreen === 'function') navigateToScreen('uploadScreen');
+    if (typeof navigateToScreen === "function")
+      navigateToScreen("uploadScreen");
   } catch (e) {
-    console.error('Login error:', e);
-    if (typeof hideLoading === 'function') hideLoading();
-    if (typeof showToast === 'function') showToast(e.message || 'Login failed', 'error');
+    console.error("Login error:", e);
+    if (typeof hideLoading === "function") hideLoading();
+    if (typeof showToast === "function")
+      showToast(e.message || "Login failed", "error");
   }
 }
 
@@ -238,13 +250,14 @@ async function handleLogin(email, password) {
 async function handleSignup(event) {
   event.preventDefault();
 
-  const emailEl = document.getElementById('signupEmail');
-  const passwordEl = document.getElementById('signupPassword');
-  const nameEl = document.getElementById('signupName');
-  const consentEl = document.getElementById('consentCheck');
+  const emailEl = document.getElementById("signupEmail");
+  const passwordEl = document.getElementById("signupPassword");
+  const nameEl = document.getElementById("signupName");
+  const consentEl = document.getElementById("consentCheck");
 
   if (!emailEl || !passwordEl || !nameEl || !consentEl) {
-    if (typeof showToast === 'function') showToast('Signup form is incomplete.', 'error');
+    if (typeof showToast === "function")
+      showToast("Signup form is incomplete.", "error");
     return;
   }
 
@@ -254,26 +267,29 @@ async function handleSignup(event) {
   const consent = consentEl.checked;
 
   if (!consent) {
-    if (typeof showToast === 'function') {
-      showToast('Please accept terms and confirm you are 18+.', 'error');
+    if (typeof showToast === "function") {
+      showToast(
+        "Please accept terms and confirm you are 18+.",
+        "error"
+      );
     }
     return;
   }
 
   if (!appState.turnstileToken) {
-    if (typeof showToast === 'function') {
-      showToast('Please complete the verification check.', 'error');
+    if (typeof showToast === "function") {
+      showToast("Please complete the verification check.", "error");
     }
     return;
   }
 
-  if (typeof showLoading === 'function') showLoading('Creating account...');
+  if (typeof showLoading === "function")
+    showLoading("Creating account...");
 
   try {
     const res = await fetch(`${API_BASE}/api/auth/signup`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      // Worker’s handleSignup expects { email, password, name }
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         email,
         password,
@@ -288,9 +304,8 @@ async function handleSignup(event) {
       data = {};
     }
 
-    // Worker returns { success, user, tokens } or { success:false, error }
     if (!res.ok || data.success === false) {
-      throw new Error(data.error || data.message || 'Signup failed');
+      throw new Error(data.error || data.message || "Signup failed");
     }
 
     const user = data.user;
@@ -298,33 +313,39 @@ async function handleSignup(event) {
     const accessToken = tokens.accessToken || data.accessToken;
 
     if (!user || !accessToken) {
-      throw new Error('Invalid signup response');
+      throw new Error("Invalid signup response");
     }
 
     window.appState = window.appState || {};
     appState.authToken = accessToken;
     appState.userId = user.id;
-    appState.userBalance = Number(user.walletBalance ?? user.balance ?? 0);
+    appState.userBalance = Number(
+      user.walletBalance ?? user.balance ?? 0
+    );
 
-    localStorage.setItem('authToken', accessToken);
-    localStorage.setItem('userId', user.id);
+    localStorage.setItem("authToken", accessToken);
+    localStorage.setItem("userId", user.id);
 
-    if (typeof updateBalanceDisplay === 'function') updateBalanceDisplay();
-    if (typeof updateHeaderVisibility === 'function') {
+    if (typeof updateBalanceDisplay === "function")
+      updateBalanceDisplay();
+    if (typeof updateHeaderVisibility === "function") {
       updateHeaderVisibility(appState.currentScreen);
     }
 
-    const emailMenuEl = document.getElementById('menuEmail');
+    const emailMenuEl = document.getElementById("menuEmail");
     if (emailMenuEl) emailMenuEl.textContent = user.email || email;
 
     closeSignup();
-    if (typeof hideLoading === 'function') hideLoading();
-    if (typeof showToast === 'function') showToast('Account created!', 'success');
+    if (typeof hideLoading === "function") hideLoading();
+    if (typeof showToast === "function")
+      showToast("Account created!", "success");
 
-    if (typeof navigateToScreen === 'function') navigateToScreen('uploadScreen');
+    if (typeof navigateToScreen === "function")
+      navigateToScreen("uploadScreen");
   } catch (e) {
-    console.error('Signup error:', e);
-    if (typeof hideLoading === 'function') hideLoading();
-    if (typeof showToast === 'function') showToast(e.message || 'Signup failed', 'error');
+    console.error("Signup error:", e);
+    if (typeof hideLoading === "function") hideLoading();
+    if (typeof showToast === "function")
+      showToast(e.message || "Signup failed", "error");
   }
 }

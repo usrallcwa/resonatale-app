@@ -5,6 +5,30 @@
 // ============================================
 const API_BASE = 'https://api.resonatale.com';
 
+// Subset of ElevenLabs multilingual languages with flags and codes
+// Codes match Eleven v3 / Multilingual v2 language tags like ENG, SPA, FRA, etc. [web:486][web:540]
+const SUPPORTED_LANGUAGES = [
+  { code: 'ENG', label: 'English', flag: '🇺🇸' },
+  { code: 'SPA', label: 'Español', flag: '🇪🇸' },
+  { code: 'MEX', label: 'Español (México)', flag: '🇲🇽' }, // if you distinguish in backend
+  { code: 'FRA', label: 'Français', flag: '🇫🇷' },
+  { code: 'DEU', label: 'Deutsch', flag: '🇩🇪' },
+  { code: 'POR', label: 'Português', flag: '🇧🇷' },        // PT-BR
+  { code: 'ITA', label: 'Italiano', flag: '🇮🇹' },
+  { code: 'JPN', label: '日本語', flag: '🇯🇵' },
+  { code: 'CMN', label: '中文 (普通话)', flag: '🇨🇳' },
+  { code: 'KOR', label: '한국어', flag: '🇰🇷' },
+  { code: 'HIN', label: 'हिन्दी', flag: '🇮🇳' },
+  { code: 'ARA', label: 'العربية', flag: '🇸🇦' },
+  { code: 'RUS', label: 'Русский', flag: '🇷🇺' },
+  { code: 'TUR', label: 'Türkçe', flag: '🇹🇷' },
+  { code: 'SWE', label: 'Svenska', flag: '🇸🇪' },
+  { code: 'NLD', label: 'Nederlands', flag: '🇳🇱' },
+  { code: 'POL', label: 'Polski', flag: '🇵🇱' },
+  { code: 'UKR', label: 'Українська', flag: '🇺🇦' },
+  { code: 'VIE', label: 'Tiếng Việt', flag: '🇻🇳' }
+];
+
 let appState = {
   currentScreen: 'heroScreen',
   previousScreen: null,
@@ -24,7 +48,11 @@ let appState = {
   userId: localStorage.getItem('userId'),
   userBalance: 0,
   previewVideoUrl: null,
-  audioObjectUrl: null
+  audioObjectUrl: null,
+
+  // ElevenLabs-related
+  voiceLanguage: 'ENG',  // default English
+  voiceMood: 'calm'      // default mood
 };
 
 // expose for other scripts if needed
@@ -47,6 +75,8 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   setupEventListeners();
+  initLanguageSelector();
+  initMoodPicker();
 
   if (typeof animateFilmCounter === 'function') {
     animateFilmCounter();
@@ -86,6 +116,73 @@ function setupEventListeners() {
 }
 
 // ============================================
+// LANGUAGE SELECTOR (flags + label)
+// ============================================
+// HTML you need somewhere on voice or story screen, e.g.:
+// <select id="voiceLanguageSelect" class="lang-select"></select>
+function initLanguageSelector() {
+  const select = document.getElementById('voiceLanguageSelect');
+  if (!select) return;
+
+  select.innerHTML = SUPPORTED_LANGUAGES.map(
+    (lang) =>
+      `<option value="${lang.code}">${lang.flag} ${lang.label}</option>`
+  ).join('');
+
+  select.value = appState.voiceLanguage;
+
+  select.addEventListener('change', (e) => {
+    appState.voiceLanguage = e.target.value;
+  });
+}
+
+// ============================================
+// MOOD PICKER (buttons that change color)
+// ============================================
+// HTML you need, for example:
+// <div id="moodPicker">
+//   <button type="button" class="mood-btn" data-mood="calm">Calm</button>
+//   <button type="button" class="mood-btn" data-mood="romantic">Romantic</button>
+//   <button type="button" class="mood-btn" data-mood="dramatic">Dramatic</button>
+//   <button type="button" class="mood-btn" data-mood="excited">Excited</button>
+// </div>
+function initMoodPicker() {
+  const container = document.getElementById('moodPicker');
+  if (!container) return;
+
+  const buttons = container.querySelectorAll('.mood-btn');
+
+  const applyActiveStyles = (activeMood) => {
+    buttons.forEach((btn) => {
+      const mood = btn.dataset.mood;
+      if (mood === activeMood) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  };
+
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const mood = btn.dataset.mood || 'calm';
+      appState.voiceMood = mood;
+      applyActiveStyles(mood);
+    });
+  });
+
+  // Set initial state
+  applyActiveStyles(appState.voiceMood);
+}
+
+// Suggested CSS (add in your stylesheet):
+// .mood-btn { border-radius: 999px; padding: 0.5rem 1rem; border: 1px solid #4b5563; background:#111827; color:#e5e7eb; cursor:pointer; }
+// .mood-btn.active[data-mood="calm"] { background:#10B981; border-color:#10B981; }
+// .mood-btn.active[data-mood="romantic"] { background:#EC4899; border-color:#EC4899; }
+// .mood-btn.active[data-mood="dramatic"] { background:#F97316; border-color:#F97316; }
+// .mood-btn.active[data-mood="excited"] { background:#6366F1; border-color:#6366F1; }
+
+// ============================================
 // NAVIGATION
 // ============================================
 function startApp() {
@@ -95,7 +192,6 @@ function startApp() {
 function updateHeaderVisibility(screenId) {
   const header = document.querySelector('.app-header');
   if (!header) return;
-  // Header always visible
   header.classList.remove('hidden');
 }
 
@@ -148,7 +244,6 @@ function requireTurnstileOrBlock() {
   return false;
 }
 
-// Consent modal helpers
 function showConsentModal() {
   const modal = document.getElementById('consentModal');
   if (!modal) return;
@@ -330,7 +425,6 @@ async function toggleRecording() {
 
       startRecordingTimer();
 
-      // Auto-stop after 30s
       setTimeout(() => {
         if (appState.mediaRecorder && appState.mediaRecorder.state === 'recording') stopRecording();
       }, 30000);
@@ -425,7 +519,6 @@ function stopAllStreams() {
   }
 }
 
-// Legacy helper (not used in new flow, kept harmless)
 function goToStory() {
   if (!appState.voiceBlob) {
     if (typeof showToast === 'function') showToast('Please record your voice first', 'error');
@@ -515,7 +608,6 @@ async function generatePreview() {
 }
 
 async function uploadPhotos() {
-  // TODO: replace with real upload to storage if needed
   return appState.photos.map((photo, i) => `photo_${i}_${Date.now()}`);
 }
 
@@ -569,7 +661,9 @@ async function generatePreviewRequest(photoUrls, voiceId, briefDesc) {
       prompt: briefDesc,
       photoUrls,
       voiceId,
-      photoCount: photoUrls.length
+      photoCount: photoUrls.length,
+      language: appState.voiceLanguage,
+      mood: appState.voiceMood
     })
   });
 
@@ -586,7 +680,6 @@ async function generatePreviewRequest(photoUrls, voiceId, briefDesc) {
 
 // ============================================
 // FULL VIDEO GENERATION (paid, after wallet)
-// Calls POST /api/render/video and returns videoId
 // ============================================
 async function generateFullVideo(briefDesc) {
   if (!appState.authToken) {
@@ -595,7 +688,7 @@ async function generateFullVideo(briefDesc) {
 
   const headers = {
     'Content-Type': 'application/json',
-    Authorization: `Bearer ${appState.authToken}`,
+    Authorization: `Bearer ${appState.authToken}`
   };
 
   const res = await fetch(`${API_BASE}/api/render/video`, {
@@ -604,7 +697,9 @@ async function generateFullVideo(briefDesc) {
     body: JSON.stringify({
       prompt: briefDesc,
       photoCount: appState.photos.length || 6,
-    }),
+      language: appState.voiceLanguage,
+      mood: appState.voiceMood
+    })
   });
 
   const data = await res.json().catch(() => ({}));
@@ -639,7 +734,6 @@ async function onGetFullVideoClicked() {
       showToast('Full video render started. We’ll notify you when it’s ready.', 'success');
     }
 
-    // Simple polling – can be improved later
     const poll = async () => {
       const res = await fetch(`${API_BASE}/api/render/status/${videoId}`);
       const data = await res.json().catch(() => ({}));

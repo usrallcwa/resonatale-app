@@ -1,15 +1,4 @@
-// app.js (top of file)
-
-// restore appState from localStorage on page load
-window.appState = window.appState || {};
-
-const savedToken = localStorage.getItem('authToken');
-const savedUserId = localStorage.getItem('userId');
-
-if (savedToken) {
-  appState.authToken = savedToken;
-  appState.userId = savedUserId;
-}
+// app.js
 
 // ============================================
 // GLOBAL STATE & CONFIGURATION
@@ -38,6 +27,9 @@ let appState = {
   audioObjectUrl: null
 };
 
+// expose for other scripts if needed
+window.appState = appState;
+
 // ============================================
 // INITIALIZATION
 // ============================================
@@ -58,6 +50,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (typeof animateFilmCounter === 'function') {
     animateFilmCounter();
+  }
+
+  // Wire "Get full video" button on preview screen
+  const getFullBtn = document.getElementById('getFullVideoBtn');
+  if (getFullBtn) {
+    getFullBtn.addEventListener('click', onGetFullVideoClicked);
   }
 });
 
@@ -97,8 +95,7 @@ function startApp() {
 function updateHeaderVisibility(screenId) {
   const header = document.querySelector('.app-header');
   if (!header) return;
-
-  // Header always visible, including menu button
+  // Header always visible
   header.classList.remove('hidden');
 }
 
@@ -253,13 +250,11 @@ function updatePhotoContinueButton() {
   btn.disabled = appState.photos.length < 6;
 }
 
-// Upload → Voice & Story
 function goToVoice() {
   if (appState.photos.length < 6) {
     if (typeof showToast === 'function') showToast('Please upload at least 6 photos', 'error');
     return;
   }
-
   navigateToScreen('voiceScreen');
 }
 
@@ -335,6 +330,7 @@ async function toggleRecording() {
 
       startRecordingTimer();
 
+      // Auto-stop after 30s
       setTimeout(() => {
         if (appState.mediaRecorder && appState.mediaRecorder.state === 'recording') stopRecording();
       }, 30000);
@@ -540,7 +536,6 @@ async function uploadVoice() {
   const headers = {};
   if (appState.authToken) headers['Authorization'] = `Bearer ${appState.authToken}`;
 
-  // Match the route used by the deployed Worker bundle
   const response = await fetch(`${API_BASE}/apiuservoiceupload`, {
     method: 'POST',
     headers,
@@ -587,6 +582,92 @@ async function generatePreviewRequest(photoUrls, voiceId, briefDesc) {
   }
 
   return await response.json();
+}
+
+// ============================================
+// FULL VIDEO GENERATION (paid, after wallet)
+// Calls POST /api/render/video and returns videoId
+// ============================================
+async function generateFullVideo(briefDesc) {
+  if (!appState.authToken) {
+    throw new Error('Please log in before generating full video');
+  }
+
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${appState.authToken}`,
+  };
+
+  const res = await fetch(`${API_BASE}/api/render/video`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      prompt: briefDesc,
+      photoCount: appState.photos.length || 6,
+    }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok || data.success === false) {
+    throw new Error(data.error || data.message || 'Failed to start full render');
+  }
+
+  // Backend returns { success, videoId, newBalance, charged, message }
+  return data.videoId;
+}
+
+async function onGetFullVideoClicked() {
+  const briefDescEl = document.getElementById('briefDesc');
+  const briefDesc = briefDescEl ? briefDescEl.value.trim() : '';
+
+  if (!briefDesc) {
+    if (typeof showToast === 'function') {
+      showToast('Please enter a brief description first.', 'error');
+    }
+    return;
+  }
+
+  try {
+    if (typeof showLoading === 'function') {
+      showLoading('Starting full video render...');
+    }
+
+    const videoId = await generateFullVideo(briefDesc);
+
+    if (typeof showToast === 'function') {
+      showToast('Full video render started. We’ll notify you when it’s ready.', 'success');
+    }
+
+    // Simple polling – can be improved later
+    const poll = async () => {
+      const res = await fetch(`${API_BASE}/api/render/status/${videoId}`);
+      const data = await res.json().catch(() => ({}));
+
+      if (data.status === 'done' && data.url) {
+        if (typeof hideLoading === 'function') hideLoading();
+
+        const mediaEl = document.getElementById('previewVideo');
+        if (mediaEl) {
+          mediaEl.src = data.url;
+        }
+
+        if (typeof showToast === 'function') {
+          showToast('Your full video is ready!', 'success');
+        }
+      } else {
+        setTimeout(poll, 4000);
+      }
+    };
+
+    poll();
+  } catch (err) {
+    console.error('Get full video error:', err);
+    if (typeof hideLoading === 'function') hideLoading();
+    if (typeof showToast === 'function') {
+      showToast(err.message || 'Failed to start full video', 'error');
+    }
+  }
 }
 
 // ============================================

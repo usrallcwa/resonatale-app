@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // PREVIEW SCREEN
 // ============================================
 function wirePreviewScreen() {
-  const mediaEl = document.getElementById('previewVideo'); // <audio> in current index.html
+  const mediaEl = document.getElementById('previewVideo'); // <video> or <audio> element
   const statusBtn = document.getElementById('previewStatusBtn');
   const restartBtn = document.getElementById('previewRestartBtn');
 
@@ -29,8 +29,7 @@ function wirePreviewScreen() {
     });
   }
 
-  // Optional: "check status" button if you later
-  // use /api/render/status/:id for long running renders.
+  // Optional: "check status" button using /api/render/status/:id
   if (statusBtn) {
     statusBtn.addEventListener('click', () => {
       const previewIdEl = document.getElementById('previewId');
@@ -56,11 +55,13 @@ async function checkRenderStatus(renderId) {
     if (!res.ok) {
       throw new Error('Failed to check status');
     }
+
     const data = await res.json();
 
     const statusTextEl = document.getElementById('previewStatusText');
     if (statusTextEl) {
-      statusTextEl.textContent = `${data.status || 'unknown'} (${data.progress ?? 0}%)`;
+      const progress = data.progress ?? 0;
+      statusTextEl.textContent = `${data.status || 'unknown'} (${progress}%)`;
     }
 
     if (data.url) {

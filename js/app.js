@@ -50,7 +50,11 @@ let appState = {
   audioObjectUrl: null,
 
   voiceLanguage: 'ENG',
-  voiceMood: 'calm'
+  voiceMood: 'calm',
+
+  // flags populated from /api/auth/me
+  hasSavedPhotos: false,
+  hasSavedVoice: false
 };
 
 // expose for other scripts
@@ -173,6 +177,19 @@ function initMoodPicker() {
 // NAVIGATION
 // ============================================
 function startApp() {
+  // If user is authenticated and has saved assets, jump straight to story/voice screen
+  if (appState.authToken && appState.hasSavedPhotos && appState.hasSavedVoice) {
+    // Optional: show a small helper on voice screen once
+    const recordingHint = document.getElementById('recordingHint');
+    if (recordingHint) {
+      recordingHint.textContent =
+        'We\'re using your saved photos and voice from last time. Just describe the new story you want to tell.';
+    }
+    navigateToScreen('voiceScreen');
+    return;
+  }
+
+  // Default behavior for first-time or incomplete users
   navigateToScreen('uploadScreen');
 }
 window.startApp = startApp;
@@ -288,19 +305,31 @@ async function initAuthenticatedApp() {
     }
 
     const data = await response.json();
-    const balanceNum = Number(data?.user?.balance ?? 0);
+    const user = data?.user || {};
 
+    const balanceNum = Number(user.balance ?? 0);
     appState.userBalance = Number.isFinite(balanceNum) ? balanceNum : 0;
+
+    // New: flags for saved assets (if your backend supports them)
+    appState.hasSavedPhotos = Boolean(user.hasPhotos);
+    appState.hasSavedVoice = Boolean(user.hasVoice);
+
     updateBalanceDisplay();
 
     const header = document.querySelector('.app-header');
     if (header && appState.currentScreen !== 'heroScreen') header.classList.remove('hidden');
 
     const emailEl = document.getElementById('menuEmail');
-    if (emailEl) emailEl.textContent = data?.user?.email || '';
+    if (emailEl) emailEl.textContent = user.email || '';
 
     const balanceEl = document.getElementById('menuBalance');
     if (balanceEl) balanceEl.textContent = appState.userBalance.toFixed(2);
+
+    // Optional UX: tweak hero note if they have saved assets
+    const heroNote = document.querySelector('.hero-note');
+    if (heroNote && appState.hasSavedPhotos && appState.hasSavedVoice) {
+      heroNote.textContent = 'We\'ll reuse your saved photos and voice. Just describe your next story.';
+    }
   } catch (error) {
     console.error('Auth check error:', error);
   }
@@ -358,6 +387,8 @@ function logout(silent = false) {
   appState.authToken = null;
   appState.userId = null;
   appState.userBalance = 0;
+  appState.hasSavedPhotos = false;
+  appState.hasSavedVoice = false;
 
   closeMenu();
   if (typeof hideLoading === 'function') hideLoading();

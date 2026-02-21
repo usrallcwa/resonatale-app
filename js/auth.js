@@ -1,8 +1,7 @@
 // auth.js – Authentication, Signup & Password Reset
-
 // Requires globally defined:
-// const API_BASE = "https://api.resonatale.com";
-// let appState from app.js
+//   const API_BASE = "https://api.resonatale.com";
+//   let appState from app.js
 
 // ============================================
 // MODAL CONTROLS
@@ -48,14 +47,16 @@ function switchToLogin() {
 // ============================================
 // FORGOT PASSWORD (REQUEST RESET EMAIL)
 // ============================================
-// Attach this to the "Forgot password?" button in index.html
 async function handleForgotPasswordClick() {
   const emailInput = document.getElementById("loginEmail");
   const email = (emailInput?.value || "").trim();
 
   if (!email) {
     if (typeof showToast === "function") {
-      showToast("Enter your account email first, then tap Forgot password.", "error");
+      showToast(
+        "Enter your account email first, then tap Forgot password.",
+        "error"
+      );
     }
     return;
   }
@@ -86,7 +87,10 @@ async function handleForgotPasswordClick() {
 
     if (typeof hideLoading === "function") hideLoading();
     if (typeof showToast === "function") {
-      showToast("If that email is registered, a reset link has been sent.", "info");
+      showToast(
+        "If that email is registered, a reset link has been sent.",
+        "info"
+      );
     }
   } catch (e) {
     console.error("Forgot password error:", e);
@@ -247,8 +251,7 @@ async function handleLogin(email, password) {
     if (typeof showToast === "function")
       showToast("Logged in!", "success");
 
-    // Use the same “smart start” logic as the hero button:
-    // if assets exist, go straight to voice/story, otherwise to upload.
+    // Smart start: reuse assets if present
     if (typeof navigateToScreen === "function") {
       if (appState.hasSavedPhotos && appState.hasSavedVoice) {
         const recordingHint = document.getElementById("recordingHint");
@@ -382,7 +385,9 @@ async function handleSignup(event) {
   }
 }
 
-// Expose functions if needed globally
+// ============================================
+// GLOBAL EXPORTS
+// ============================================
 window.showLogin = showLogin;
 window.closeLogin = closeLogin;
 window.showSignup = showSignup;

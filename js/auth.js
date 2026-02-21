@@ -1,7 +1,8 @@
 // auth.js – Authentication, Signup & Password Reset
 
-// Make sure this is defined somewhere globally, e.g. in app.js:
+// Requires globally defined:
 // const API_BASE = "https://api.resonatale.com";
+// let appState from app.js
 
 // ============================================
 // MODAL CONTROLS
@@ -47,17 +48,27 @@ function switchToLogin() {
 // ============================================
 // FORGOT PASSWORD (REQUEST RESET EMAIL)
 // ============================================
+// Attach this to the "Forgot password?" button in index.html
 async function handleForgotPasswordClick() {
-  const email = window.prompt(
-    "Enter your account email to reset your password:"
-  );
-  if (!email) return;
+  const emailInput = document.getElementById("loginEmail");
+  const email = (emailInput?.value || "").trim();
+
+  if (!email) {
+    if (typeof showToast === "function") {
+      showToast("Enter your account email first, then tap Forgot password.", "error");
+    }
+    return;
+  }
+
+  if (typeof showLoading === "function") {
+    showLoading("Sending reset link...");
+  }
 
   try {
     const res = await fetch(`${API_BASE}/api/auth/forgot-password`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: email.trim() })
+      body: JSON.stringify({ email })
     });
 
     let data = {};
@@ -73,14 +84,13 @@ async function handleForgotPasswordClick() {
       );
     }
 
+    if (typeof hideLoading === "function") hideLoading();
     if (typeof showToast === "function") {
-      showToast(
-        "If that email is registered, a reset link has been sent.",
-        "info"
-      );
+      showToast("If that email is registered, a reset link has been sent.", "info");
     }
   } catch (e) {
     console.error("Forgot password error:", e);
+    if (typeof hideLoading === "function") hideLoading();
     if (typeof showToast === "function") {
       showToast(e.message || "Could not start password reset", "error");
     }
@@ -89,6 +99,7 @@ async function handleForgotPasswordClick() {
 
 // ============================================
 // RESET PASSWORD (SUBMIT NEW PASSWORD)
+// (Used on a dedicated reset page, not in the main app flow)
 // ============================================
 async function handleResetPasswordSubmit(event) {
   event.preventDefault();
@@ -147,9 +158,7 @@ async function handleResetPasswordSubmit(event) {
       showToast("Password reset successfully. Please log in.", "success");
     }
 
-    if (typeof navigateToScreen === "function") {
-      navigateToScreen("landing"); // your login/landing screen ID
-    }
+    // In this SPA, just open the login modal
     showLogin();
   } catch (e) {
     console.error("Reset password error:", e);
@@ -178,7 +187,7 @@ async function handleLoginSubmit(event) {
 async function handleLogin(email, password) {
   if (!email || !password) {
     if (typeof showToast === "function")
-      showToast("Please enter email and password", "error");
+      showToast("Please enter email and password.", "error");
     return;
   }
 
@@ -188,7 +197,7 @@ async function handleLogin(email, password) {
     const res = await fetch(`${API_BASE}/api/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }) // matches Worker handleLogin
+      body: JSON.stringify({ email, password })
     });
 
     let data = {};
@@ -217,6 +226,10 @@ async function handleLogin(email, password) {
       user.walletBalance ?? user.balance ?? 0
     );
 
+    // Flags for reusing assets later
+    appState.hasSavedPhotos = Boolean(user.hasPhotos);
+    appState.hasSavedVoice = Boolean(user.hasVoice);
+
     localStorage.setItem("authToken", accessToken);
     localStorage.setItem("userId", user.id);
 
@@ -226,16 +239,28 @@ async function handleLogin(email, password) {
       updateHeaderVisibility(appState.currentScreen);
     }
 
-    const emailEl = document.getElementById("menuEmail");
-    if (emailEl) emailEl.textContent = user.email || email;
+    const emailElMenu = document.getElementById("menuEmail");
+    if (emailElMenu) emailElMenu.textContent = user.email || email;
 
     closeLogin();
     if (typeof hideLoading === "function") hideLoading();
     if (typeof showToast === "function")
       showToast("Logged in!", "success");
 
-    if (typeof navigateToScreen === "function")
-      navigateToScreen("uploadScreen");
+    // Use the same “smart start” logic as the hero button:
+    // if assets exist, go straight to voice/story, otherwise to upload.
+    if (typeof navigateToScreen === "function") {
+      if (appState.hasSavedPhotos && appState.hasSavedVoice) {
+        const recordingHint = document.getElementById("recordingHint");
+        if (recordingHint) {
+          recordingHint.textContent =
+            "We’re using your saved photos and voice from last time. Just describe the new story you want to tell.";
+        }
+        navigateToScreen("voiceScreen");
+      } else {
+        navigateToScreen("uploadScreen");
+      }
+    }
   } catch (e) {
     console.error("Login error:", e);
     if (typeof hideLoading === "function") hideLoading();
@@ -323,6 +348,11 @@ async function handleSignup(event) {
       user.walletBalance ?? user.balance ?? 0
     );
 
+    // New accounts typically have no assets yet,
+    // but we still read these in case your backend sets them.
+    appState.hasSavedPhotos = Boolean(user.hasPhotos);
+    appState.hasSavedVoice = Boolean(user.hasVoice);
+
     localStorage.setItem("authToken", accessToken);
     localStorage.setItem("userId", user.id);
 
@@ -340,8 +370,10 @@ async function handleSignup(event) {
     if (typeof showToast === "function")
       showToast("Account created!", "success");
 
-    if (typeof navigateToScreen === "function")
+    if (typeof navigateToScreen === "function") {
+      // New users go to upload first to add photos.
       navigateToScreen("uploadScreen");
+    }
   } catch (e) {
     console.error("Signup error:", e);
     if (typeof hideLoading === "function") hideLoading();
@@ -349,3 +381,15 @@ async function handleSignup(event) {
       showToast(e.message || "Signup failed", "error");
   }
 }
+
+// Expose functions if needed globally
+window.showLogin = showLogin;
+window.closeLogin = closeLogin;
+window.showSignup = showSignup;
+window.closeSignup = closeSignup;
+window.switchToSignup = switchToSignup;
+window.switchToLogin = switchToLogin;
+window.handleForgotPasswordClick = handleForgotPasswordClick;
+window.handleResetPasswordSubmit = handleResetPasswordSubmit;
+window.handleLoginSubmit = handleLoginSubmit;
+window.handleSignup = handleSignup;

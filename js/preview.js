@@ -110,6 +110,8 @@ async function generatePreview() {
     const scriptText = previewData.script || '';
 
     appState.previewVideoUrl = audioUrl;
+    // Save last brief so fullVideo.js can reuse it
+    appState.lastBrief = briefDesc;
 
     if (typeof window.navigateToScreen === 'function') {
       window.navigateToScreen('previewScreen');
@@ -141,7 +143,7 @@ async function generatePreview() {
     isGeneratingPreview = false;
     if (generateBtn) {
       generateBtn.disabled = false;
-      generateBtn.textContent = 'Generate Preview';
+      generateBtn.textContent = 'Generate preview';
     }
   }
 }
@@ -240,4 +242,3 @@ window.generatePreview = generatePreview;
 window.uploadPhotos = uploadPhotos;
 window.uploadVoice = uploadVoice;
 window.generatePreviewRequest = generatePreviewRequest;
-

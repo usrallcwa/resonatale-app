@@ -533,47 +533,101 @@ function goToStory() {
 // ============================================
 // GENERATE PREVIEW (Step 2 - part 2 → Step 3)
 // ============================================
+let isGeneratingPreview = false;
+
 async function generatePreview() {
+  if (isGeneratingPreview) {
+    // prevent double taps on mobile
+    return;
+  }
+
   const briefDescEl = document.getElementById('briefDesc');
   const briefDesc = briefDescEl ? briefDescEl.value.trim() : '';
 
+  // DEBUG LOGS – you can remove later
+  console.log('[ResonaTale] generatePreview clicked');
+  console.log('  hasConsent:', hasConsent());
+  console.log('  turnstileToken:', appState.turnstileToken);
+  console.log('  photos:', appState.photos.length);
+  console.log('  hasVoiceBlob:', !!appState.voiceBlob, 'voiceId:', appState.voiceId);
+  console.log('  briefDesc length:', briefDesc.length);
+
+  // 1) Consent guard
   if (!hasConsent()) {
     if (typeof showConsentModal === 'function') showConsentModal();
     if (typeof showToast === 'function') {
       showToast('Please confirm you are 18+ before generating a preview.', 'error');
+    } else {
+      alert('Please confirm you are 18+ before generating a preview.');
     }
     return;
   }
+
+  // 2) Turnstile guard – but be kinder on browsers where widget might not work
   if (!appState.turnstileToken) {
+    // On some iOS embedded browsers Turnstile might not fire; log clearly.
+    console.warn('[ResonaTale] No Turnstile token – blocking preview.');
     if (typeof showToast === 'function') {
-      showToast('Please complete the verification check.', 'error');
+      showToast('Please complete the verification check at the top of the page.', 'error');
+    } else {
+      alert('Please complete the verification check at the top of the page.');
     }
     return;
   }
+
+  // 3) Description guard
   if (!briefDesc) {
-    if (typeof showToast === 'function') showToast('Please enter a brief description', 'error');
+    if (typeof showToast === 'function') {
+      showToast('Please enter a brief description of your story.', 'error');
+    } else {
+      alert('Please enter a brief description of your story.');
+    }
     return;
   }
+
+  // 4) Photos guard – you can relax this minimum if needed
   if (appState.photos.length < 6) {
-    if (typeof showToast === 'function') showToast('Please upload at least 6 photos', 'error');
+    if (typeof showToast === 'function') {
+      showToast('Please upload at least 6 photos.', 'error');
+    } else {
+      alert('Please upload at least 6 photos.');
+    }
     return;
   }
+
+  // 5) Voice guard
   if (!appState.voiceBlob && !appState.voiceId) {
-    if (typeof showToast === 'function') showToast('Please record your voice', 'error');
+    if (typeof showToast === 'function') {
+      showToast('Please record your voice before generating a preview.', 'error');
+    } else {
+      alert('Please record your voice before generating a preview.');
+    }
     return;
+  }
+
+  isGeneratingPreview = true;
+
+  // Disable button while generating
+  const generateBtn = document.getElementById('voiceContinueBtn');
+  if (generateBtn) {
+    generateBtn.disabled = true;
+    generateBtn.textContent = 'Generating...';
   }
 
   if (typeof showLoading === 'function') showLoading('Uploading photos...');
 
   try {
+    // 6) Upload photos
     const photoUrls = await uploadPhotos();
 
+    // 7) Upload voice if needed
     if (!appState.voiceId) {
       if (typeof showLoading === 'function') showLoading('Cloning your voice...');
       const voiceId = await uploadVoice();
       appState.voiceId = voiceId;
     }
 
+    // 8) Call preview API
     if (typeof showLoading === 'function') showLoading('Creating your preview film...');
     const previewData = await generatePreviewRequest(photoUrls, appState.voiceId, briefDesc);
 
@@ -582,6 +636,7 @@ async function generatePreview() {
 
     appState.previewVideoUrl = audioUrl;
 
+    // 9) Move to preview screen
     navigateToScreen('previewScreen');
 
     const mediaEl = document.getElementById('previewVideo');
@@ -599,15 +654,24 @@ async function generatePreview() {
       showToast(previewData.message || 'Preview ready!', 'success');
     }
   } catch (error) {
-    console.error('Preview generation error:', error);
+    console.error('[ResonaTale] Preview generation error:', error);
     if (typeof hideLoading === 'function') hideLoading();
     if (typeof showToast === 'function') {
-      showToast(error.message || 'Failed to generate preview', 'error');
+      showToast(error.message || 'Failed to generate preview. Please try again.', 'error');
+    } else {
+      alert(error.message || 'Failed to generate preview. Please try again.');
+    }
+  } finally {
+    isGeneratingPreview = false;
+    if (generateBtn) {
+      generateBtn.disabled = false;
+      generateBtn.textContent = 'Generate Preview';
     }
   }
 }
 
 async function uploadPhotos() {
+  // TODO: replace this stub with real upload when backend is ready.
   return appState.photos.map((photo, i) => `photo_${i}_${Date.now()}`);
 }
 
@@ -671,7 +735,9 @@ async function generatePreviewRequest(photoUrls, voiceId, briefDesc) {
     let error = {};
     try {
       error = await response.json();
-    } catch {}
+    } catch (e) {
+      console.error('Preview response non-JSON error:', e);
+    }
     throw new Error(error.error || error.message || 'Preview generation failed');
   }
 

@@ -25,7 +25,7 @@ function handlePhotoSelection(event) {
 
   if (appState.photos.length + files.length > 12) {
     if (typeof window.showToast === 'function') {
-      window.showToast('Maximum 12 photos allowed', 'error');
+      window.showToast('Maximum 12 photos allowed.', 'error');
     }
     inputEl.value = '';
     return;
@@ -55,9 +55,11 @@ function updatePhotoGrid() {
 
   const grid = document.getElementById('photoGrid');
   const count = document.getElementById('photoCount');
-  if (!grid || !count) return;
+  const helper = document.getElementById('photoHelperText');
+  if (!grid || !count || !helper) return;
 
-  count.textContent = appState.photos.length;
+  const total = appState.photos.length;
+  count.textContent = total;
 
   grid.innerHTML = appState.photos
     .map(
@@ -69,6 +71,21 @@ function updatePhotoGrid() {
       `
     )
     .join('');
+
+  // Inline guidance text for premium feel
+  if (total === 0) {
+    helper.textContent = 'Selected photos: 0/12. Aim for at least 6 photos for best results.';
+    helper.style.color = 'rgba(255,255,255,0.75)';
+  } else if (total < 6) {
+    helper.textContent = `Selected photos: ${total}/12. Add ${6 - total} more photo${6 - total === 1 ? '' : 's'} to unlock the best results.`;
+    helper.style.color = 'rgba(248,113,113,0.9)'; // soft red
+  } else if (total > 12) {
+    helper.textContent = `Selected photos: ${total}/12. Only the first 12 photos will be used.`;
+    helper.style.color = 'rgba(248,113,113,0.9)';
+  } else {
+    helper.textContent = `Selected photos: ${total}/12. You’re good to continue.`;
+    helper.style.color = 'rgba(190, 242, 100, 0.9)'; // soft green
+  }
 }
 
 function removePhoto(index) {
@@ -95,7 +112,7 @@ function goToVoice() {
 
   if (appState.photos.length < 6) {
     if (typeof window.showToast === 'function') {
-      window.showToast('Please upload at least 6 photos', 'error');
+      window.showToast('Please upload at least 6 photos.', 'error');
     }
     return;
   }
@@ -111,4 +128,3 @@ window.updatePhotoGrid = updatePhotoGrid;
 window.removePhoto = removePhoto;
 window.updatePhotoContinueButton = updatePhotoContinueButton;
 window.goToVoice = goToVoice;
-

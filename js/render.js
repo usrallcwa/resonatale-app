@@ -1,4 +1,4 @@
-// render.js – screen wiring for preview (new 3-step flow)
+// render.js – optional screen wiring for preview extras
 
 document.addEventListener('DOMContentLoaded', () => {
   wirePreviewScreen();
@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // PREVIEW SCREEN
 // ============================================
 function wirePreviewScreen() {
-  const mediaEl = document.getElementById('previewVideo'); // <video> or <audio> element
+  const mediaEl = document.getElementById('previewVideo'); // <audio> in your HTML
   const statusBtn = document.getElementById('previewStatusBtn');
   const restartBtn = document.getElementById('previewRestartBtn');
 
@@ -23,7 +23,7 @@ function wirePreviewScreen() {
   // Optional: restart button if you add it in HTML
   if (restartBtn && mediaEl) {
     restartBtn.addEventListener('click', () => {
-      if (!appState.previewVideoUrl) return;
+      if (!window.appState || !window.appState.previewVideoUrl) return;
       mediaEl.currentTime = 0;
       mediaEl.play().catch(() => {});
     });
@@ -33,7 +33,7 @@ function wirePreviewScreen() {
   if (statusBtn) {
     statusBtn.addEventListener('click', () => {
       const previewIdEl = document.getElementById('previewId');
-      const previewId = previewIdEl ? previewIdEl.textContent.trim() : '';
+      const previewId = previewIdEl ? previewId.textContent.trim() : '';
       if (!previewId) {
         if (typeof showToast === 'function') {
           showToast('No render ID available yet.', 'error');
@@ -47,11 +47,12 @@ function wirePreviewScreen() {
 
 // ============================================
 // OPTIONAL: Render status polling
-// (uses GET /api/render/status/:id from Worker)
 // ============================================
 async function checkRenderStatus(renderId) {
+  if (!window.API_BASE) return;
+
   try {
-    const res = await fetch(`${API_BASE}/api/render/status/${encodeURIComponent(renderId)}`);
+    const res = await fetch(`${window.API_BASE}/api/render/status/${encodeURIComponent(renderId)}`);
     if (!res.ok) {
       throw new Error('Failed to check status');
     }
@@ -68,7 +69,7 @@ async function checkRenderStatus(renderId) {
       const mediaEl = document.getElementById('previewVideo');
       if (mediaEl) {
         mediaEl.src = data.url;
-        appState.previewVideoUrl = data.url;
+        if (window.appState) window.appState.previewVideoUrl = data.url;
       }
       if (typeof showToast === 'function') {
         showToast('Render complete!', 'success');
@@ -81,3 +82,6 @@ async function checkRenderStatus(renderId) {
     }
   }
 }
+
+// Expose if needed
+window.checkRenderStatus = checkRenderStatus;

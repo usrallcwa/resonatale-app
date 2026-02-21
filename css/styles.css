@@ -233,7 +233,7 @@ button {
 }
 
 .hero-desc {
-  margin-bottom: 1.8rem;
+  margin-bottom: 1.3rem;
 }
 
 .hero-desc p {
@@ -245,6 +245,14 @@ button {
   font-size: 0.875rem;
   margin-top: 0.5rem;
   color: rgba(255, 255, 255, 0.7);
+}
+
+/* small explainer under hero text */
+.hero-mini-explainer {
+  font-size: 0.8rem;
+  color: var(--text-soft);
+  margin: 0 0 1.2rem;
+  line-height: 1.5;
 }
 
 .hero-note {
@@ -392,6 +400,34 @@ button {
   background: rgba(15, 23, 42, 0.9);
   border-color: var(--border-strong);
   transform: translateY(-0.5px);
+}
+
+/* STORY CHIPS */
+
+.story-chips {
+  /* container is inline-styled; this adds hover polish */
+}
+
+.chip-btn {
+  border-radius: var(--radius-pill);
+  padding: 0.35rem 0.8rem;
+  border: 1px solid var(--border-soft);
+  background: rgba(0, 0, 0, 0.6);
+  color: var(--text-soft);
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition:
+    background 130ms ease-out,
+    border-color 130ms ease-out,
+    color 130ms ease-out,
+    transform 120ms ease-out;
+}
+
+.chip-btn:hover {
+  background: rgba(15, 23, 42, 0.95);
+  border-color: var(--border-strong);
+  color: #ffffff;
+  transform: translateY(-0.25px);
 }
 
 /* AUTH MODAL / LOGIN CARD */

@@ -43,16 +43,26 @@ async function generateFullVideo(briefDesc) {
   return data.videoId;
 }
 
-// Click handler for "Get full video" / "Make Full Film" button
+// Click handler for "Make full film" button
 async function onGetFullVideoClicked() {
   const briefDescEl = document.getElementById('briefDesc');
-  const briefDesc = briefDescEl ? briefDescEl.value.trim() : '';
+  let briefDesc = briefDescEl ? briefDescEl.value.trim() : '';
+
+  // Optional: reuse last brief from appState if you decide to store it
+  if (!briefDesc && window.appState && window.appState.lastBrief) {
+    briefDesc = window.appState.lastBrief.trim();
+  }
 
   if (!briefDesc) {
     if (typeof window.showToast === 'function') {
       window.showToast('Please enter a brief description first.', 'error');
     }
     return;
+  }
+
+  // persist for re-use within the same session
+  if (window.appState) {
+    window.appState.lastBrief = briefDesc;
   }
 
   try {
@@ -83,6 +93,11 @@ async function onGetFullVideoClicked() {
         if (typeof window.showToast === 'function') {
           window.showToast('Your full video is ready!', 'success');
         }
+      } else if (data.status === 'error') {
+        if (typeof window.hideLoading === 'function') window.hideLoading();
+        if (typeof window.showToast === 'function') {
+          window.showToast(data.message || 'Full video render failed.', 'error');
+        }
       } else {
         setTimeout(poll, 4000);
       }
@@ -103,4 +118,3 @@ async function onGetFullVideoClicked() {
 // Expose to global for app.js / HTML wiring
 window.generateFullVideo = generateFullVideo;
 window.onGetFullVideoClicked = onGetFullVideoClicked;
-

@@ -563,17 +563,9 @@ async function generatePreview() {
     return;
   }
 
-  // 2) Turnstile guard – but be kinder on browsers where widget might not work
-  if (!appState.turnstileToken) {
-    // On some iOS embedded browsers Turnstile might not fire; log clearly.
-    console.warn('[ResonaTale] No Turnstile token – blocking preview.');
-    if (typeof showToast === 'function') {
-      showToast('Please complete the verification check at the top of the page.', 'error');
-    } else {
-      alert('Please complete the verification check at the top of the page.');
-    }
-    return;
-  }
+// 2) Turnstile – optional for preview (backend will enforce limits if needed)
+const turnstileToken = appState.turnstileToken || null;
+console.log('[ResonaTale] turnstileToken for preview:', turnstileToken);
 
   // 3) Description guard
   if (!briefDesc) {

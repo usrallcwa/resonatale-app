@@ -5,7 +5,6 @@
 // ============================================
 const API_BASE = 'https://api.resonatale.com';
 
-// Subset of ElevenLabs multilingual languages with flags and codes
 const SUPPORTED_LANGUAGES = [
   { code: 'ENG', label: 'English', flag: '🇺🇸' },
   { code: 'SPA', label: 'Español', flag: '🇪🇸' },
@@ -88,6 +87,7 @@ document.addEventListener('DOMContentLoaded', function () {
     animateFilmCounter();
   }
 
+  // Full video button on preview screen (safety: also has inline onclick)
   const getFullBtn = document.getElementById('getFullVideoBtn');
   if (getFullBtn && typeof onGetFullVideoClicked === 'function') {
     getFullBtn.addEventListener('click', onGetFullVideoClicked);
@@ -395,6 +395,24 @@ function closeCredits() {
   modal.style.display = 'none';
 }
 window.closeCredits = closeCredits;
+
+// ============================================
+// SOCIAL AUTH STUBS (Google / Apple)
+// ============================================
+function startGoogleLogin() {
+  // TODO: replace with real OAuth flow
+  if (typeof showToast === 'function') {
+    showToast('Google sign-in coming soon.', 'info');
+  }
+}
+function startAppleLogin() {
+  // TODO: replace with real OAuth flow
+  if (typeof showToast === 'function') {
+    showToast('Apple sign-in coming soon.', 'info');
+  }
+}
+window.startGoogleLogin = startGoogleLogin;
+window.startAppleLogin = startAppleLogin;
 
 // ============================================
 // SOCIAL PROOF COUNTER

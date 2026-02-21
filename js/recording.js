@@ -71,6 +71,7 @@ async function toggleRecording() {
 
   const icon = btn.querySelector('.record-icon');
   const text = btn.querySelector('.record-text');
+  const statusLabel = document.getElementById('recordStatus');
 
   if (!appState.mediaRecorder || appState.mediaRecorder.state === 'inactive') {
     // START recording
@@ -102,6 +103,10 @@ async function toggleRecording() {
         showAudioPreview(audioBlob);
         stopAllStreams();
         releaseWakeLock();
+
+        if (statusLabel) {
+          statusLabel.style.display = 'none';
+        }
       };
 
       appState.mediaRecorder.start();
@@ -109,10 +114,16 @@ async function toggleRecording() {
 
       btn.classList.add('recording');
       if (icon) icon.textContent = '⏹';
-      if (text) text.textContent = 'Stop Recording';
+      if (text) text.textContent = 'Stop recording';
+
+      if (statusLabel) {
+        statusLabel.style.display = 'block';
+        statusLabel.textContent = 'Recording…';
+      }
 
       startRecordingTimer();
 
+      // Auto-stop at 30s
       setTimeout(() => {
         if (appState.mediaRecorder && appState.mediaRecorder.state === 'recording') {
           stopRecording();
@@ -123,12 +134,18 @@ async function toggleRecording() {
       if (typeof window.showToast === 'function') {
         window.showToast('Microphone access denied', 'error');
       }
+      if (statusLabel) {
+        statusLabel.style.display = 'none';
+      }
       releaseWakeLock();
     }
   } else {
     // STOP recording
     stopRecording();
     releaseWakeLock();
+    if (statusLabel) {
+      statusLabel.style.display = 'none';
+    }
   }
 }
 
@@ -147,7 +164,7 @@ function stopRecording() {
 
     btn.classList.remove('recording');
     if (icon) icon.textContent = '⏺';
-    if (text) text.textContent = 'Start Recording';
+    if (text) text.textContent = 'Start recording';
   }
 }
 
@@ -255,4 +272,3 @@ window.showAudioPreview = showAudioPreview;
 window.reRecord = reRecord;
 window.stopAllStreams = stopAllStreams;
 window.goToStory = goToStory;
-

@@ -296,10 +296,10 @@ window.acceptConsent = acceptConsent;
 async function initAuthenticatedApp() {
   if (!appState.authToken) return;
 
-  try {
-    const response = await fetch(`${API_BASE}/api/auth/me`, {
-      headers: { Authorization: `Bearer ${appState.authToken}` }
-    });
+ try {
+  const response = await fetch(`${AUTH_API_BASE}/api/auth/me`, {
+    headers: { Authorization: `Bearer ${appState.authToken}` }
+  });
 
     if (!response.ok) {
       logout(true);

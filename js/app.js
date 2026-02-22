@@ -1,10 +1,16 @@
-// app.js
-
 // ============================================
 // GLOBAL STATE & CONFIGURATION
 // ============================================
-// Point this to the backend that serves /api/render, /api/auth/me, etc.
-const API_BASE = 'https://resonatale-app.resonatale.com';
+
+// Auth & wallet backend
+const AUTH_API_BASE = 'https://api.resonatale.com';
+
+// Render / preview backend
+const RENDER_API_BASE = 'https://resonatale-app.resonatale.com';
+
+// Keep API_BASE + window.API_BASE for render/preview code
+const API_BASE = RENDER_API_BASE;
+window.API_BASE = RENDER_API_BASE;
 
 const SUPPORTED_LANGUAGES = [
   { code: 'ENG', label: 'English', flag: '🇺🇸' },

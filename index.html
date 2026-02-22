@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>ResonaTale – AI films starring you</title>
+  <title>ResonaTale – Your Voice. Your Story. Brought to Life.</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- Favicons -->
@@ -108,16 +108,15 @@
 
       <div class="hero">
         <h1 class="hero-logo">ResonaTale</h1>
-        <p class="hero-tag">AI films starring you</p>
+        <p class="hero-tag">Your Voice. Your Story. Brought to Life.</p>
 
         <div class="hero-desc">
-          <p>Turn a few photos into a cinematic story in your own voice.</p>
+          <p>Clone your voice, upload your photos, and create AI-powered video stories that sound exactly like you.</p>
           <p class="hero-desc-sub">See a free preview in under a minute.</p>
         </div>
 
-        <!-- Optional small explainer under hero text -->
         <p class="hero-mini-explainer">
-          You’ll get a short, vertical video made from your photos, narrated by a cloned version of your voice.
+          A short, vertical film crafted from your photos and your own voice, ready to share or keep forever.
         </p>
 
         <!-- Turnstile widget for verification -->
@@ -182,7 +181,6 @@
           Upload 6–12 clear photos of your face. Good lighting, minimal sunglasses or hats, and no heavy filters work best.
         </p>
 
-        <!-- Dropzone-style description -->
         <div
           class="upload-dropzone"
           style="
@@ -196,7 +194,7 @@
             background:rgba(0,0,0,0.35);
           "
         >
-          Drag &amp; drop images here, or click “Upload photos”.
+          Tap “Upload photos” to pick images from your camera roll.
         </div>
 
         <input
@@ -262,10 +260,9 @@
 
       <section style="margin-bottom:1.5rem;">
         <p id="recordingHint" style="font-size:0.9rem;color:rgba(255,255,255,0.8);margin-bottom:0.75rem;">
-          Record 20–30 seconds of you speaking naturally, like you’re telling a story to a friend. We’ll use it to clone your voice.
+          Record 20–30 seconds of you speaking naturally, like you’re telling a story to a friend.
         </p>
 
-        <!-- Recording state label (updated via JS) -->
         <p
           id="recordStatus"
           style="font-size:0.8rem;color:rgba(255,120,120,0.9);margin-bottom:0.25rem;display:none;"
@@ -294,7 +291,7 @@
         <p
           style="font-size:0.8rem;color:rgba(255,255,255,0.75);margin-bottom:1rem;"
         >
-          Pro tip: Record in a quiet room, hold your phone close, and speak at a normal pace.
+          Record in a quiet room, hold your phone close, and speak at a normal pace.
         </p>
 
         <div
@@ -334,7 +331,7 @@
               Choose narration language
             </p>
             <p style="font-size:0.8rem;color:rgba(255,255,255,0.65);margin-bottom:0.35rem;">
-              You can speak in your normal language while recording. We only use it to learn your unique voice.
+              You can speak in any language while recording. We only use it to learn your unique voice.
             </p>
             <select
               id="voiceLanguageSelect"
@@ -378,7 +375,6 @@
           What story should your film tell?
         </p>
 
-        <!-- Quick-start chips (optional, wired up in JS if you want) -->
         <div
           class="story-chips"
           style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.5rem;font-size:0.8rem;"
@@ -413,7 +409,7 @@
         ></textarea>
 
         <p style="font-size:0.8rem;color:rgba(255,255,255,0.7);margin-top:0.35rem;margin-bottom:1rem;">
-          <span id="briefCount">0</span>/600 characters • 2–5 sentences is perfect.
+          <span id="briefCount">0</span>/600 characters • 2–5 sentences is enough.
         </p>
 
         <button
@@ -438,10 +434,9 @@
 
       <section>
         <p style="font-size:0.9rem;color:rgba(255,255,255,0.85);margin-bottom:0.75rem;">
-          Here’s a first preview of your AI film, generated from your photos, voice, and story.
+          Here’s a first preview of your film, generated from your photos, voice, and story.
         </p>
 
-        <!-- Preview card-style wrapper -->
         <div
           class="preview-card"
           style="
@@ -504,20 +499,6 @@
           Sign in to save your films and manage your credits.
         </p>
 
-        <!-- Social login -->
-        <div class="auth-social">
-          <button type="button" class="btn social-btn google" onclick="startGoogleLogin && startGoogleLogin()">
-            Continue with Google
-          </button>
-          <button type="button" class="btn social-btn apple" onclick="startAppleLogin && startAppleLogin()">
-            Continue with Apple
-          </button>
-        </div>
-
-        <div class="auth-divider">
-          <span>or</span>
-        </div>
-
         <form onsubmit="handleLoginSubmit(event)">
           <div class="auth-field">
             <label for="loginEmail">Email</label>
@@ -550,6 +531,7 @@
             type="button"
             class="link-btn"
             style="margin-top:0.5rem;font-size:0.8rem;"
+            onclick="handleForgotPasswordClick()"
           >
             Forgot password?
           </button>
@@ -576,20 +558,6 @@
         <p style="font-size:0.85rem;color:rgba(255,255,255,0.75);margin-bottom:1rem;">
           We’ll keep your photos, voices, and films safe and ready on any device.
         </p>
-
-        <!-- Social signup -->
-        <div class="auth-social">
-          <button type="button" class="btn social-btn google" onclick="startGoogleLogin && startGoogleLogin()">
-            Continue with Google
-          </button>
-          <button type="button" class="btn social-btn apple" onclick="startAppleLogin && startAppleLogin()">
-            Continue with Apple
-          </button>
-        </div>
-
-        <div class="auth-divider">
-          <span>or</span>
-        </div>
 
         <form onsubmit="handleSignup(event)">
           <div class="auth-field">
@@ -739,7 +707,6 @@
     </div>
   </div>
 
-  <!-- keep the slider label in sync -->
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       var slider = document.getElementById('creditSlider');
@@ -751,7 +718,6 @@
         });
       }
 
-      // Optional: quick story chip behavior (safe no-op if you don't wire more)
       var chips = document.querySelectorAll('.chip-btn');
       var brief = document.getElementById('briefDesc');
       if (chips && brief) {
@@ -775,12 +741,12 @@
   </script>
 
   <script src="js/app.js"></script>
-<script src="js/ui.js"></script>
-<script src="js/photos.js"></script>
-<script src="js/recording.js"></script>
-<script src="js/preview.js"></script>
-<script src="js/fullVideo.js"></script>
-<script src="js/wallet.js"></script>
-<script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/photos.js"></script>
+  <script src="js/recording.js"></script>
+  <script src="js/preview.js"></script>
+  <script src="js/fullVideo.js"></script>
+  <script src="js/wallet.js"></script>
+  <script src="js/auth.js"></script>
 </body>
 </html>

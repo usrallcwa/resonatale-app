@@ -1,12 +1,6 @@
-// auth.js
-// Uses AUTH_API_BASE for auth routes
-// AUTH_API_BASE is defined in app.js
-
-// (no new const here, just rely on the global from app.js)
 // auth.js – Authentication, Signup & Password Reset
-// Requires globally defined:
-//   const API_BASE = "https://api.resonatale.com";
-//   let appState from app.js
+// Uses AUTH_API_BASE for auth routes (defined in app.js)
+// appState is also defined in app.js
 
 // ============================================
 // MODAL CONTROLS
@@ -71,7 +65,7 @@ async function handleForgotPasswordClick() {
   }
 
   try {
-    const res = await fetch(`${API_BASE}/api/auth/forgot-password`, {
+    const res = await fetch(`${AUTH_API_BASE}/auth/forgot-password`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email })
@@ -143,7 +137,7 @@ async function handleResetPasswordSubmit(event) {
     showLoading("Resetting password...");
 
   try {
-    const res = await fetch(`${API_BASE}/api/auth/reset-password`, {
+    const res = await fetch(`${AUTH_API_BASE}/auth/reset-password`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token, password })
@@ -167,7 +161,6 @@ async function handleResetPasswordSubmit(event) {
       showToast("Password reset successfully. Please log in.", "success");
     }
 
-    // In this SPA, just open the login modal
     showLogin();
   } catch (e) {
     console.error("Reset password error:", e);
@@ -203,7 +196,7 @@ async function handleLogin(email, password) {
   if (typeof showLoading === "function") showLoading("Logging in...");
 
   try {
-    const res = await fetch(`${API_BASE}/api/auth/login`, {
+    const res = await fetch(`${AUTH_API_BASE}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password })
@@ -235,7 +228,6 @@ async function handleLogin(email, password) {
       user.walletBalance ?? user.balance ?? 0
     );
 
-    // Flags for reusing assets later
     appState.hasSavedPhotos = Boolean(user.hasPhotos);
     appState.hasSavedVoice = Boolean(user.hasVoice);
 
@@ -256,7 +248,6 @@ async function handleLogin(email, password) {
     if (typeof showToast === "function")
       showToast("Logged in!", "success");
 
-    // Smart start: reuse assets if present
     if (typeof navigateToScreen === "function") {
       if (appState.hasSavedPhotos && appState.hasSavedVoice) {
         const recordingHint = document.getElementById("recordingHint");
@@ -320,7 +311,7 @@ async function handleSignup(event) {
     showLoading("Creating account...");
 
   try {
-    const res = await fetch(`${API_BASE}/api/auth/signup`, {
+    const res = await fetch(`${AUTH_API_BASE}/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -356,8 +347,6 @@ async function handleSignup(event) {
       user.walletBalance ?? user.balance ?? 0
     );
 
-    // New accounts typically have no assets yet,
-    // but we still read these in case your backend sets them.
     appState.hasSavedPhotos = Boolean(user.hasPhotos);
     appState.hasSavedVoice = Boolean(user.hasVoice);
 
@@ -379,7 +368,6 @@ async function handleSignup(event) {
       showToast("Account created!", "success");
 
     if (typeof navigateToScreen === "function") {
-      // New users go to upload first to add photos.
       navigateToScreen("uploadScreen");
     }
   } catch (e) {

@@ -3,7 +3,8 @@
 // ============================================
 // GLOBAL STATE & CONFIGURATION
 // ============================================
-const API_BASE = 'https://api.resonatale.com';
+// Point this to the backend that serves /api/render, /api/auth/me, etc.
+const API_BASE = 'https://resonatale-app.resonatale.com';
 
 const SUPPORTED_LANGUAGES = [
   { code: 'ENG', label: 'English', flag: '🇺🇸' },
@@ -52,7 +53,6 @@ let appState = {
   voiceLanguage: 'ENG',
   voiceMood: 'calm',
 
-  // flags populated from /api/auth/me
   hasSavedPhotos: false,
   hasSavedVoice: false
 };
@@ -91,7 +91,6 @@ document.addEventListener('DOMContentLoaded', function () {
     animateFilmCounter();
   }
 
-  // Full video button on preview screen (safety: also has inline onclick)
   const getFullBtn = document.getElementById('getFullVideoBtn');
   if (getFullBtn && typeof onGetFullVideoClicked === 'function') {
     getFullBtn.addEventListener('click', onGetFullVideoClicked);
@@ -177,19 +176,16 @@ function initMoodPicker() {
 // NAVIGATION
 // ============================================
 function startApp() {
-  // If user is authenticated and has saved assets, jump straight to story/voice screen
   if (appState.authToken && appState.hasSavedPhotos && appState.hasSavedVoice) {
-    // Optional: show a small helper on voice screen once
     const recordingHint = document.getElementById('recordingHint');
     if (recordingHint) {
       recordingHint.textContent =
-        'We\'re using your saved photos and voice from last time. Just describe the new story you want to tell.';
+        "We're using your saved photos and voice from last time. Just describe the new story you want to tell.";
     }
     navigateToScreen('voiceScreen');
     return;
   }
 
-  // Default behavior for first-time or incomplete users
   navigateToScreen('uploadScreen');
 }
 window.startApp = startApp;
@@ -310,14 +306,15 @@ async function initAuthenticatedApp() {
     const balanceNum = Number(user.balance ?? 0);
     appState.userBalance = Number.isFinite(balanceNum) ? balanceNum : 0;
 
-    // New: flags for saved assets (if your backend supports them)
     appState.hasSavedPhotos = Boolean(user.hasPhotos);
     appState.hasSavedVoice = Boolean(user.hasVoice);
 
     updateBalanceDisplay();
 
     const header = document.querySelector('.app-header');
-    if (header && appState.currentScreen !== 'heroScreen') header.classList.remove('hidden');
+    if (header && appState.currentScreen !== 'heroScreen') {
+      header.classList.remove('hidden');
+    }
 
     const emailEl = document.getElementById('menuEmail');
     if (emailEl) emailEl.textContent = user.email || '';
@@ -325,10 +322,9 @@ async function initAuthenticatedApp() {
     const balanceEl = document.getElementById('menuBalance');
     if (balanceEl) balanceEl.textContent = appState.userBalance.toFixed(2);
 
-    // Optional UX: tweak hero note if they have saved assets
     const heroNote = document.querySelector('.hero-note');
     if (heroNote && appState.hasSavedPhotos && appState.hasSavedVoice) {
-      heroNote.textContent = 'We\'ll reuse your saved photos and voice. Just describe your next story.';
+      heroNote.textContent = "We'll reuse your saved photos and voice. Just describe your next story.";
     }
   } catch (error) {
     console.error('Auth check error:', error);
@@ -428,16 +424,14 @@ function closeCredits() {
 window.closeCredits = closeCredits;
 
 // ============================================
-// SOCIAL AUTH STUBS (Google / Apple)
+// SOCIAL AUTH STUBS
 // ============================================
 function startGoogleLogin() {
-  // TODO: replace with real OAuth flow
   if (typeof showToast === 'function') {
     showToast('Google sign-in coming soon.', 'info');
   }
 }
 function startAppleLogin() {
-  // TODO: replace with real OAuth flow
   if (typeof showToast === 'function') {
     showToast('Apple sign-in coming soon.', 'info');
   }

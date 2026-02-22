@@ -1,3 +1,8 @@
+// auth.js
+// Uses AUTH_API_BASE for auth routes
+// AUTH_API_BASE is defined in app.js
+
+// (no new const here, just rely on the global from app.js)
 // auth.js – Authentication, Signup & Password Reset
 // Requires globally defined:
 //   const API_BASE = "https://api.resonatale.com";

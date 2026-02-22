@@ -730,10 +730,56 @@ button {
   border-radius: var(--radius-md);
 }
 
-/* SOCIAL PROOF COUNTER (if you add it) */
+/* SOCIAL PROOF COUNTER */
 
 #filmCounter {
   font-variant-numeric: tabular-nums;
+}
+
+/* RECORD BUTTON (NEW) */
+
+.record-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  background: rgba(15, 23, 42, 0.9);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background 140ms ease-out,
+    border-color 140ms ease-out,
+    box-shadow 140ms ease-out,
+    transform 120ms ease-out;
+}
+
+/* inner dot if you use a span inside */
+.record-btn .inner-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(248, 250, 252, 0.9);
+  transition:
+    background 140ms ease-out,
+    width 140ms ease-out,
+    height 140ms ease-out,
+    border-radius 140ms ease-out;
+}
+
+/* when recording: turn red */
+.record-btn.recording {
+  background: #ef4444;
+  border-color: #fecaca;
+  box-shadow: 0 12px 30px rgba(220, 38, 38, 0.6);
+  transform: translateY(-1px);
+}
+
+.record-btn.recording .inner-dot {
+  background: #fee2e2;
+  width: 16px;
+  height: 16px;
 }
 
 /* RESPONSIVE */

@@ -65,7 +65,7 @@ async function handleForgotPasswordClick() {
   }
 
   try {
-    const res = await fetch(`${AUTH_API_BASE}/auth/forgot-password`, {
+    const res = await fetch(`${AUTH_API_BASE}/api/auth/forgot-password`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email })
@@ -137,7 +137,7 @@ async function handleResetPasswordSubmit(event) {
     showLoading("Resetting password...");
 
   try {
-    const res = await fetch(`${AUTH_API_BASE}/auth/reset-password`, {
+    const res = await fetch(`${AUTH_API_BASE}/api/auth/reset-password`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token, password })
@@ -196,7 +196,7 @@ async function handleLogin(email, password) {
   if (typeof showLoading === "function") showLoading("Logging in...");
 
   try {
-    const res = await fetch(`${AUTH_API_BASE}/auth/login`, {
+    const res = await fetch(`${AUTH_API_BASE}/api/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password })
@@ -311,7 +311,7 @@ async function handleSignup(event) {
     showLoading("Creating account...");
 
   try {
-    const res = await fetch(`${AUTH_API_BASE}/auth/signup`, {
+    const res = await fetch(`${AUTH_API_BASE}/api/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

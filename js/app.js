@@ -3,6 +3,7 @@
 // ============================================
 
 // Auth & wallet backend
+// For local testing, you can temporarily set this to "http://127.0.0.1:8787"
 const AUTH_API_BASE = 'https://api.resonatale.com';
 
 // Render / preview backend
@@ -97,9 +98,21 @@ document.addEventListener('DOMContentLoaded', function () {
     animateFilmCounter();
   }
 
+  // Hook main CTA / wallet buttons
   const getFullBtn = document.getElementById('getFullVideoBtn');
-  if (getFullBtn && typeof onGetFullVideoClicked === 'function') {
-    getFullBtn.addEventListener('click', onGetFullVideoClicked);
+  if (getFullBtn) {
+    getFullBtn.addEventListener('click', () => {
+      // Example: 10 USD → 10 wallet credits
+      startCheckout(10, 10, 'wallet');
+    });
+  }
+
+  const addCreditsBtn = document.getElementById('addCreditsBtn');
+  if (addCreditsBtn) {
+    addCreditsBtn.addEventListener('click', () => {
+      // Adjust these as needed for your UI
+      startCheckout(10, 10, 'wallet');
+    });
   }
 });
 
@@ -296,10 +309,10 @@ window.acceptConsent = acceptConsent;
 async function initAuthenticatedApp() {
   if (!appState.authToken) return;
 
- try {
-  const response = await fetch(`${AUTH_API_BASE}/api/auth/me`, {
-    headers: { Authorization: `Bearer ${appState.authToken}` }
-  });
+  try {
+    const response = await fetch(`${AUTH_API_BASE}/api/auth/me`, {
+      headers: { Authorization: `Bearer ${appState.authToken}` }
+    });
 
     if (!response.ok) {
       logout(true);
@@ -428,6 +441,63 @@ function closeCredits() {
   modal.style.display = 'none';
 }
 window.closeCredits = closeCredits;
+
+// ============================================
+// CHECKOUT / CREDITS
+// ============================================
+async function startCheckout(amount, credits, type) {
+  try {
+    if (!appState.authToken) {
+      if (typeof showToast === 'function') {
+        showToast('Please log in before adding credits.', 'error');
+      }
+      if (typeof showLogin === 'function') {
+        showLogin();
+      }
+      return;
+    }
+
+    if (typeof requireConsentOrBlock === 'function' && !requireConsentOrBlock()) {
+      return;
+    }
+
+    if (typeof requireTurnstileOrBlock === 'function' && !requireTurnstileOrBlock()) {
+      return;
+    }
+
+    if (typeof showLoading === 'function') showLoading('Redirecting to checkout...');
+
+    const response = await fetch(`${AUTH_API_BASE}/api/credits/checkout/create`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${appState.authToken}`
+      },
+      body: JSON.stringify({ amount, credits, type })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success || !data.url) {
+      if (typeof hideLoading === 'function') hideLoading();
+      console.error('Checkout error:', data);
+      if (typeof showToast === 'function') {
+        showToast(data.error || 'Failed to start checkout.', 'error');
+      }
+      return;
+    }
+
+    // Redirect to Stripe Checkout
+    window.location.href = data.url;
+  } catch (err) {
+    console.error('Checkout exception:', err);
+    if (typeof hideLoading === 'function') hideLoading();
+    if (typeof showToast === 'function') {
+      showToast('Unexpected error starting checkout.', 'error');
+    }
+  }
+}
+window.startCheckout = startCheckout;
 
 // ============================================
 // SOCIAL AUTH STUBS

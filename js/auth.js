@@ -68,7 +68,7 @@ async function handleForgotPasswordClick() {
     const res = await fetch(`${AUTH_API_BASE}/api/auth/forgot-password`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email })
+      body: JSON.stringify({ email }),
     });
 
     let data = {};
@@ -102,7 +102,6 @@ async function handleForgotPasswordClick() {
 
 // ============================================
 // RESET PASSWORD (SUBMIT NEW PASSWORD)
-// (Used on a dedicated reset page, not in the main app flow)
 // ============================================
 async function handleResetPasswordSubmit(event) {
   event.preventDefault();
@@ -112,8 +111,9 @@ async function handleResetPasswordSubmit(event) {
   const confirmEl = document.getElementById("resetPasswordConfirm");
 
   if (!tokenEl || !passwordEl || !confirmEl) {
-    if (typeof showToast === "function")
+    if (typeof showToast === "function") {
       showToast("Reset form is incomplete.", "error");
+    }
     return;
   }
 
@@ -122,25 +122,28 @@ async function handleResetPasswordSubmit(event) {
   const confirm = confirmEl.value;
 
   if (!token || !password || !confirm) {
-    if (typeof showToast === "function")
+    if (typeof showToast === "function") {
       showToast("Please fill in all fields.", "error");
+    }
     return;
   }
 
   if (password !== confirm) {
-    if (typeof showToast === "function")
+    if (typeof showToast === "function") {
       showToast("Passwords do not match.", "error");
+    }
     return;
   }
 
-  if (typeof showLoading === "function")
+  if (typeof showLoading === "function") {
     showLoading("Resetting password...");
+  }
 
   try {
     const res = await fetch(`${AUTH_API_BASE}/api/auth/reset-password`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token, password })
+      body: JSON.stringify({ token, password }),
     });
 
     let data = {};
@@ -158,7 +161,10 @@ async function handleResetPasswordSubmit(event) {
 
     if (typeof hideLoading === "function") hideLoading();
     if (typeof showToast === "function") {
-      showToast("Password reset successfully. Please log in.", "success");
+      showToast(
+        "Password reset successfully. Please log in.",
+        "success"
+      );
     }
 
     showLogin();
@@ -188,18 +194,21 @@ async function handleLoginSubmit(event) {
 
 async function handleLogin(email, password) {
   if (!email || !password) {
-    if (typeof showToast === "function")
+    if (typeof showToast === "function") {
       showToast("Please enter email and password.", "error");
+    }
     return;
   }
 
-  if (typeof showLoading === "function") showLoading("Logging in...");
+  if (typeof showLoading === "function") {
+    showLoading("Logging in...");
+  }
 
   try {
     const res = await fetch(`${AUTH_API_BASE}/api/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email, password }),
     });
 
     let data = {};
@@ -234,19 +243,23 @@ async function handleLogin(email, password) {
     localStorage.setItem("authToken", accessToken);
     localStorage.setItem("userId", user.id);
 
-    if (typeof updateBalanceDisplay === "function")
+    if (typeof updateBalanceDisplay === "function") {
       updateBalanceDisplay();
+    }
     if (typeof updateHeaderVisibility === "function") {
       updateHeaderVisibility(appState.currentScreen);
     }
 
     const emailElMenu = document.getElementById("menuEmail");
-    if (emailElMenu) emailElMenu.textContent = user.email || email;
+    if (emailElMenu) {
+      emailElMenu.textContent = user.email || email;
+    }
 
     closeLogin();
     if (typeof hideLoading === "function") hideLoading();
-    if (typeof showToast === "function")
+    if (typeof showToast === "function") {
       showToast("Logged in!", "success");
+    }
 
     if (typeof navigateToScreen === "function") {
       if (appState.hasSavedPhotos && appState.hasSavedVoice) {
@@ -263,8 +276,9 @@ async function handleLogin(email, password) {
   } catch (e) {
     console.error("Login error:", e);
     if (typeof hideLoading === "function") hideLoading();
-    if (typeof showToast === "function")
+    if (typeof showToast === "function") {
       showToast(e.message || "Login failed", "error");
+    }
   }
 }
 
@@ -280,8 +294,9 @@ async function handleSignup(event) {
   const consentEl = document.getElementById("consentCheck");
 
   if (!emailEl || !passwordEl || !nameEl || !consentEl) {
-    if (typeof showToast === "function")
+    if (typeof showToast === "function") {
       showToast("Signup form is incomplete.", "error");
+    }
     return;
   }
 
@@ -307,8 +322,9 @@ async function handleSignup(event) {
     return;
   }
 
-  if (typeof showLoading === "function")
+  if (typeof showLoading === "function") {
     showLoading("Creating account...");
+  }
 
   try {
     const res = await fetch(`${AUTH_API_BASE}/api/auth/signup`, {
@@ -317,8 +333,8 @@ async function handleSignup(event) {
       body: JSON.stringify({
         email,
         password,
-        name
-      })
+        name,
+      }),
     });
 
     let data = {};
@@ -353,19 +369,23 @@ async function handleSignup(event) {
     localStorage.setItem("authToken", accessToken);
     localStorage.setItem("userId", user.id);
 
-    if (typeof updateBalanceDisplay === "function")
+    if (typeof updateBalanceDisplay === "function") {
       updateBalanceDisplay();
+    }
     if (typeof updateHeaderVisibility === "function") {
       updateHeaderVisibility(appState.currentScreen);
     }
 
     const emailMenuEl = document.getElementById("menuEmail");
-    if (emailMenuEl) emailMenuEl.textContent = user.email || email;
+    if (emailMenuEl) {
+      emailMenuEl.textContent = user.email || email;
+    }
 
     closeSignup();
     if (typeof hideLoading === "function") hideLoading();
-    if (typeof showToast === "function")
+    if (typeof showToast === "function") {
       showToast("Account created!", "success");
+    }
 
     if (typeof navigateToScreen === "function") {
       navigateToScreen("uploadScreen");
@@ -373,8 +393,9 @@ async function handleSignup(event) {
   } catch (e) {
     console.error("Signup error:", e);
     if (typeof hideLoading === "function") hideLoading();
-    if (typeof showToast === "function")
+    if (typeof showToast === "function") {
       showToast(e.message || "Signup failed", "error");
+    }
   }
 }
 
@@ -390,4 +411,5 @@ window.switchToLogin = switchToLogin;
 window.handleForgotPasswordClick = handleForgotPasswordClick;
 window.handleResetPasswordSubmit = handleResetPasswordSubmit;
 window.handleLoginSubmit = handleLoginSubmit;
+window.handleLogin = handleLogin;
 window.handleSignup = handleSignup;

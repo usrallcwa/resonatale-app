@@ -18,8 +18,9 @@ const MAX_DEPOSIT = 500;
 async function processPayment() {
   const slider = document.getElementById("creditSlider");
   if (!slider) {
-    if (typeof showToast === "function")
+    if (typeof showToast === "function") {
       showToast("Payment slider not found.", "error");
+    }
     return;
   }
 
@@ -27,20 +28,23 @@ async function processPayment() {
 
   // Match pricing constraints MIN_DEPOSIT / MAX_DEPOSIT (20–500)
   if (Number.isNaN(amount) || amount < MIN_DEPOSIT || amount > MAX_DEPOSIT) {
-    if (typeof showToast === "function")
+    if (typeof showToast === "function") {
       showToast("Amount must be $20–$500", "error");
+    }
     return;
   }
 
   if (!appState.authToken) {
-    if (typeof showToast === "function")
+    if (typeof showToast === "function") {
       showToast("Please login first", "error");
+    }
     if (typeof showLogin === "function") showLogin();
     return;
   }
 
-  if (typeof showLoading === "function")
+  if (typeof showLoading === "function") {
     showLoading("Processing payment...");
+  }
 
   try {
     // 1) Get authenticated user so we have id + email
@@ -58,12 +62,10 @@ async function processPayment() {
     const user = meData.user;
 
     // 2) Create a Stripe Checkout session for wallet credits
-    // Backend route: POST /api/credits/checkout/create
-    // Body: { userId, email, amount, credits, type }
     const payload = {
       userId: user.id,
       email: user.email,
-      amount, // dollars
+      amount,      // dollars
       credits: amount, // 1 wallet credit == $1
       type: "wallet",
     };
@@ -100,8 +102,9 @@ async function processPayment() {
   } catch (e) {
     console.error("Payment error:", e);
     if (typeof hideLoading === "function") hideLoading();
-    if (typeof showToast === "function")
+    if (typeof showToast === "function") {
       showToast(e.message || "Payment failed", "error");
+    }
   }
 }
 
@@ -133,8 +136,9 @@ async function refreshBalance() {
       ? walletBalance
       : 0;
 
-    if (typeof updateBalanceDisplay === "function")
+    if (typeof updateBalanceDisplay === "function") {
       updateBalanceDisplay();
+    }
   } catch (e) {
     console.error("Balance refresh failed:", e);
   }
@@ -149,7 +153,7 @@ async function refreshBalance() {
 document.addEventListener("DOMContentLoaded", async () => {
   const params = new URLSearchParams(window.location.search);
 
-  // Worker successUrl will be .../wallet?session_id={CHECKOUT_SESSION_ID}
+  // successUrl: .../wallet?session_id={CHECKOUT_SESSION_ID}
   const sessionId = params.get("session_id");
   const statusFlag = params.get("payment"); // ?payment=success|cancelled
 
@@ -204,13 +208,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Fallback: simple ?payment=success|cancelled flag
   if (statusFlag === "success") {
-    if (typeof showToast === "function")
+    if (typeof showToast === "function") {
       showToast("Payment successful!", "success");
+    }
     refreshBalance();
   } else if (statusFlag === "cancelled") {
-    if (typeof showToast === "function")
+    if (typeof showToast === "function") {
       showToast("Payment cancelled", "info");
+    }
   }
 
   window.history.replaceState({}, "", window.location.pathname);
 });
+
+// Expose functions if needed elsewhere
+window.processPayment = processPayment;
+window.refreshBalance = refreshBalance;

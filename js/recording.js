@@ -8,15 +8,15 @@ let wakeLock = null;
 
 async function requestWakeLock() {
   try {
-    if ('wakeLock' in navigator && !wakeLock) {
+    if ("wakeLock" in navigator && !wakeLock) {
       // @ts-ignore
-      wakeLock = await navigator.wakeLock.request('screen');
-      wakeLock.addEventListener('release', () => {
+      wakeLock = await navigator.wakeLock.request("screen");
+      wakeLock.addEventListener("release", () => {
         wakeLock = null;
       });
     }
   } catch (e) {
-    console.warn('Wake Lock not available or failed:', e);
+    console.warn("Wake Lock not available or failed:", e);
   }
 }
 
@@ -27,19 +27,19 @@ async function releaseWakeLock() {
       wakeLock = null;
     }
   } catch (e) {
-    console.warn('Wake Lock release failed:', e);
+    console.warn("Wake Lock release failed:", e);
   }
 }
 
 function pickBestAudioMimeType() {
-  if (!window.MediaRecorder || typeof MediaRecorder.isTypeSupported !== 'function') return null;
+  if (!window.MediaRecorder || typeof MediaRecorder.isTypeSupported !== "function") return null;
 
   const candidates = [
-    'audio/webm;codecs=opus',
-    'audio/webm',
-    'audio/mp4',
-    'audio/ogg;codecs=opus',
-    'audio/ogg'
+    "audio/webm;codecs=opus",
+    "audio/webm",
+    "audio/mp4",
+    "audio/ogg;codecs=opus",
+    "audio/ogg",
   ];
 
   for (const t of candidates) {
@@ -52,28 +52,28 @@ async function toggleRecording() {
   const appState = window.appState;
   if (!appState) return;
 
-  const btn = document.getElementById('recordBtn');
+  const btn = document.getElementById("recordBtn");
   if (!btn) return;
 
-  if (typeof window.requireConsentOrBlock === 'function') {
+  if (typeof window.requireConsentOrBlock === "function") {
     if (!window.requireConsentOrBlock()) return;
   }
-  if (typeof window.requireTurnstileOrBlock === 'function') {
+  if (typeof window.requireTurnstileOrBlock === "function") {
     if (!window.requireTurnstileOrBlock()) return;
   }
 
   if (!window.MediaRecorder) {
-    if (typeof window.showToast === 'function') {
-      window.showToast('Recording not supported on this browser', 'error');
+    if (typeof window.showToast === "function") {
+      window.showToast("Recording not supported on this browser", "error");
     }
     return;
   }
 
-  const icon = btn.querySelector('.record-icon');
-  const text = btn.querySelector('.record-text');
-  const statusLabel = document.getElementById('recordStatus');
+  const icon = btn.querySelector(".record-icon");
+  const text = btn.querySelector(".record-text");
+  const statusLabel = document.getElementById("recordStatus");
 
-  if (!appState.mediaRecorder || appState.mediaRecorder.state === 'inactive') {
+  if (!appState.mediaRecorder || appState.mediaRecorder.state === "inactive") {
     // START recording
     try {
       await requestWakeLock();
@@ -96,7 +96,7 @@ async function toggleRecording() {
 
       appState.mediaRecorder.onstop = () => {
         const type =
-          appState.voiceMimeType || (audioChunks[0] && audioChunks[0].type) || 'audio/webm';
+          appState.voiceMimeType || (audioChunks[0] && audioChunks[0].type) || "audio/webm";
         const audioBlob = new Blob(audioChunks, { type });
         appState.voiceBlob = audioBlob;
 
@@ -105,37 +105,37 @@ async function toggleRecording() {
         releaseWakeLock();
 
         if (statusLabel) {
-          statusLabel.style.display = 'none';
+          statusLabel.style.display = "none";
         }
       };
 
       appState.mediaRecorder.start();
       appState.recordingStartTime = Date.now();
 
-      btn.classList.add('recording');
-      if (icon) icon.textContent = '⏹';
-      if (text) text.textContent = 'Stop recording';
+      btn.classList.add("recording");
+      if (icon) icon.textContent = "⏹";
+      if (text) text.textContent = "Stop recording";
 
       if (statusLabel) {
-        statusLabel.style.display = 'block';
-        statusLabel.textContent = 'Recording…';
+        statusLabel.style.display = "block";
+        statusLabel.textContent = "Recording…";
       }
 
       startRecordingTimer();
 
       // Auto-stop at 30s
       setTimeout(() => {
-        if (appState.mediaRecorder && appState.mediaRecorder.state === 'recording') {
+        if (appState.mediaRecorder && appState.mediaRecorder.state === "recording") {
           stopRecording();
         }
       }, 30000);
     } catch (error) {
-      console.error('Microphone access error:', error);
-      if (typeof window.showToast === 'function') {
-        window.showToast('Microphone access denied', 'error');
+      console.error("Microphone access error:", error);
+      if (typeof window.showToast === "function") {
+        window.showToast("Microphone access denied", "error");
       }
       if (statusLabel) {
-        statusLabel.style.display = 'none';
+        statusLabel.style.display = "none";
       }
       releaseWakeLock();
     }
@@ -144,7 +144,7 @@ async function toggleRecording() {
     stopRecording();
     releaseWakeLock();
     if (statusLabel) {
-      statusLabel.style.display = 'none';
+      statusLabel.style.display = "none";
     }
   }
 }
@@ -153,18 +153,18 @@ function stopRecording() {
   const appState = window.appState;
   if (!appState) return;
 
-  if (appState.mediaRecorder && appState.mediaRecorder.state === 'recording') {
+  if (appState.mediaRecorder && appState.mediaRecorder.state === "recording") {
     appState.mediaRecorder.stop();
 
-    const btn = document.getElementById('recordBtn');
+    const btn = document.getElementById("recordBtn");
     if (!btn) return;
 
-    const icon = btn.querySelector('.record-icon');
-    const text = btn.querySelector('.record-text');
+    const icon = btn.querySelector(".record-icon");
+    const text = btn.querySelector(".record-text");
 
-    btn.classList.remove('recording');
-    if (icon) icon.textContent = '⏺';
-    if (text) text.textContent = 'Start recording';
+    btn.classList.remove("recording");
+    if (icon) icon.textContent = "⏺";
+    if (text) text.textContent = "Start recording";
   }
 }
 
@@ -172,24 +172,24 @@ function startRecordingTimer() {
   const appState = window.appState;
   if (!appState) return;
 
-  const timerEl = document.getElementById('recordTimer');
+  const timerEl = document.getElementById("recordTimer");
   if (!timerEl) return;
 
   const interval = setInterval(() => {
     if (
       !appState.recordingStartTime ||
       !appState.mediaRecorder ||
-      appState.mediaRecorder.state !== 'recording'
+      appState.mediaRecorder.state !== "recording"
     ) {
       clearInterval(interval);
-      timerEl.textContent = '0:00 / 0:30';
+      timerEl.textContent = "0:00 / 0:30";
       return;
     }
 
     const elapsed = Math.floor((Date.now() - appState.recordingStartTime) / 1000);
     const minutes = Math.floor(elapsed / 60);
     const seconds = elapsed % 60;
-    timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')} / 0:30`;
+    timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, "0")} / 0:30`;
   }, 100);
 }
 
@@ -197,20 +197,20 @@ function showAudioPreview(blob) {
   const appState = window.appState;
   if (!appState) return;
 
-  const preview = document.getElementById('audioPreview');
-  const audio = document.getElementById('audioPlayback');
+  const preview = document.getElementById("audioPreview");
+  const audio = document.getElementById("audioPlayback");
   if (!preview || !audio) return;
 
   if (appState.audioObjectUrl) URL.revokeObjectURL(appState.audioObjectUrl);
   appState.audioObjectUrl = URL.createObjectURL(blob);
 
   audio.src = appState.audioObjectUrl;
-  preview.classList.remove('hidden');
+  preview.classList.remove("hidden");
 
-  const hint = document.getElementById('recordingHint');
-  if (hint) hint.style.display = 'none';
+  const hint = document.getElementById("recordingHint");
+  if (hint) hint.style.display = "none";
 
-  const btn = document.getElementById('voiceContinueBtn');
+  const btn = document.getElementById("voiceContinueBtn");
   if (btn) btn.disabled = false;
 }
 
@@ -218,13 +218,13 @@ function reRecord() {
   const appState = window.appState;
   if (!appState) return;
 
-  const preview = document.getElementById('audioPreview');
-  if (preview) preview.classList.add('hidden');
+  const preview = document.getElementById("audioPreview");
+  if (preview) preview.classList.add("hidden");
 
-  const hint = document.getElementById('recordingHint');
-  if (hint) hint.style.display = 'block';
+  const hint = document.getElementById("recordingHint");
+  if (hint) hint.style.display = "block";
 
-  const btn = document.getElementById('voiceContinueBtn');
+  const btn = document.getElementById("voiceContinueBtn");
   if (btn) btn.disabled = true;
 
   appState.voiceBlob = null;
@@ -232,8 +232,14 @@ function reRecord() {
   if (appState.audioObjectUrl) URL.revokeObjectURL(appState.audioObjectUrl);
   appState.audioObjectUrl = null;
 
-  const audio = document.getElementById('audioPlayback');
-  if (audio) audio.src = '';
+  const audio = document.getElementById("audioPlayback");
+  if (audio) audio.src = "";
+
+  // Also clear any uploaded file so user starts fresh
+  const fileInput = document.getElementById("voiceFileInput");
+  if (fileInput) {
+    fileInput.value = "";
+  }
 }
 
 function stopAllStreams() {
@@ -251,15 +257,15 @@ function goToStory() {
   if (!appState) return;
 
   if (!appState.voiceBlob) {
-    if (typeof window.showToast === 'function') {
-      window.showToast('Please record your voice first', 'error');
+    if (typeof window.showToast === "function") {
+      window.showToast("Please record your voice first", "error");
     }
     return;
   }
 
-  if (appState.currentScreen === 'scriptScreen' && document.getElementById('voiceScreen')) {
-    if (typeof window.navigateToScreen === 'function') {
-      window.navigateToScreen('voiceScreen');
+  if (appState.currentScreen === "scriptScreen" && document.getElementById("voiceScreen")) {
+    if (typeof window.navigateToScreen === "function") {
+      window.navigateToScreen("voiceScreen");
     }
   }
 }

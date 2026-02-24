@@ -291,7 +291,7 @@
         <p
           style="font-size:0.8rem;color:rgba(255,255,255,0.75);margin-bottom:1rem;"
         >
-          Record in a quiet room, hold your phone close, and speak at a normal pace.
+          Record in a quiet room, hold your phone or mic close, and speak at a normal pace.
         </p>
 
         <div
@@ -321,6 +321,28 @@
             Re-record
           </button>
         </div>
+
+        <!-- NEW: Desktop/alternative voice upload -->
+        <input
+          id="voiceFileInput"
+          type="file"
+          accept="audio/*"
+          style="display:none;"
+        />
+        <button
+          id="uploadVoiceFileBtn"
+          class="btn secondary-btn"
+          type="button"
+          style="margin-top:0.75rem;"
+        >
+          Upload existing voice file
+        </button>
+        <p
+          id="voiceFileHint"
+          style="font-size:0.8rem;color:rgba(255,255,255,0.7);margin-top:0.35rem;"
+        >
+          Prefer using a file from your computer? Upload an audio clip instead of recording.
+        </p>
       </section>
 
       <!-- Language + mood selectors -->
@@ -707,6 +729,7 @@
     </div>
   </div>
 
+  <!-- Inline helpers: slider & chips -->
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       var slider = document.getElementById('creditSlider');
@@ -737,6 +760,68 @@
           });
         });
       }
+    });
+  </script>
+
+  <!-- NEW: voice file upload wiring (desktop friendly) -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      window.appState = window.appState || {};
+      var appState = window.appState;
+
+      var fileInput = document.getElementById("voiceFileInput");
+      var uploadBtn = document.getElementById("uploadVoiceFileBtn");
+      var continueBtn = document.getElementById("voiceContinueBtn");
+      var audioEl = document.getElementById("audioPlayback");
+      var audioPreview = document.getElementById("audioPreview");
+
+      if (!fileInput || !uploadBtn) return;
+
+      uploadBtn.addEventListener("click", function () {
+        fileInput.click();
+      });
+
+      fileInput.addEventListener("change", function () {
+        var file = fileInput.files && fileInput.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith("audio/")) {
+          if (typeof window.showToast === "function") {
+            window.showToast("Please select an audio file.", "error");
+          }
+          fileInput.value = "";
+          return;
+        }
+
+        var maxBytes = 10 * 1024 * 1024; // 10 MB
+        if (file.size > maxBytes) {
+          if (typeof window.showToast === "function") {
+            window.showToast("Audio file is too large (max 10 MB).", "error");
+          }
+          fileInput.value = "";
+          return;
+        }
+
+        appState.voiceBlob = file;
+        appState.voiceMimeType = file.type;
+
+        if (audioEl) {
+          if (appState.audioObjectUrl) {
+            URL.revokeObjectURL(appState.audioObjectUrl);
+          }
+          appState.audioObjectUrl = URL.createObjectURL(file);
+          audioEl.src = appState.audioObjectUrl;
+        }
+        if (audioPreview) {
+          audioPreview.classList.remove("hidden");
+        }
+
+        if (continueBtn) continueBtn.disabled = false;
+
+        if (typeof window.showToast === "function") {
+          window.showToast("Voice file selected. You can generate a preview now.", "success");
+        }
+      });
     });
   </script>
 

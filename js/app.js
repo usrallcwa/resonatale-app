@@ -1,42 +1,42 @@
+// app.js
+
 // ============================================
 // GLOBAL STATE & CONFIGURATION
 // ============================================
 
-// Auth & wallet backend
-// For local testing, you can temporarily set this to "http://127.0.0.1:8787"
-const AUTH_API_BASE = 'https://api.resonatale.com';
-
-// Render / preview backend
-const RENDER_API_BASE = 'https://resonatale-app.resonatale.com';
+// Single backend (Cloudflare Worker) for auth, credits, render, preview
+// For local testing, you can temporarily set these to "http://127.0.0.1:8787"
+const AUTH_API_BASE = "https://api.resonatale.com";
+const RENDER_API_BASE = "https://api.resonatale.com";
 
 // Keep API_BASE + window.API_BASE for render/preview code
 const API_BASE = RENDER_API_BASE;
 window.API_BASE = RENDER_API_BASE;
 
 const SUPPORTED_LANGUAGES = [
-  { code: 'ENG', label: 'English', flag: '🇺🇸' },
-  { code: 'SPA', label: 'Español', flag: '🇪🇸' },
-  { code: 'MEX', label: 'Español (México)', flag: '🇲🇽' },
-  { code: 'FRA', label: 'Français', flag: '🇫🇷' },
-  { code: 'DEU', label: 'Deutsch', flag: '🇩🇪' },
-  { code: 'POR', label: 'Português', flag: '🇧🇷' },
-  { code: 'ITA', label: 'Italiano', flag: '🇮🇹' },
-  { code: 'JPN', label: '日本語', flag: '🇯🇵' },
-  { code: 'CMN', label: '中文 (普通话)', flag: '🇨🇳' },
-  { code: 'KOR', label: '한국어', flag: '🇰🇷' },
-  { code: 'HIN', label: 'हिन्दी', flag: '🇮🇳' },
-  { code: 'ARA', label: 'العربية', flag: '🇸🇦' },
-  { code: 'RUS', label: 'Русский', flag: '🇷🇺' },
-  { code: 'TUR', label: 'Türkçe', flag: '🇹🇷' },
-  { code: 'SWE', label: 'Svenska', flag: '🇸🇪' },
-  { code: 'NLD', label: 'Nederlands', flag: '🇳🇱' },
-  { code: 'POL', label: 'Polski', flag: '🇵🇱' },
-  { code: 'UKR', label: 'Українська', flag: '🇺🇦' },
-  { code: 'VIE', label: 'Tiếng Việt', flag: '🇻🇳' }
+  { code: "ENG", label: "English", flag: "🇺🇸" },
+  { code: "SPA", label: "Español", flag: "🇪🇸" },
+  { code: "MEX", label: "Español (México)", flag: "🇲🇽" },
+  { code: "FRA", label: "Français", flag: "🇫🇷" },
+  { code: "DEU", label: "Deutsch", flag: "🇩🇪" },
+  { code: "POR", label: "Português", flag: "🇧🇷" },
+  { code: "ITA", label: "Italiano", flag: "🇮🇹" },
+  { code: "JPN", label: "日本語", flag: "🇯🇵" },
+  { code: "CMN", label: "中文 (普通话)", flag: "🇨🇳" },
+  { code: "KOR", label: "한국어", flag: "🇰🇷" },
+  { code: "HIN", label: "हिन्दी", flag: "🇮🇳" },
+  { code: "ARA", label: "العربية", flag: "🇸🇦" },
+  { code: "RUS", label: "Русский", flag: "🇷🇺" },
+  { code: "TUR", label: "Türkçe", flag: "🇹🇷" },
+  { code: "SWE", label: "Svenska", flag: "🇸🇪" },
+  { code: "NLD", label: "Nederlands", flag: "🇳🇱" },
+  { code: "POL", label: "Polski", flag: "🇵🇱" },
+  { code: "UKR", label: "Українська", flag: "🇺🇦" },
+  { code: "VIE", label: "Tiếng Việt", flag: "🇻🇳" },
 ];
 
 let appState = {
-  currentScreen: 'heroScreen',
+  currentScreen: "heroScreen",
   previousScreen: null,
 
   photos: [],
@@ -51,88 +51,72 @@ let appState = {
     return window.turnstileToken || null;
   },
 
-  authToken: localStorage.getItem('authToken'),
-  userId: localStorage.getItem('userId'),
+  authToken: localStorage.getItem("authToken"),
+  userId: localStorage.getItem("userId"),
   userBalance: 0,
   previewVideoUrl: null,
   audioObjectUrl: null,
 
-  voiceLanguage: 'ENG',
-  voiceMood: 'calm',
+  voiceLanguage: "ENG",
+  voiceMood: "calm",
 
   hasSavedPhotos: false,
-  hasSavedVoice: false
+  hasSavedVoice: false,
 };
 
 // expose for other scripts
 window.appState = appState;
 window.API_BASE = API_BASE;
 window.SUPPORTED_LANGUAGES = SUPPORTED_LANGUAGES;
+window.AUTH_API_BASE = AUTH_API_BASE;
 
 // ============================================
 // INITIALIZATION
 // ============================================
-document.addEventListener('DOMContentLoaded', function () {
-  console.log('🎬 ResonaTale App Initialized');
+document.addEventListener("DOMContentLoaded", function () {
+  console.log("🎬 ResonaTale App Initialized");
 
-  if (typeof initCompliance === 'function') {
+  if (typeof initCompliance === "function") {
     initCompliance();
   }
 
   updateHeaderVisibility(appState.currentScreen);
 
-  if (appState.authToken && typeof initAuthenticatedApp === 'function') {
+  if (appState.authToken && typeof initAuthenticatedApp === "function") {
     initAuthenticatedApp();
   }
 
   setupEventListeners();
 
-  if (typeof initLanguageSelector === 'function') {
+  if (typeof initLanguageSelector === "function") {
     initLanguageSelector();
   }
-  if (typeof initMoodPicker === 'function') {
+  if (typeof initMoodPicker === "function") {
     initMoodPicker();
   }
 
-  if (typeof animateFilmCounter === 'function') {
+  if (typeof animateFilmCounter === "function") {
     animateFilmCounter();
-  }
-
-  // Hook main CTA / wallet buttons
-  const getFullBtn = document.getElementById('getFullVideoBtn');
-  if (getFullBtn) {
-    getFullBtn.addEventListener('click', () => {
-      // Example: 10 USD → 10 wallet credits
-      startCheckout(10, 10, 'wallet');
-    });
-  }
-
-  const addCreditsBtn = document.getElementById('addCreditsBtn');
-  if (addCreditsBtn) {
-    addCreditsBtn.addEventListener('click', () => {
-      // Adjust these as needed for your UI
-      startCheckout(10, 10, 'wallet');
-    });
   }
 });
 
 function setupEventListeners() {
-  const photoInput = document.getElementById('photoInput');
-  if (photoInput && typeof handlePhotoSelection === 'function') {
-    photoInput.addEventListener('change', handlePhotoSelection);
+  const photoInput = document.getElementById("photoInput");
+  if (photoInput && typeof handlePhotoSelection === "function") {
+    photoInput.addEventListener("change", handlePhotoSelection);
   }
 
-  const briefDesc = document.getElementById('briefDesc');
+  const briefDesc = document.getElementById("briefDesc");
   if (briefDesc) {
-    briefDesc.addEventListener('input', function (e) {
+    briefDesc.addEventListener("input", function (e) {
       const count = e.target.value.length;
-      const counterEl = document.getElementById('briefCount');
+      const counterEl = document.getElementById("briefCount");
       if (counterEl) counterEl.textContent = count;
     });
   }
 
   document.body.addEventListener(
-    'touchmove',
+    "touchmove",
     function (e) {
       if (e.touches && e.touches.length > 1) {
         e.preventDefault();
@@ -146,16 +130,16 @@ function setupEventListeners() {
 // LANGUAGE SELECTOR
 // ============================================
 function initLanguageSelector() {
-  const select = document.getElementById('voiceLanguageSelect');
+  const select = document.getElementById("voiceLanguageSelect");
   if (!select) return;
 
   select.innerHTML = SUPPORTED_LANGUAGES.map(
     (lang) => `<option value="${lang.code}">${lang.flag} ${lang.label}</option>`
-  ).join('');
+  ).join("");
 
   select.value = appState.voiceLanguage;
 
-  select.addEventListener('change', (e) => {
+  select.addEventListener("change", (e) => {
     appState.voiceLanguage = e.target.value;
   });
 }
@@ -164,25 +148,25 @@ function initLanguageSelector() {
 // MOOD PICKER
 // ============================================
 function initMoodPicker() {
-  const container = document.getElementById('moodPicker');
+  const container = document.getElementById("moodPicker");
   if (!container) return;
 
-  const buttons = container.querySelectorAll('.mood-btn');
+  const buttons = container.querySelectorAll(".mood-btn");
 
   const applyActiveStyles = (activeMood) => {
     buttons.forEach((btn) => {
       const mood = btn.dataset.mood;
       if (mood === activeMood) {
-        btn.classList.add('active');
+        btn.classList.add("active");
       } else {
-        btn.classList.remove('active');
+        btn.classList.remove("active");
       }
     });
   };
 
   buttons.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const mood = btn.dataset.mood || 'calm';
+    btn.addEventListener("click", () => {
+      const mood = btn.dataset.mood || "calm";
       appState.voiceMood = mood;
       applyActiveStyles(mood);
     });
@@ -196,27 +180,27 @@ function initMoodPicker() {
 // ============================================
 function startApp() {
   if (appState.authToken && appState.hasSavedPhotos && appState.hasSavedVoice) {
-    const recordingHint = document.getElementById('recordingHint');
+    const recordingHint = document.getElementById("recordingHint");
     if (recordingHint) {
       recordingHint.textContent =
         "We're using your saved photos and voice from last time. Just describe the new story you want to tell.";
     }
-    navigateToScreen('voiceScreen');
+    navigateToScreen("voiceScreen");
     return;
   }
 
-  navigateToScreen('uploadScreen');
+  navigateToScreen("uploadScreen");
 }
 window.startApp = startApp;
 
 function updateHeaderVisibility(screenId) {
-  const header = document.querySelector('.app-header');
+  const header = document.querySelector(".app-header");
   if (!header) return;
-  header.classList.remove('hidden');
+  header.classList.remove("hidden");
 }
 
 function navigateToScreen(screenId) {
-  const currentScreen = document.querySelector('.screen.active');
+  const currentScreen = document.querySelector(".screen.active");
   const nextScreen = document.getElementById(screenId);
   if (!nextScreen) return;
 
@@ -224,12 +208,12 @@ function navigateToScreen(screenId) {
   appState.currentScreen = screenId;
 
   if (currentScreen) {
-    currentScreen.classList.remove('active');
-    currentScreen.classList.add('exiting');
-    setTimeout(() => currentScreen.classList.remove('exiting'), 300);
+    currentScreen.classList.remove("active");
+    currentScreen.classList.add("exiting");
+    setTimeout(() => currentScreen.classList.remove("exiting"), 300);
   }
 
-  nextScreen.classList.add('active');
+  nextScreen.classList.add("active");
   updateHeaderVisibility(screenId);
 }
 window.navigateToScreen = navigateToScreen;
@@ -242,19 +226,19 @@ window.goBack = goBack;
 // ============================================
 // CONSENT / TURNSTILE
 // ============================================
-const CONSENT_KEY = 'rt_consent_18plus_v1';
+const CONSENT_KEY = "rt_consent_18plus_v1";
 
 function hasConsent() {
-  return localStorage.getItem(CONSENT_KEY) === 'true';
+  return localStorage.getItem(CONSENT_KEY) === "true";
 }
 window.hasConsent = hasConsent;
 
 function requireConsentOrBlock() {
   if (hasConsent()) return true;
-  if (typeof showConsentModal === 'function') {
+  if (typeof showConsentModal === "function") {
     showConsentModal();
-  } else if (typeof showToast === 'function') {
-    showToast('Please confirm you are 18+ before continuing.', 'error');
+  } else if (typeof showToast === "function") {
+    showToast("Please confirm you are 18+ before continuing.", "error");
   }
   return false;
 }
@@ -262,43 +246,43 @@ window.requireConsentOrBlock = requireConsentOrBlock;
 
 function requireTurnstileOrBlock() {
   if (appState.turnstileToken) return true;
-  if (typeof showToast === 'function') {
-    showToast('Please complete the verification check.', 'error');
+  if (typeof showToast === "function") {
+    showToast("Please complete the verification check.", "error");
   }
   return false;
 }
 window.requireTurnstileOrBlock = requireTurnstileOrBlock;
 
 function showConsentModal() {
-  const modal = document.getElementById('consentModal');
+  const modal = document.getElementById("consentModal");
   if (!modal) return;
-  modal.style.display = 'flex';
-  modal.classList.add('active');
+  modal.style.display = "flex";
+  modal.classList.add("active");
 }
 window.showConsentModal = showConsentModal;
 
 function closeConsentModal() {
-  const modal = document.getElementById('consentModal');
+  const modal = document.getElementById("consentModal");
   if (!modal) return;
-  modal.classList.remove('active');
-  modal.style.display = 'none';
+  modal.classList.remove("active");
+  modal.style.display = "none";
 }
 window.closeConsentModal = closeConsentModal;
 
 function acceptConsent() {
-  const checkbox = document.getElementById('consentCheckbox');
+  const checkbox = document.getElementById("consentCheckbox");
   if (!checkbox || !checkbox.checked) {
-    if (typeof showToast === 'function') {
-      showToast('Please confirm you are 18+ and accept the terms.', 'error');
+    if (typeof showToast === "function") {
+      showToast("Please confirm you are 18+ and accept the terms.", "error");
     }
     return;
   }
 
-  localStorage.setItem(CONSENT_KEY, 'true');
+  localStorage.setItem(CONSENT_KEY, "true");
   closeConsentModal();
 
-  if (typeof showToast === 'function') {
-    showToast('Thank you, you can continue.', 'success');
+  if (typeof showToast === "function") {
+    showToast("Thank you, you can continue.", "success");
   }
 }
 window.acceptConsent = acceptConsent;
@@ -311,7 +295,7 @@ async function initAuthenticatedApp() {
 
   try {
     const response = await fetch(`${AUTH_API_BASE}/api/auth/me`, {
-      headers: { Authorization: `Bearer ${appState.authToken}` }
+      headers: { Authorization: `Bearer ${appState.authToken}` },
     });
 
     if (!response.ok) {
@@ -322,7 +306,8 @@ async function initAuthenticatedApp() {
     const data = await response.json();
     const user = data?.user || {};
 
-    const balanceNum = Number(user.balance ?? 0);
+    const balanceNum =
+      Number(user.walletBalance ?? user.balance ?? 0);
     appState.userBalance = Number.isFinite(balanceNum) ? balanceNum : 0;
 
     appState.hasSavedPhotos = Boolean(user.hasPhotos);
@@ -330,29 +315,33 @@ async function initAuthenticatedApp() {
 
     updateBalanceDisplay();
 
-    const header = document.querySelector('.app-header');
-    if (header && appState.currentScreen !== 'heroScreen') {
-      header.classList.remove('hidden');
+    const header = document.querySelector(".app-header");
+    if (header && appState.currentScreen !== "heroScreen") {
+      header.classList.remove("hidden");
     }
 
-    const emailEl = document.getElementById('menuEmail');
-    if (emailEl) emailEl.textContent = user.email || '';
+    const emailEl = document.getElementById("menuEmail");
+    if (emailEl) emailEl.textContent = user.email || "";
 
-    const balanceEl = document.getElementById('menuBalance');
-    if (balanceEl) balanceEl.textContent = appState.userBalance.toFixed(2);
+    const balanceEl = document.getElementById("menuBalance");
+    if (balanceEl)
+      balanceEl.textContent = appState.userBalance.toFixed(2);
 
-    const heroNote = document.querySelector('.hero-note');
+    const heroNote = document.querySelector(".hero-note");
     if (heroNote && appState.hasSavedPhotos && appState.hasSavedVoice) {
-      heroNote.textContent = "We'll reuse your saved photos and voice. Just describe your next story.";
+      heroNote.textContent =
+        "We'll reuse your saved photos and voice. Just describe your next story.";
     }
   } catch (error) {
-    console.error('Auth check error:', error);
+    console.error("Auth check error:", error);
   }
 }
 window.initAuthenticatedApp = initAuthenticatedApp;
 
 function updateBalanceDisplay() {
-  const balanceEls = document.querySelectorAll('#userBalance, #modalBalance, #menuBalance');
+  const balanceEls = document.querySelectorAll(
+    "#userBalance, #modalBalance, #menuBalance"
+  );
   balanceEls.forEach((el) => {
     el.textContent = Number(appState.userBalance || 0).toFixed(2);
   });
@@ -360,44 +349,44 @@ function updateBalanceDisplay() {
 window.updateBalanceDisplay = updateBalanceDisplay;
 
 function openMenu() {
-  const overlay = document.getElementById('menuOverlay');
+  const overlay = document.getElementById("menuOverlay");
   if (!overlay) return;
 
-  overlay.style.display = 'flex';
-  overlay.classList.add('open');
+  overlay.style.display = "flex";
+  overlay.classList.add("open");
 }
 window.openMenu = openMenu;
 
 function closeMenu() {
-  const overlay = document.getElementById('menuOverlay');
+  const overlay = document.getElementById("menuOverlay");
   if (!overlay) return;
 
-  overlay.classList.remove('open');
-  overlay.style.display = 'none';
+  overlay.classList.remove("open");
+  overlay.style.display = "none";
 }
 window.closeMenu = closeMenu;
 
 function showLogin() {
-  const modal = document.getElementById('authModal');
+  const modal = document.getElementById("authModal");
   if (!modal) return;
 
-  modal.style.display = 'flex';
-  modal.classList.add('active');
+  modal.style.display = "flex";
+  modal.classList.add("active");
 }
 window.showLogin = showLogin;
 
 function closeLogin() {
-  const modal = document.getElementById('authModal');
+  const modal = document.getElementById("authModal");
   if (!modal) return;
 
-  modal.classList.remove('active');
-  modal.style.display = 'none';
+  modal.classList.remove("active");
+  modal.style.display = "none";
 }
 window.closeLogin = closeLogin;
 
 function logout(silent = false) {
-  localStorage.removeItem('authToken');
-  localStorage.removeItem('userId');
+  localStorage.removeItem("authToken");
+  localStorage.removeItem("userId");
 
   appState.authToken = null;
   appState.userId = null;
@@ -406,110 +395,54 @@ function logout(silent = false) {
   appState.hasSavedVoice = false;
 
   closeMenu();
-  if (typeof hideLoading === 'function') hideLoading();
-  if (typeof closeCredits === 'function') closeCredits();
+  if (typeof hideLoading === "function") hideLoading();
+  if (typeof closeCredits === "function") closeCredits();
 
-  navigateToScreen('heroScreen');
+  navigateToScreen("heroScreen");
 
-  const header = document.querySelector('.app-header');
-  if (header) header.classList.add('hidden');
+  const header = document.querySelector(".app-header");
+  if (header) header.classList.add("hidden");
 
-  if (!silent && typeof showToast === 'function') {
-    showToast('Logged out successfully', 'success');
+  if (!silent && typeof showToast === "function") {
+    showToast("Logged out successfully", "success");
   }
 }
 window.logout = logout;
 
 function showAddCredits() {
   closeMenu();
-  const modal = document.getElementById('creditsModal');
+  const modal = document.getElementById("creditsModal");
   if (!modal) return;
 
-  modal.style.display = 'flex';
-  modal.classList.add('active');
+  modal.style.display = "flex";
+  modal.classList.add("active");
 
-  const balanceEl = document.getElementById('modalBalance');
-  if (balanceEl) balanceEl.textContent = Number(appState.userBalance || 0).toFixed(2);
+  const balanceEl = document.getElementById("modalBalance");
+  if (balanceEl)
+    balanceEl.textContent = Number(appState.userBalance || 0).toFixed(2);
 }
 window.showAddCredits = showAddCredits;
 
 function closeCredits() {
-  const modal = document.getElementById('creditsModal');
+  const modal = document.getElementById("creditsModal");
   if (!modal) return;
 
-  modal.classList.remove('active');
-  modal.style.display = 'none';
+  modal.classList.remove("active");
+  modal.style.display = "none";
 }
 window.closeCredits = closeCredits;
-
-// ============================================
-// CHECKOUT / CREDITS
-// ============================================
-async function startCheckout(amount, credits, type) {
-  try {
-    if (!appState.authToken) {
-      if (typeof showToast === 'function') {
-        showToast('Please log in before adding credits.', 'error');
-      }
-      if (typeof showLogin === 'function') {
-        showLogin();
-      }
-      return;
-    }
-
-    if (typeof requireConsentOrBlock === 'function' && !requireConsentOrBlock()) {
-      return;
-    }
-
-    if (typeof requireTurnstileOrBlock === 'function' && !requireTurnstileOrBlock()) {
-      return;
-    }
-
-    if (typeof showLoading === 'function') showLoading('Redirecting to checkout...');
-
-    const response = await fetch(`${AUTH_API_BASE}/api/credits/checkout/create`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${appState.authToken}`
-      },
-      body: JSON.stringify({ amount, credits, type })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok || !data.success || !data.url) {
-      if (typeof hideLoading === 'function') hideLoading();
-      console.error('Checkout error:', data);
-      if (typeof showToast === 'function') {
-        showToast(data.error || 'Failed to start checkout.', 'error');
-      }
-      return;
-    }
-
-    // Redirect to Stripe Checkout
-    window.location.href = data.url;
-  } catch (err) {
-    console.error('Checkout exception:', err);
-    if (typeof hideLoading === 'function') hideLoading();
-    if (typeof showToast === 'function') {
-      showToast('Unexpected error starting checkout.', 'error');
-    }
-  }
-}
-window.startCheckout = startCheckout;
 
 // ============================================
 // SOCIAL AUTH STUBS
 // ============================================
 function startGoogleLogin() {
-  if (typeof showToast === 'function') {
-    showToast('Google sign-in coming soon.', 'info');
+  if (typeof showToast === "function") {
+    showToast("Google sign-in coming soon.", "info");
   }
 }
 function startAppleLogin() {
-  if (typeof showToast === 'function') {
-    showToast('Apple sign-in coming soon.', 'info');
+  if (typeof showToast === "function") {
+    showToast("Apple sign-in coming soon.", "info");
   }
 }
 window.startGoogleLogin = startGoogleLogin;
@@ -519,7 +452,7 @@ window.startAppleLogin = startAppleLogin;
 // SOCIAL PROOF COUNTER
 // ============================================
 function animateFilmCounter() {
-  const counter = document.getElementById('filmCounter');
+  const counter = document.getElementById("filmCounter");
   if (!counter) return;
 
   let count = 47329;

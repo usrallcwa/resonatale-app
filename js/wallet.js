@@ -11,7 +11,6 @@ const MAX_DEPOSIT = 500;
  * - Reads amount from #creditSlider
  * - Validates amount ($20–$500)
  * - Ensures user is logged in
- * - Fetches current user via /api/auth/me
  * - Creates Stripe Checkout session via /api/credits/checkout/create
  * - Redirects browser to Stripe checkout URL
  */
@@ -47,25 +46,10 @@ async function processPayment() {
   }
 
   try {
-    // 1) Get authenticated user so we have id + email
-    const meRes = await fetch(`${API_BASE}/api/auth/me`, {
-      headers: { Authorization: `Bearer ${appState.authToken}` },
-    });
-
-    const meData = await meRes.json().catch(() => ({}));
-    if (!meRes.ok || !meData.user) {
-      throw new Error(
-        meData.error || meData.message || "Unable to load account",
-      );
-    }
-
-    const user = meData.user;
-
-    // 2) Create a Stripe Checkout session for wallet credits
+    // Create a Stripe Checkout session for wallet credits
+    // Backend will derive userId/email from the Authorization token
     const payload = {
-      userId: user.id,
-      email: user.email,
-      amount,      // dollars
+      amount,          // dollars
       credits: amount, // 1 wallet credit == $1
       type: "wallet",
     };

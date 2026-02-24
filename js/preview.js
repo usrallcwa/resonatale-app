@@ -15,71 +15,83 @@ async function generatePreview() {
     return;
   }
 
-  const briefDescEl = document.getElementById('briefDesc');
-  const briefDesc = briefDescEl ? briefDescEl.value.trim() : '';
+  const briefDescEl = document.getElementById("briefDesc");
+  const briefDesc = briefDescEl ? briefDescEl.value.trim() : "";
 
-  console.log('[ResonaTale] generatePreview clicked');
-  console.log('  hasConsent:', typeof window.hasConsent === 'function' ? window.hasConsent() : null);
-  console.log('  turnstileToken:', appState.turnstileToken);
-  console.log('  photos:', appState.photos.length);
-  console.log('  hasVoiceBlob:', !!appState.voiceBlob, 'voiceId:', appState.voiceId);
-  console.log('  briefDesc length:', briefDesc.length);
+  console.log("[ResonaTale] generatePreview clicked");
+  console.log(
+    "  hasConsent:",
+    typeof window.hasConsent === "function" ? window.hasConsent() : null
+  );
+  console.log("  turnstileToken:", appState.turnstileToken);
+  console.log("  photos:", appState.photos.length);
+  console.log("  hasVoiceBlob:", !!appState.voiceBlob, "voiceId:", appState.voiceId);
+  console.log("  briefDesc length:", briefDesc.length);
 
   // 1) Consent guard
-  if (typeof window.hasConsent === 'function' && !window.hasConsent()) {
-    if (typeof window.showConsentModal === 'function') window.showConsentModal();
-    if (typeof window.showToast === 'function') {
-      window.showToast('Please confirm you are 18+ before generating a preview.', 'error');
+  if (typeof window.hasConsent === "function" && !window.hasConsent()) {
+    if (typeof window.showConsentModal === "function") window.showConsentModal();
+    if (typeof window.showToast === "function") {
+      window.showToast(
+        "Please confirm you are 18+ before generating a preview.",
+        "error"
+      );
     } else {
-      alert('Please confirm you are 18+ before generating a preview.');
+      alert("Please confirm you are 18+ before generating a preview.");
     }
     return;
   }
 
   // 2) Turnstile – optional for preview (backend will enforce limits if needed)
   const turnstileToken = appState.turnstileToken || null;
-  console.log('[ResonaTale] turnstileToken for preview:', turnstileToken);
+  console.log("[ResonaTale] turnstileToken for preview:", turnstileToken);
 
   // 3) Description guard
   if (!briefDesc) {
-    if (typeof window.showToast === 'function') {
-      window.showToast('Please enter a brief description of your story.', 'error');
+    if (typeof window.showToast === "function") {
+      window.showToast(
+        "Please enter a brief description of your story.",
+        "error"
+      );
     } else {
-      alert('Please enter a brief description of your story.');
+      alert("Please enter a brief description of your story.");
     }
     return;
   }
 
   // 4) Photos guard
   if (appState.photos.length < 6) {
-    if (typeof window.showToast === 'function') {
-      window.showToast('Please upload at least 6 photos.', 'error');
+    if (typeof window.showToast === "function") {
+      window.showToast("Please upload at least 6 photos.", "error");
     } else {
-      alert('Please upload at least 6 photos.');
+      alert("Please upload at least 6 photos.");
     }
     return;
   }
 
-  // 5) Voice guard
+  // 5) Voice guard (record or upload)
   if (!appState.voiceBlob && !appState.voiceId) {
-    if (typeof window.showToast === 'function') {
-      window.showToast('Please record your voice before generating a preview.', 'error');
+    if (typeof window.showToast === "function") {
+      window.showToast(
+        "Please record or upload your voice before generating a preview.",
+        "error"
+      );
     } else {
-      alert('Please record your voice before generating a preview.');
+      alert("Please record or upload your voice before generating a preview.");
     }
     return;
   }
 
   isGeneratingPreview = true;
 
-  const generateBtn = document.getElementById('voiceContinueBtn');
+  const generateBtn = document.getElementById("voiceContinueBtn");
   if (generateBtn) {
     generateBtn.disabled = true;
-    generateBtn.textContent = 'Generating...';
+    generateBtn.textContent = "Generating...";
   }
 
-  if (typeof window.showLoading === 'function') {
-    window.showLoading('Uploading photos...');
+  if (typeof window.showLoading === "function") {
+    window.showLoading("Uploading photos...");
   }
 
   try {
@@ -88,16 +100,16 @@ async function generatePreview() {
 
     // 7) Upload voice if needed
     if (!appState.voiceId) {
-      if (typeof window.showLoading === 'function') {
-        window.showLoading('Cloning your voice...');
+      if (typeof window.showLoading === "function") {
+        window.showLoading("Cloning your voice...");
       }
       const voiceId = await uploadVoice();
       appState.voiceId = voiceId;
     }
 
     // 8) Call preview API
-    if (typeof window.showLoading === 'function') {
-      window.showLoading('Creating your preview film...');
+    if (typeof window.showLoading === "function") {
+      window.showLoading("Creating your preview film...");
     }
     const previewData = await generatePreviewRequest(
       photoUrls,
@@ -107,43 +119,46 @@ async function generatePreview() {
     );
 
     const audioUrl = previewData.audioUrl || null;
-    const scriptText = previewData.script || '';
+    const scriptText = previewData.script || "";
 
     appState.previewVideoUrl = audioUrl;
     // Save last brief so fullVideo.js can reuse it
     appState.lastBrief = briefDesc;
 
-    if (typeof window.navigateToScreen === 'function') {
-      window.navigateToScreen('previewScreen');
+    if (typeof window.navigateToScreen === "function") {
+      window.navigateToScreen("previewScreen");
     }
 
-    const mediaEl = document.getElementById('previewVideo');
+    const mediaEl = document.getElementById("previewVideo");
     if (mediaEl && audioUrl) {
       mediaEl.src = audioUrl;
     }
 
-    const scriptEl = document.getElementById('previewScript');
+    const scriptEl = document.getElementById("previewScript");
     if (scriptEl) {
       scriptEl.textContent = scriptText;
     }
 
-    if (typeof window.hideLoading === 'function') window.hideLoading();
-    if (typeof window.showToast === 'function') {
-      window.showToast(previewData.message || 'Preview ready!', 'success');
+    if (typeof window.hideLoading === "function") window.hideLoading();
+    if (typeof window.showToast === "function") {
+      window.showToast(previewData.message || "Preview ready!", "success");
     }
   } catch (error) {
-    console.error('[ResonaTale] Preview generation error:', error);
-    if (typeof window.hideLoading === 'function') window.hideLoading();
-    if (typeof window.showToast === 'function') {
-      window.showToast(error.message || 'Failed to generate preview. Please try again.', 'error');
+    console.error("[ResonaTale] Preview generation error:", error);
+    if (typeof window.hideLoading === "function") window.hideLoading();
+    if (typeof window.showToast === "function") {
+      window.showToast(
+        error.message || "Failed to generate preview. Please try again.",
+        "error"
+      );
     } else {
-      alert(error.message || 'Failed to generate preview. Please try again.');
+      alert(error.message || "Failed to generate preview. Please try again.");
     }
   } finally {
     isGeneratingPreview = false;
     if (generateBtn) {
       generateBtn.disabled = false;
-      generateBtn.textContent = 'Generate preview';
+      generateBtn.textContent = "Generate preview";
     }
   }
 }
@@ -159,39 +174,39 @@ async function uploadVoice() {
   const appState = window.appState;
   const API_BASE = window.API_BASE;
   if (!appState || !API_BASE) {
-    throw new Error('App not initialized');
+    throw new Error("App not initialized");
   }
 
-  if (typeof window.hasConsent === 'function' && !window.hasConsent()) {
-    if (typeof window.showConsentModal === 'function') window.showConsentModal();
-    throw new Error('Consent required');
+  if (typeof window.hasConsent === "function" && !window.hasConsent()) {
+    if (typeof window.showConsentModal === "function") window.showConsentModal();
+    throw new Error("Consent required");
   }
   if (!appState.turnstileToken) {
-    throw new Error('Verification required');
+    throw new Error("Verification required");
   }
 
   const formData = new FormData();
-  formData.append('audio', appState.voiceBlob, 'voice.webm');
-  formData.append('name', 'User Voice');
-  formData.append('turnstileToken', appState.turnstileToken);
+  formData.append("audio", appState.voiceBlob, "voice.webm");
+  formData.append("name", "User Voice");
+  formData.append("turnstileToken", appState.turnstileToken);
 
   const headers = {};
-  if (appState.authToken) headers['Authorization'] = `Bearer ${appState.authToken}`;
+  if (appState.authToken) headers["Authorization"] = `Bearer ${appState.authToken}`;
 
-  const response = await fetch(`${API_BASE}/apiuservoiceupload`, {
-    method: 'POST',
+  const response = await fetch(`${API_BASE}/api/user/voice/upload`, {
+    method: "POST",
     headers,
-    body: formData
+    body: formData,
   });
 
   if (!response.ok) {
-    let msg = 'Voice upload failed';
+    let msg = "Voice upload failed";
     try {
       const err = await response.json();
-      console.error('Voice upload error body:', err);
+      console.error("Voice upload error body:", err);
       if (err && (err.error || err.message)) msg = err.error || err.message;
     } catch (e) {
-      console.error('Voice upload non-JSON error:', e);
+      console.error("Voice upload non-JSON error:", e);
     }
     throw new Error(msg);
   }
@@ -204,14 +219,14 @@ async function generatePreviewRequest(photoUrls, voiceId, briefDesc, turnstileTo
   const appState = window.appState;
   const API_BASE = window.API_BASE;
   if (!API_BASE || !appState) {
-    throw new Error('App not initialized');
+    throw new Error("App not initialized");
   }
 
-  const headers = { 'Content-Type': 'application/json' };
-  if (appState.authToken) headers['Authorization'] = `Bearer ${appState.authToken}`;
+  const headers = { "Content-Type": "application/json" };
+  if (appState.authToken) headers["Authorization"] = `Bearer ${appState.authToken}`;
 
   const response = await fetch(`${API_BASE}/api/render/preview`, {
-    method: 'POST',
+    method: "POST",
     headers,
     body: JSON.stringify({
       prompt: briefDesc,
@@ -220,8 +235,8 @@ async function generatePreviewRequest(photoUrls, voiceId, briefDesc, turnstileTo
       photoCount: photoUrls.length,
       language: appState.voiceLanguage,
       mood: appState.voiceMood,
-      turnstileToken: turnstileToken || null
-    })
+      turnstileToken: turnstileToken || null,
+    }),
   });
 
   if (!response.ok) {
@@ -229,9 +244,9 @@ async function generatePreviewRequest(photoUrls, voiceId, briefDesc, turnstileTo
     try {
       error = await response.json();
     } catch (e) {
-      console.error('Preview response non-JSON error:', e);
+      console.error("Preview response non-JSON error:", e);
     }
-    throw new Error(error.error || error.message || 'Preview generation failed');
+    throw new Error(error.error || error.message || "Preview generation failed");
   }
 
   return await response.json();

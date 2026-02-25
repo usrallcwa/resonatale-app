@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>ResonaTale – Your Voice. Your Story. Brought to Life.</title>
+  <title>ResonaTale – Upload, record, and star in your own short movie.</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- Favicons -->
@@ -46,7 +46,7 @@
     <header class="app-header">
       <div class="header-left">
         <a href="/" class="brand-logo" aria-label="ResonaTale home">
-          <!-- Inline SVG logo -->
+          <!-- Inline SVG logo (unchanged) -->
           <svg
             viewBox="0 0 320 320"
             xmlns="http://www.w3.org/2000/svg"
@@ -93,35 +93,31 @@
         </a>
       </div>
 
-     <div class="header-right">
-  <button class="header-menu-btn" type="button" onclick="showLogin()">
-    Sign in
-  </button>
+      <div class="header-right">
+        <!-- Single Sign in, always visible -->
+        <button class="header-menu-btn" type="button" onclick="showLogin()">
+          Sign in
+        </button>
 
-  <button class="header-menu-btn" type="button" onclick="openMenu()">
-    ☰
-  </button>
-</div>
-</header>
+        <button class="header-menu-btn" type="button" onclick="openMenu()">
+          ☰
+        </button>
+      </div>
+    </header>
 
     <!-- HERO / WELCOME SCREEN -->
     <div id="heroScreen" class="screen active">
-      <button class="link-btn hero-login-btn" type="button" onclick="showLogin()">
-        Login
-      </button>
-
       <div class="hero">
         <h1 class="hero-logo">ResonaTale</h1>
-        <p class="hero-tag">Your Voice. Your Story. Brought to Life.</p>
+        <p class="hero-tag">
+          Upload, record, and star in your own short movie.
+        </p>
 
         <div class="hero-desc">
-          <p>Clone your voice, upload your photos, and create AI-powered video stories that sound exactly like you.</p>
-          <p class="hero-desc-sub">See a free preview in under a minute.</p>
+          <p>
+            Add your photo and voice, and we’ll create a 1‑minute film that looks and sounds like you.
+          </p>
         </div>
-
-        <p class="hero-mini-explainer">
-          A short, vertical film crafted from your photos and your own voice, ready to share or keep forever.
-        </p>
 
         <!-- Turnstile widget for verification -->
         <div
@@ -138,11 +134,26 @@
           ></div>
         </div>
 
-        <button class="btn primary-btn pulse" type="button" onclick="startApp()">
-          Start free preview
-        </button>
+        <div class="hero-actions" style="display:flex;flex-direction:column;gap:0.5rem;">
+          <button
+            class="btn primary-btn"
+            type="button"
+            onclick="triggerFileInput()"
+          >
+            ➕ Add photo
+          </button>
+          <button
+            class="btn secondary-btn"
+            type="button"
+            onclick="navigateToScreen('voiceScreen')"
+          >
+            🎙️ Add voice
+          </button>
+        </div>
 
-       <p class="hero-note">Try a free preview. No credit card required.</p>
+        <p class="hero-note">
+          1‑minute vertical movie. Your photo and voice, your story.
+        </p>
       </div>
 
       <div class="hero-footer">
@@ -182,7 +193,7 @@
 
       <section>
         <p style="font-size:0.9rem;color:rgba(255,255,255,0.8);margin-bottom:0.75rem;">
-          Upload 6–12 clear photos of your face. Good lighting, minimal sunglasses or hats, and no heavy filters work best.
+          Upload 1–12 clear photos of your face. Good lighting and minimal filters work best.
         </p>
 
         <div
@@ -198,7 +209,7 @@
             background:rgba(0,0,0,0.35);
           "
         >
-          Tap “Upload photos” to pick images from your camera roll.
+          Tap “Add photo” to pick images from your camera roll.
         </div>
 
         <input
@@ -215,14 +226,14 @@
           onclick="triggerFileInput()"
           style="margin-bottom:0.75rem;"
         >
-          Upload photos
+          Add photo
         </button>
 
         <p
           id="photoHelperText"
           style="font-size:0.85rem;color:rgba(255,255,255,0.75);margin:0 0 0.5rem;"
         >
-          Selected photos: <span id="photoCount">0</span>/12. Aim for at least 6 photos for best results.
+          Selected photos: <span id="photoCount">0</span>/12. Add at least 1 photo to continue.
         </p>
 
         <div
@@ -254,11 +265,11 @@
       </section>
     </div>
 
-    <!-- VOICE & STORY SCREEN (Step 2: voice + script + generate) -->
+    <!-- VOICE & STORY SCREEN (Step 2: voice + story + generate) -->
     <div id="voiceScreen" class="screen">
       <div class="screen-header">
         <button class="back-btn" type="button" onclick="goBack('uploadScreen');">←</button>
-        <h2 class="screen-title">Clone your voice &amp; story</h2>
+        <h2 class="screen-title">Add your voice & story</h2>
         <span class="step">2/3</span>
       </div>
 
@@ -326,7 +337,7 @@
           </button>
         </div>
 
-        <!-- NEW: Desktop/alternative voice upload -->
+        <!-- Voice file upload -->
         <input
           id="voiceFileInput"
           type="file"
@@ -372,7 +383,7 @@
                 font-size:0.9rem;
               "
             >
-              <!-- Options are filled dynamically -->
+              <!-- Options filled by JS -->
             </select>
           </div>
 
@@ -396,26 +407,13 @@
         </div>
       </section>
 
+      <!-- Story text and create movie -->
       <section>
         <p style="font-size:0.9rem;color:rgba(255,255,255,0.8);margin-bottom:0.5rem;">
-          What story should your film tell?
+          What should your short movie be about?
         </p>
 
-        <div
-          class="story-chips"
-          style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.5rem;font-size:0.8rem;"
-        >
-          <button type="button" class="chip-btn" data-template="birthday">
-            Birthday montage
-          </button>
-          <button type="button" class="chip-btn" data-template="travel">
-            Travel recap
-          </button>
-          <button type="button" class="chip-btn" data-template="love">
-            Love story
-          </button>
-        </div>
-
+        <!-- No suggestion chips for content; just a clean box -->
         <textarea
           id="briefDesc"
           rows="5"
@@ -431,90 +429,26 @@
             color:#fff;
             font-size:0.95rem;
           "
-          placeholder="Example: A weekend trip to LA with my partner. We’re walking on the beach, laughing, watching the sunset, then a night drive through the city lights."
+          placeholder="Describe your 1‑minute short movie in your own words."
         ></textarea>
 
         <p style="font-size:0.8rem;color:rgba(255,255,255,0.7);margin-top:0.35rem;margin-bottom:1rem;">
-          <span id="briefCount">0</span>/600 characters • 2–5 sentences is enough.
+          <span id="briefCount">0</span>/600 characters • No sexual, hateful, or graphic content.
         </p>
 
         <button
           id="voiceContinueBtn"
           class="btn primary-btn"
           type="button"
-          onclick="generatePreview()"
+          onclick="onCreateMovieClicked()"
           disabled
         >
-          Generate preview
+          Create my 1‑minute movie
         </button>
       </section>
     </div>
 
-    <!-- PREVIEW SCREEN (Step 3: preview result; full film comes later) -->
-    <div id="previewScreen" class="screen">
-      <div class="screen-header">
-        <button class="back-btn" type="button" onclick="goBack('voiceScreen');">←</button>
-        <h2 class="screen-title">Your AI film preview</h2>
-        <span class="step">3/3</span>
-      </div>
-
-      <section>
-        <p style="font-size:0.9rem;color:rgba(255,255,255,0.85);margin-bottom:0.75rem;">
-          Here’s a first preview of your film, generated from your photos, voice, and story.
-        </p>
-
-        <div
-          class="preview-card"
-          style="
-            border-radius:12px;
-            padding:0.75rem 0.85rem;
-            background:rgba(0,0,0,0.45);
-            border:1px solid rgba(255,255,255,0.18);
-            margin-bottom:0.75rem;
-          "
-        >
-          <p style="font-size:0.85rem;color:rgba(255,255,255,0.8);margin:0 0 0.35rem;">
-            Audio preview
-          </p>
-          <audio
-            id="previewVideo"
-            controls
-            style="width:100%;margin-bottom:0.5rem;"
-          ></audio>
-        </div>
-
-        <p style="font-size:0.85rem;color:rgba(255,255,255,0.75);margin:0 0 0.4rem;">
-          Script preview
-        </p>
-        <pre
-          id="previewScript"
-          style="
-            white-space:pre-wrap;
-            background:rgba(0,0,0,0.5);
-            border-radius:10px;
-            padding:0.75rem;
-            border:1px solid rgba(255,255,255,0.2);
-            font-size:0.9rem;
-            color:rgba(255,255,255,0.85);
-            max-height:220px;
-            overflow-y:auto;
-            margin-bottom:1rem;
-          "
-        ></pre>
-
-        <button
-          class="btn primary-btn"
-          type="button"
-          onclick="onGetFullVideoClicked()"
-        >
-          Make full film
-        </button>
-
-        <p style="font-size:0.8rem;color:rgba(255,255,255,0.7);margin-top:0.5rem;">
-          We’ll turn this preview into a full, cinematic video. Your photos and voice are already saved—no need to redo anything.
-        </p>
-      </section>
-    </div>
+    <!-- You can keep previewScreen JS and HTML for later; v1 uses direct 1‑minute movie flow -->
 
     <!-- LOGIN MODAL -->
     <div id="authModal" class="auth-modal" style="display:none;">
@@ -647,7 +581,7 @@
       </div>
     </div>
 
-    <!-- 18+ CONSENT MODAL (for uploads/recording) -->
+    <!-- 18+ CONSENT MODAL -->
     <div id="consentModal" class="auth-modal" style="display:none;">
       <div class="auth-card">
         <button class="auth-close" type="button" onclick="closeConsentModal()">×</button>
@@ -679,7 +613,7 @@
     <div id="creditsModal" class="auth-modal" style="display:none;">
       <div class="auth-card">
         <button class="auth-close" type="button" onclick="closeCredits()">×</button>
-        <h2 class="auth-title">Add credits for full films</h2>
+        <h2 class="auth-title">Add credits for short movies</h2>
         <p style="font-size:0.9rem;color:rgba(255,255,255,0.8);margin-bottom:1rem;">
           Current balance: $<span id="modalBalance">0</span>
         </p>
@@ -687,18 +621,18 @@
         <input
           id="creditSlider"
           type="range"
-          min="20"
+          min="10"
           max="500"
           step="10"
-          value="20"
+          value="10"
           style="width:100%;margin-bottom:0.5rem;"
         />
         <p style="font-size:0.85rem;color:rgba(255,255,255,0.75);margin-top:0;">
-          Amount: $<span id="creditAmount">20</span>
+          Amount: $<span id="creditAmount">10</span>
         </p>
 
         <p style="font-size:0.8rem;color:rgba(255,255,255,0.7);margin-top:0.4rem;margin-bottom:0.8rem;">
-          Credits are only charged when a full film is successfully generated.
+          Credits are only charged when a short movie is successfully generated.
         </p>
 
         <button class="btn primary-btn" type="button" onclick="processPayment()">
@@ -733,7 +667,7 @@
     </div>
   </div>
 
-  <!-- Inline helpers: slider & chips -->
+  <!-- Inline helpers: slider amount label -->
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       var slider = document.getElementById('creditSlider');
@@ -744,30 +678,10 @@
           amountLabel.textContent = slider.value;
         });
       }
-
-      var chips = document.querySelectorAll('.chip-btn');
-      var brief = document.getElementById('briefDesc');
-      if (chips && brief) {
-        chips.forEach(function (chip) {
-          chip.addEventListener('click', function () {
-            var type = chip.dataset.template;
-            if (!type) return;
-            if (type === 'birthday') {
-              brief.value = 'A birthday party with my closest friends. We are laughing, blowing out candles, and taking photos together through the night.';
-            } else if (type === 'travel') {
-              brief.value = 'A travel recap from my latest city trip. Walking through streets, visiting landmarks, and ending with a sunset view over the skyline.';
-            } else if (type === 'love') {
-              brief.value = 'A love story about me and my partner. From our first date to quiet mornings at home and a walk at sunset.';
-            }
-            var counterEl = document.getElementById('briefCount');
-            if (counterEl) counterEl.textContent = brief.value.length;
-          });
-        });
-      }
     });
   </script>
 
-  <!-- NEW: voice file upload wiring (desktop friendly) -->
+  <!-- Voice file upload wiring -->
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       window.appState = window.appState || {};
@@ -823,7 +737,7 @@
         if (continueBtn) continueBtn.disabled = false;
 
         if (typeof window.showToast === "function") {
-          window.showToast("Voice file selected. You can generate a preview now.", "success");
+          window.showToast("Voice file selected. You can create your movie now.", "success");
         }
       });
     });

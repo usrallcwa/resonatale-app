@@ -4,14 +4,11 @@
 // GLOBAL STATE & CONFIGURATION
 // ============================================
 
-// Single backend (Cloudflare Worker) for auth, credits, render, preview
-// For local testing, you can temporarily set these to "http://127.0.0.1:8787"
-const AUTH_API_BASE = "https://api.resonatale.com";
-const RENDER_API_BASE = "https://api.resonatale.com";
+const API_BASE = "https://api.resonatale.com";
+const AUTH_API_BASE = API_BASE;
 
-// Keep API_BASE + window.API_BASE for render/preview code
-const API_BASE = RENDER_API_BASE;
-window.API_BASE = RENDER_API_BASE;
+window.API_BASE = API_BASE;
+window.AUTH_API_BASE = AUTH_API_BASE;
 
 const SUPPORTED_LANGUAGES = [
   { code: "ENG", label: "English", flag: "🇺🇸" },
@@ -54,6 +51,7 @@ let appState = {
   authToken: localStorage.getItem("authToken"),
   userId: localStorage.getItem("userId"),
   userBalance: 0,
+
   previewVideoUrl: null,
   audioObjectUrl: null,
 
@@ -64,40 +62,28 @@ let appState = {
   hasSavedVoice: false,
 };
 
-// expose for other scripts
 window.appState = appState;
-window.API_BASE = API_BASE;
 window.SUPPORTED_LANGUAGES = SUPPORTED_LANGUAGES;
-window.AUTH_API_BASE = AUTH_API_BASE;
 
 // ============================================
 // INITIALIZATION
 // ============================================
-document.addEventListener("DOMContentLoaded", function () {
-  console.log("🎬 ResonaTale App Initialized");
 
+document.addEventListener("DOMContentLoaded", function () {
   if (typeof initCompliance === "function") {
     initCompliance();
   }
 
   updateHeaderVisibility(appState.currentScreen);
+  setupEventListeners();
 
-  if (appState.authToken && typeof initAuthenticatedApp === "function") {
+  if (appState.authToken) {
     initAuthenticatedApp();
   }
 
-  setupEventListeners();
-
-  if (typeof initLanguageSelector === "function") {
-    initLanguageSelector();
-  }
-  if (typeof initMoodPicker === "function") {
-    initMoodPicker();
-  }
-
-  if (typeof animateFilmCounter === "function") {
-    animateFilmCounter();
-  }
+  initLanguageSelector();
+  initMoodPicker();
+  animateFilmCounter();
 });
 
 function setupEventListeners() {
@@ -115,6 +101,7 @@ function setupEventListeners() {
     });
   }
 
+  // Prevent pinch-zoom scroll jank on mobile
   document.body.addEventListener(
     "touchmove",
     function (e) {
@@ -129,6 +116,7 @@ function setupEventListeners() {
 // ============================================
 // LANGUAGE SELECTOR
 // ============================================
+
 function initLanguageSelector() {
   const select = document.getElementById("voiceLanguageSelect");
   if (!select) return;
@@ -147,6 +135,7 @@ function initLanguageSelector() {
 // ============================================
 // MOOD PICKER
 // ============================================
+
 function initMoodPicker() {
   const container = document.getElementById("moodPicker");
   if (!container) return;
@@ -178,6 +167,7 @@ function initMoodPicker() {
 // ============================================
 // NAVIGATION
 // ============================================
+
 function startApp() {
   if (appState.authToken && appState.hasSavedPhotos && appState.hasSavedVoice) {
     const recordingHint = document.getElementById("recordingHint");
@@ -226,6 +216,7 @@ window.goBack = goBack;
 // ============================================
 // CONSENT / TURNSTILE
 // ============================================
+
 const CONSENT_KEY = "rt_consent_18plus_v1";
 
 function hasConsent() {
@@ -290,6 +281,7 @@ window.acceptConsent = acceptConsent;
 // ============================================
 // AUTH / MENU / WALLET HOOKS
 // ============================================
+
 async function initAuthenticatedApp() {
   if (!appState.authToken) return;
 
@@ -306,8 +298,7 @@ async function initAuthenticatedApp() {
     const data = await response.json();
     const user = data?.user || {};
 
-    const balanceNum =
-      Number(user.walletBalance ?? user.balance ?? 0);
+    const balanceNum = Number(user.walletBalance ?? user.balance ?? 0);
     appState.userBalance = Number.isFinite(balanceNum) ? balanceNum : 0;
 
     appState.hasSavedPhotos = Boolean(user.hasPhotos);
@@ -315,17 +306,11 @@ async function initAuthenticatedApp() {
 
     updateBalanceDisplay();
 
-    const header = document.querySelector(".app-header");
-    if (header && appState.currentScreen !== "heroScreen") {
-      header.classList.remove("hidden");
-    }
-
     const emailEl = document.getElementById("menuEmail");
     if (emailEl) emailEl.textContent = user.email || "";
 
     const balanceEl = document.getElementById("menuBalance");
-    if (balanceEl)
-      balanceEl.textContent = appState.userBalance.toFixed(2);
+    if (balanceEl) balanceEl.textContent = appState.userBalance.toFixed(2);
 
     const heroNote = document.querySelector(".hero-note");
     if (heroNote && appState.hasSavedPhotos && appState.hasSavedVoice) {
@@ -351,7 +336,6 @@ window.updateBalanceDisplay = updateBalanceDisplay;
 function openMenu() {
   const overlay = document.getElementById("menuOverlay");
   if (!overlay) return;
-
   overlay.style.display = "flex";
   overlay.classList.add("open");
 }
@@ -360,29 +344,10 @@ window.openMenu = openMenu;
 function closeMenu() {
   const overlay = document.getElementById("menuOverlay");
   if (!overlay) return;
-
   overlay.classList.remove("open");
   overlay.style.display = "none";
 }
 window.closeMenu = closeMenu;
-
-function showLogin() {
-  const modal = document.getElementById("authModal");
-  if (!modal) return;
-
-  modal.style.display = "flex";
-  modal.classList.add("active");
-}
-window.showLogin = showLogin;
-
-function closeLogin() {
-  const modal = document.getElementById("authModal");
-  if (!modal) return;
-
-  modal.classList.remove("active");
-  modal.style.display = "none";
-}
-window.closeLogin = closeLogin;
 
 function logout(silent = false) {
   localStorage.removeItem("authToken");
@@ -426,7 +391,6 @@ window.showAddCredits = showAddCredits;
 function closeCredits() {
   const modal = document.getElementById("creditsModal");
   if (!modal) return;
-
   modal.classList.remove("active");
   modal.style.display = "none";
 }
@@ -435,6 +399,7 @@ window.closeCredits = closeCredits;
 // ============================================
 // SOCIAL AUTH STUBS
 // ============================================
+
 function startGoogleLogin() {
   if (typeof showToast === "function") {
     showToast("Google sign-in coming soon.", "info");
@@ -451,6 +416,7 @@ window.startAppleLogin = startAppleLogin;
 // ============================================
 // SOCIAL PROOF COUNTER
 // ============================================
+
 function animateFilmCounter() {
   const counter = document.getElementById("filmCounter");
   if (!counter) return;

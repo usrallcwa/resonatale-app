@@ -1,11 +1,7 @@
 // fullVideo.js
 
-// ============================================
-// FULL VIDEO GENERATION (paid, after wallet)
-// ============================================
-
-// Start a full-length paid render for the given brief description
-async function generateFullVideo(briefDesc) {
+// Start a 1-minute paid movie
+async function startMovie(prompt) {
   if (!window.appState || !window.API_BASE) {
     throw new Error("App not initialized");
   }
@@ -14,127 +10,129 @@ async function generateFullVideo(briefDesc) {
   const API_BASE = window.API_BASE;
 
   if (!appState.authToken) {
-    throw new Error("Please log in before generating full video");
+    throw new Error("Please log in before creating a movie");
   }
 
-  const headers = {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${appState.authToken}`,
-  };
-
-  const res = await fetch(`${API_BASE}/api/render/video`, {
+  const res = await fetch(`${API_BASE}/api/render/movie`, {
     method: "POST",
-    headers,
-    body: JSON.stringify({
-      prompt: briefDesc,
-      photoCount: appState.photos?.length || 6,
-      language: appState.voiceLanguage,
-      mood: appState.voiceMood,
-    }),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${appState.authToken}`,
+    },
+    body: JSON.stringify({ prompt }),
   });
 
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok || data.success === false) {
-    // Map backend code INSUFFICIENTFUNDS to a clearer message
-    if (data.code === "INSUFFICIENTFUNDS") {
+    if (data.code === "INSUFFICIENT_BALANCE") {
       throw new Error(
-        "You don’t have enough balance. Please top up your wallet first.",
+        "You don’t have enough balance. Please top up your wallet.",
       );
     }
     throw new Error(
-      data.error || data.message || "Failed to start full render",
+      data.error || data.message || "Failed to start movie",
     );
   }
 
-  // Backend returns { success, videoId, newBalance, charged, message }
-  return data.videoId;
+  return data.projectId;
 }
 
-// Click handler for "Make full film" button
-async function onGetFullVideoClicked() {
+// Poll movie project until ready (for now, just script or final video URL)
+async function pollMovieProject(projectId) {
+  const API_BASE = window.API_BASE;
+
+  const poll = async () => {
+    const res = await fetch(`${API_BASE}/api/render/movie/${projectId}`);
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || data.success === false) {
+      if (typeof window.hideLoading === "function") window.hideLoading();
+      if (typeof window.showToast === "function") {
+        window.showToast(
+          data.error || data.message || "Failed to load movie",
+          "error",
+        );
+      }
+      return;
+    }
+
+    const project = data.project || {};
+    const status = project.status;
+
+    // Later: when you fill audio_url, scene_video_urls, final_video_url,
+    // you can use those. For now, just wait for finalVideoUrl if present.
+    if (project.finalVideoUrl) {
+      if (typeof window.hideLoading === "function") window.hideLoading();
+
+      const mediaEl = document.getElementById("previewVideo");
+      if (mediaEl) {
+        mediaEl.src = project.finalVideoUrl;
+      }
+
+      if (typeof window.showToast === "function") {
+        window.showToast("Your 1-minute movie is ready!", "success");
+      }
+    } else if (status === "ERROR") {
+      if (typeof window.hideLoading === "function") window.hideLoading();
+      if (typeof window.showToast === "function") {
+        window.showToast(
+          project.lastError || "Movie failed.",
+          "error",
+        );
+      }
+    } else {
+      setTimeout(poll, 4000);
+    }
+  };
+
+  poll();
+}
+
+// Click handler for "Make my 1-minute movie"
+async function onCreateMovieClicked() {
   const briefDescEl = document.getElementById("briefDesc");
-  let briefDesc = briefDescEl ? briefDescEl.value.trim() : "";
+  const prompt = briefDescEl ? briefDescEl.value.trim() : "";
 
-  // Optional: reuse last brief from appState if you decide to store it
-  if (!briefDesc && window.appState && window.appState.lastBrief) {
-    briefDesc = window.appState.lastBrief.trim();
-  }
-
-  if (!briefDesc) {
+  if (!prompt) {
     if (typeof window.showToast === "function") {
       window.showToast(
-        "Please enter a brief description first.",
+        "Please enter what you want your 1-minute movie to be about.",
         "error",
       );
     }
     return;
   }
 
-  // persist for re-use within the same session
-  if (window.appState) {
-    window.appState.lastBrief = briefDesc;
-  }
-
   try {
     if (typeof window.showLoading === "function") {
-      window.showLoading("Starting full video render...");
+      window.showLoading("Creating your 1-minute movie...");
     }
 
-    const videoId = await generateFullVideo(briefDesc);
+    const projectId = await startMovie(prompt);
 
     if (typeof window.showToast === "function") {
       window.showToast(
-        "Full video render started. We’ll notify you when it’s ready.",
+        "Movie created. We’ll notify you when it’s ready.",
         "success",
       );
     }
 
-    const API_BASE = window.API_BASE;
-
-    const poll = async () => {
-      const res = await fetch(`${API_BASE}/api/render/status/${videoId}`);
-      const data = await res.json().catch(() => ({}));
-
-      if (data.status === "done" && data.url) {
-        if (typeof window.hideLoading === "function") window.hideLoading();
-
-        const mediaEl = document.getElementById("previewVideo");
-        if (mediaEl) {
-          mediaEl.src = data.url;
-        }
-
-        if (typeof window.showToast === "function") {
-          window.showToast("Your full video is ready!", "success");
-        }
-      } else if (data.status === "error") {
-        if (typeof window.hideLoading === "function") window.hideLoading();
-        if (typeof window.showToast === "function") {
-          window.showToast(
-            data.message || "Full video render failed.",
-            "error",
-          );
-        }
-      } else {
-        setTimeout(poll, 4000);
-      }
-    };
-
-    poll();
+    await pollMovieProject(projectId);
   } catch (err) {
-    console.error("Get full video error:", err);
+    console.error("Create movie error:", err);
     if (typeof window.hideLoading === "function") window.hideLoading();
     if (typeof window.showToast === "function") {
       window.showToast(
-        err.message || "Failed to start full video",
+        err.message || "Failed to create movie",
         "error",
       );
     } else {
-      alert(err.message || "Failed to start full video");
+      alert(err.message || "Failed to create movie");
     }
   }
 }
 
-// Expose to global for app.js / HTML wiring
-window.generateFullVideo = generateFullVideo;
-window.onGetFullVideoClicked = onGetFullVideoClicked;
+window.onCreateMovieClicked = onCreateMovieClicked;
+window.startMovie = startMovie;
+window.pollMovieProject = pollMovieProject;

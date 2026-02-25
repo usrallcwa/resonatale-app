@@ -5,14 +5,14 @@
 // ============================================
 
 function triggerFileInput() {
-  if (typeof window.requireConsentOrBlock === 'function') {
+  if (typeof window.requireConsentOrBlock === "function") {
     if (!window.requireConsentOrBlock()) return;
   }
-  if (typeof window.requireTurnstileOrBlock === 'function') {
+  if (typeof window.requireTurnstileOrBlock === "function") {
     if (!window.requireTurnstileOrBlock()) return;
   }
 
-  const input = document.getElementById('photoInput');
+  const input = document.getElementById("photoInput");
   if (input) input.click();
 }
 
@@ -23,21 +23,21 @@ function handlePhotoSelection(event) {
   const inputEl = event.target;
   const files = Array.from(inputEl.files || []);
 
-  if (appState.photos.length + files.length > 12) {
-    if (typeof window.showToast === 'function') {
-      window.showToast('Maximum 12 photos allowed.', 'error');
+  if ((appState.photos.length || 0) + files.length > 12) {
+    if (typeof window.showToast === "function") {
+      window.showToast("Maximum 12 photos allowed.", "error");
     }
-    inputEl.value = '';
+    inputEl.value = "";
     return;
   }
 
   files.forEach((file) => {
-    if (file && file.type && file.type.startsWith('image/')) {
+    if (file && file.type && file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onload = function (e) {
         appState.photos.push({
           file: file,
-          dataUrl: e.target.result
+          dataUrl: e.target.result,
         });
         updatePhotoGrid();
         updatePhotoContinueButton();
@@ -46,16 +46,16 @@ function handlePhotoSelection(event) {
     }
   });
 
-  inputEl.value = '';
+  inputEl.value = "";
 }
 
 function updatePhotoGrid() {
   const appState = window.appState;
   if (!appState) return;
 
-  const grid = document.getElementById('photoGrid');
-  const count = document.getElementById('photoCount');
-  const helper = document.getElementById('photoHelperText');
+  const grid = document.getElementById("photoGrid");
+  const count = document.getElementById("photoCount");
+  const helper = document.getElementById("photoHelperText");
   if (!grid || !count || !helper) return;
 
   const total = appState.photos.length;
@@ -68,23 +68,23 @@ function updatePhotoGrid() {
           <img src="${photo.dataUrl}" alt="Photo ${index + 1}">
           <button class="photo-remove" type="button" onclick="removePhoto(${index})">×</button>
         </div>
-      `
+      `,
     )
-    .join('');
+    .join("");
 
-  // Inline guidance text for premium feel
   if (total === 0) {
-    helper.textContent = 'Selected photos: 0/12. Aim for at least 6 photos for best results.';
-    helper.style.color = 'rgba(255,255,255,0.75)';
-  } else if (total < 6) {
-    helper.textContent = `Selected photos: ${total}/12. Add ${6 - total} more photo${6 - total === 1 ? '' : 's'} to unlock the best results.`;
-    helper.style.color = 'rgba(248,113,113,0.9)'; // soft red
+    helper.textContent =
+      "Selected photos: 0/12. Add at least 1 photo to continue.";
+    helper.style.color = "rgba(255,255,255,0.75)";
+  } else if (total < 3) {
+    helper.textContent = `Selected photos: ${total}/12. More photos (3–6) will give better results.`;
+    helper.style.color = "rgba(248,113,113,0.9)";
   } else if (total > 12) {
     helper.textContent = `Selected photos: ${total}/12. Only the first 12 photos will be used.`;
-    helper.style.color = 'rgba(248,113,113,0.9)';
+    helper.style.color = "rgba(248,113,113,0.9)";
   } else {
     helper.textContent = `Selected photos: ${total}/12. You’re good to continue.`;
-    helper.style.color = 'rgba(190, 242, 100, 0.9)'; // soft green
+    helper.style.color = "rgba(190, 242, 100, 0.9)";
   }
 }
 
@@ -101,23 +101,24 @@ function updatePhotoContinueButton() {
   const appState = window.appState;
   if (!appState) return;
 
-  const btn = document.getElementById('photoContinueBtn');
+  const btn = document.getElementById("photoContinueBtn");
   if (!btn) return;
-  btn.disabled = appState.photos.length < 6;
+  // allow 1+
+  btn.disabled = appState.photos.length < 1;
 }
 
 function goToVoice() {
   const appState = window.appState;
   if (!appState) return;
 
-  if (appState.photos.length < 6) {
-    if (typeof window.showToast === 'function') {
-      window.showToast('Please upload at least 6 photos.', 'error');
+  if (appState.photos.length < 1) {
+    if (typeof window.showToast === "function") {
+      window.showToast("Please upload at least 1 photo.", "error");
     }
     return;
   }
-  if (typeof window.navigateToScreen === 'function') {
-    window.navigateToScreen('voiceScreen');
+  if (typeof window.navigateToScreen === "function") {
+    window.navigateToScreen("voiceScreen");
   }
 }
 

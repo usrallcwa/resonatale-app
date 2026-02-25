@@ -3,13 +3,13 @@
 // ========================
 // PRICING
 // ========================
-const MIN_DEPOSIT = 20;
+const MIN_DEPOSIT = 10;
 const MAX_DEPOSIT = 500;
 
 /**
  * processPayment
  * - Reads amount from #creditSlider
- * - Validates amount ($20–$500)
+ * - Validates amount ($10–$500)
  * - Ensures user is logged in
  * - Creates Stripe Checkout session via /api/credits/checkout/create
  * - Redirects browser to Stripe checkout URL

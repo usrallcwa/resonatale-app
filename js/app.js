@@ -7,9 +7,6 @@
 const API_BASE = "https://api.resonatale.com";
 const AUTH_API_BASE = API_BASE;
 
-window.API_BASE = API_BASE;
-window.AUTH_API_BASE = AUTH_API_BASE;
-
 const SUPPORTED_LANGUAGES = [
   { code: "ENG", label: "English", flag: "🇺🇸" },
   { code: "SPA", label: "Español", flag: "🇪🇸" },
@@ -63,13 +60,15 @@ let appState = {
 };
 
 window.appState = appState;
+window.API_BASE = API_BASE;
+window.AUTH_API_BASE = AUTH_API_BASE;
 window.SUPPORTED_LANGUAGES = SUPPORTED_LANGUAGES;
 
 // ============================================
 // INITIALIZATION
 // ============================================
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
   if (typeof initCompliance === "function") {
     initCompliance();
   }
@@ -94,7 +93,7 @@ function setupEventListeners() {
 
   const briefDesc = document.getElementById("briefDesc");
   if (briefDesc) {
-    briefDesc.addEventListener("input", function (e) {
+    briefDesc.addEventListener("input", (e) => {
       const count = e.target.value.length;
       const counterEl = document.getElementById("briefCount");
       if (counterEl) counterEl.textContent = count;
@@ -104,7 +103,7 @@ function setupEventListeners() {
   // Prevent pinch-zoom scroll jank on mobile
   document.body.addEventListener(
     "touchmove",
-    function (e) {
+    (e) => {
       if (e.touches && e.touches.length > 1) {
         e.preventDefault();
       }
@@ -186,6 +185,7 @@ window.startApp = startApp;
 function updateHeaderVisibility(screenId) {
   const header = document.querySelector(".app-header");
   if (!header) return;
+  // Header always visible for a premium feel
   header.classList.remove("hidden");
 }
 
@@ -349,6 +349,23 @@ function closeMenu() {
 }
 window.closeMenu = closeMenu;
 
+// Single sign-in entry point (used from header or side menu)
+function showLogin() {
+  const modal = document.getElementById("authModal");
+  if (!modal) return;
+  modal.style.display = "flex";
+  modal.classList.add("active");
+}
+window.showLogin = showLogin;
+
+function closeLogin() {
+  const modal = document.getElementById("authModal");
+  if (!modal) return;
+  modal.classList.remove("active");
+  modal.style.display = "none";
+}
+window.closeLogin = closeLogin;
+
 function logout(silent = false) {
   localStorage.removeItem("authToken");
   localStorage.removeItem("userId");
@@ -365,9 +382,6 @@ function logout(silent = false) {
 
   navigateToScreen("heroScreen");
 
-  const header = document.querySelector(".app-header");
-  if (header) header.classList.add("hidden");
-
   if (!silent && typeof showToast === "function") {
     showToast("Logged out successfully", "success");
   }
@@ -378,7 +392,6 @@ function showAddCredits() {
   closeMenu();
   const modal = document.getElementById("creditsModal");
   if (!modal) return;
-
   modal.style.display = "flex";
   modal.classList.add("active");
 

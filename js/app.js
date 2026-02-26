@@ -441,3 +441,65 @@ function animateFilmCounter() {
   }, 5000);
 }
 window.animateFilmCounter = animateFilmCounter;
+// ============================================
+// STORY GENERATION (AI SCENES)
+// ============================================
+
+async function onCreateMovieClicked() {
+  const briefEl = document.getElementById("briefDesc");
+  const brief = briefEl ? briefEl.value.trim() : "";
+
+  if (!brief) {
+    if (typeof showToast === "function") {
+      showToast("Please describe your 1-minute movie first.", "error");
+    }
+    return;
+  }
+
+  if (!requireConsentOrBlock() || !requireTurnstileOrBlock()) {
+    return;
+  }
+
+  const mood = appState.voiceMood || "calm";
+  const language = appState.voiceLanguage || "ENG";
+  const durationMinutes = 1;
+
+  if (typeof showLoading === "function") {
+    showLoading("Creating your story scenes...");
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/story`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ brief, mood, language, durationMinutes }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.detail || data.error || "Story API failed");
+    }
+
+    appState.storyScenes = data.scenes;
+    console.log("Story scenes:", data.scenes);
+
+    // TODO: next step: call your video generation endpoint (render.js/fullVideo.js)
+    // using appState.storyScenes once you rewire that part.
+    if (typeof showToast === "function") {
+      showToast("Story created! Next step: generate your movie.", "success");
+    }
+  } catch (err) {
+    console.error("onCreateMovieClicked error:", err);
+    if (typeof showToast === "function") {
+      showToast(String(err.message || err), "error");
+    }
+  } finally {
+    if (typeof hideLoading === "function") {
+      hideLoading();
+    }
+  }
+}
+
+window.onCreateMovieClicked = onCreateMovieClicked;
+

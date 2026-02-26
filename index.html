@@ -28,7 +28,16 @@
   <!-- HOME -->
   <div id="s-home" class="screen">
     <div class="hero">
-      <div class="orb"></div>
+      <div class="orb-wrap">
+        <div class="orb"></div>
+        <svg class="clock" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1"/>
+          <circle cx="50" cy="50" r="1.5" fill="rgba(255,255,255,.7)"/>
+          <line id="clock-h" x1="50" y1="50" x2="50" y2="28" stroke="rgba(255,255,255,.8)" stroke-width="2" stroke-linecap="round"/>
+          <line id="clock-m" x1="50" y1="50" x2="50" y2="18" stroke="rgba(255,255,255,.6)" stroke-width="1.5" stroke-linecap="round"/>
+          <line id="clock-s" x1="50" y1="50" x2="50" y2="14" stroke="var(--blue)" stroke-width="0.8" stroke-linecap="round"/>
+        </svg>
+      </div>
       <h1>RESONATALE</h1>
       <p>Cinematic AI storyboards designed for premium short films.</p>
       <button class="btn" id="go-create">Create Story</button>
@@ -54,7 +63,16 @@
 
     <div class="section">
       <label class="label">Language</label>
-      <select class="sel" id="lang-sel"></select>
+      <select class="sel" id="lang-sel">
+        <option value="en">&#127482;&#127480;  English</option>
+        <option value="es">&#127466;&#127480;  Spanish</option>
+        <option value="fr">&#127467;&#127479;  French</option>
+        <option value="ja">&#127471;&#127477;  Japanese</option>
+        <option value="de">&#127465;&#127466;  German</option>
+        <option value="it">&#127470;&#127481;  Italian</option>
+        <option value="pt">&#127477;&#127481;  Portuguese</option>
+        <option value="ko">&#127472;&#127479;  Korean</option>
+      </select>
     </div>
 
     <div class="section">

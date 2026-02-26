@@ -1,150 +1,238 @@
-// app.js
+(function () {
+  'use strict';
 
-// ============================================
-// GLOBAL STATE & CONFIGURATION
-// ============================================
+  // ── Config ──
+  var TURNSTILE_KEY = '0x4AAAAAACLI9vyJZYGLg9lS';
+  var API = '/api/story';
 
-const API_BASE = "https://api.resonatale.com";
+  var MOODS = ['calm', 'cozy', 'adventure', 'romantic', 'suspense', 'motivational', 'heartwarming'];
+  var DURATIONS = [
+    { value: '1', label: '1 min' },
+    { value: '2', label: '2 min' },
+    { value: '3', label: '3 min' },
+    { value: '5', label: '5 min' }
+  ];
 
-let appState = {
-  voiceLanguage: "ENG",
-  voiceMood: "calm",
-  storyScenes: [],
-};
+  // ── State ──
+  var mood = '';
+  var duration = '2';
+  var tsToken = '';
+  var tsWidgetId = null;
 
-window.appState = appState;
-window.API_BASE = API_BASE;
+  // ── DOM ──
+  var $home = document.getElementById('s-home');
+  var $create = document.getElementById('s-create');
+  var $loader = document.getElementById('loader');
+  var $loaderMsg = document.getElementById('loader-msg');
+  var $toast = document.getElementById('toast');
+  var $moodChips = document.getElementById('mood-chips');
+  var $langSel = document.getElementById('lang-sel');
+  var $brief = document.getElementById('brief');
+  var $durRow = document.getElementById('dur-row');
+  var $genBtn = document.getElementById('gen-btn');
+  var $results = document.getElementById('results');
+  var $scenesList = document.getElementById('scenes-list');
+  var $newBtn = document.getElementById('new-btn');
+  var $goCreate = document.getElementById('go-create');
+  var $logo = document.getElementById('logo');
 
-document.addEventListener("DOMContentLoaded", () => {
-  initLanguageSelector();
-  initMoodPicker();
-  setupBriefCounter();
-});
-const SUPPORTED_LANGUAGES = [
-  { code: "ENG", label: "English", flag: "🇺🇸" },
-  { code: "SPA", label: "Español", flag: "🇪🇸" },
-  { code: "MEX", label: "Español (México)", flag: "🇲🇽" },
-  { code: "FRA", label: "Français", flag: "🇫🇷" },
-  { code: "DEU", label: "Deutsch", flag: "🇩🇪" },
-  { code: "POR", label: "Português", flag: "🇧🇷" },
-  { code: "ITA", label: "Italiano", flag: "🇮🇹" },
-  { code: "JPN", label: "日本語", flag: "🇯🇵" },
-  { code: "CMN", label: "中文 (普通话)", flag: "🇨🇳" },
-  { code: "KOR", label: "한국어", flag: "🇰🇷" },
-  { code: "HIN", label: "हिन्दी", flag: "🇮🇳" },
-  { code: "ARA", label: "العربية", flag: "🇸🇦" },
-  { code: "RUS", label: "Русский", flag: "🇷🇺" },
-  { code: "TUR", label: "Türkçe", flag: "🇹🇷" },
-  { code: "SWE", label: "Svenska", flag: "🇸🇪" },
-  { code: "NLD", label: "Nederlands", flag: "🇳🇱" },
-  { code: "POL", label: "Polski", flag: "🇵🇱" },
-  { code: "UKR", label: "Українська", flag: "🇺🇦" },
-  { code: "VIE", label: "Tiếng Việt", flag: "🇻🇳" },
-];
-
-function initLanguageSelector() {
-  const select = document.getElementById("voiceLanguageSelect");
-  if (!select) return;
-
-  select.innerHTML = SUPPORTED_LANGUAGES.map(
-    (lang) => `<option value="${lang.code}">${lang.flag} ${lang.label}</option>`
-  ).join("");
-
-  select.value = appState.voiceLanguage;
-  select.addEventListener("change", (e) => {
-    appState.voiceLanguage = e.target.value;
-  });
-}
-
-// MOOD
-
-function initMoodPicker() {
-  const container = document.getElementById("moodPicker");
-  if (!container) return;
-  const buttons = container.querySelectorAll(".mood-btn");
-
-  const applyActive = (activeMood) => {
-    buttons.forEach((btn) => {
-      btn.classList.toggle("active", btn.dataset.mood === activeMood);
-    });
-  };
-
-  buttons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      appState.voiceMood = btn.dataset.mood || "calm";
-      applyActive(appState.voiceMood);
-    });
+  // ── Restore language ──
+  var savedLang = localStorage.getItem('rt_lang');
+  if (savedLang) $langSel.value = savedLang;
+  $langSel.addEventListener('change', function () {
+    localStorage.setItem('rt_lang', $langSel.value);
   });
 
-  applyActive(appState.voiceMood);
-}
-
-// BRIEF COUNTER
-
-function setupBriefCounter() {
-  const briefDesc = document.getElementById("briefDesc");
-  const counterEl = document.getElementById("briefCount");
-  if (!briefDesc || !counterEl) return;
-
-  briefDesc.addEventListener("input", (e) => {
-    counterEl.textContent = e.target.value.length;
-  });
-}
-
-// STORY GENERATION
-
-async function onCreateMovieClicked() {
-  const briefEl = document.getElementById("briefDesc");
-  const brief = briefEl ? briefEl.value.trim() : "";
-
-  if (!brief) {
-    alert("Please describe your 1-minute movie first.");
-    return;
+  // ── Navigation ──
+  function showHome() {
+    $home.classList.remove('hide');
+    $create.classList.add('hide');
   }
 
-  const mood = appState.voiceMood;
-  const language = appState.voiceLanguage;
-  const durationMinutes = 1;
+  function showCreate() {
+    $home.classList.add('hide');
+    $create.classList.remove('hide');
+    $results.classList.remove('show');
+    mountTurnstile();
+  }
 
-  document.getElementById("storyOutput").textContent =
-    "Creating your story scenes…";
+  $goCreate.addEventListener('click', showCreate);
+  $logo.addEventListener('click', showHome);
 
-  try {
-    const res = await fetch(`${API_BASE}/api/story`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ brief, mood, language, durationMinutes }),
+  // ── Mood Chips ──
+  MOODS.forEach(function (m) {
+    var btn = document.createElement('button');
+    btn.className = 'chip';
+    btn.setAttribute('data-v', m);
+    btn.textContent = m.charAt(0).toUpperCase() + m.slice(1);
+    btn.addEventListener('click', function () {
+      mood = m;
+      var all = $moodChips.querySelectorAll('.chip');
+      for (var i = 0; i < all.length; i++) {
+        all[i].classList.toggle('on', all[i].getAttribute('data-v') === m);
+      }
     });
+    $moodChips.appendChild(btn);
+  });
 
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.detail || data.error || "Story API failed");
+  // ── Duration Toggle ──
+  function renderDuration() {
+    $durRow.innerHTML = '';
+    DURATIONS.forEach(function (d) {
+      var btn = document.createElement('button');
+      btn.className = 'dur-opt' + (duration === d.value ? ' on' : '');
+      btn.textContent = d.label;
+      btn.addEventListener('click', function () {
+        duration = d.value;
+        renderDuration();
+      });
+      $durRow.appendChild(btn);
+    });
+  }
+  renderDuration();
+
+  // ── Turnstile ──
+  function mountTurnstile() {
+    var target = document.getElementById('ts-target');
+    if (!target) return;
+    if (!window.turnstile) {
+      setTimeout(mountTurnstile, 300);
+      return;
     }
-
-    appState.storyScenes = data.scenes;
-    renderScenes(data.scenes);
-  } catch (err) {
-    console.error(err);
-    document.getElementById("storyOutput").textContent =
-      "Sorry, something went wrong generating your story.";
+    if (tsWidgetId !== null) {
+      try { window.turnstile.remove(tsWidgetId); } catch (e) {}
+    }
+    tsToken = '';
+    tsWidgetId = window.turnstile.render(target, {
+      sitekey: TURNSTILE_KEY,
+      theme: 'dark',
+      size: 'normal',
+      callback: function (token) { tsToken = token; },
+      'expired-callback': function () { tsToken = ''; },
+      'error-callback': function () { tsToken = ''; }
+    });
   }
-}
 
-window.onCreateMovieClicked = onCreateMovieClicked;
+  // ── Toast ──
+  var toastTimer = null;
+  function toast(msg, ok) {
+    if (toastTimer) clearTimeout(toastTimer);
+    $toast.textContent = msg;
+    $toast.className = 'toast show' + (ok ? ' ok' : '');
+    toastTimer = setTimeout(function () {
+      $toast.classList.remove('show');
+    }, 3500);
+  }
 
-function renderScenes(scenes) {
-  const container = document.getElementById("storyOutput");
-  if (!container) return;
+  // ── Loader ──
+  function loading(show, msg) {
+    $loaderMsg.textContent = msg || 'Generating scenes...';
+    $loader.classList.toggle('show', show);
+  }
 
-  container.innerHTML = scenes
-    .map(
-      (s) => `
-      <div class="scene-card">
-        <h3>${s.title}</h3>
-        <p><strong>Visual:</strong> ${s.description}</p>
-        <p><strong>Voiceover:</strong> ${s.voiceover}</p>
-      </div>
-    `
-    )
-    .join("");
-}
+  // ── Generate ──
+  $genBtn.addEventListener('click', function () {
+    if (!mood) { toast('Select a mood.'); return; }
+    if (!$brief.value.trim()) { toast('Enter a story brief.'); return; }
+    if ($brief.value.trim().length < 5) { toast('Brief is too short.'); return; }
+    if (!tsToken) { toast('Complete the verification.'); return; }
+
+    loading(true, 'Crafting your scenes...');
+    $genBtn.disabled = true;
+
+    fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        brief: $brief.value.trim(),
+        mood: mood,
+        language: $langSel.value,
+        durationMinutes: parseInt(duration, 10),
+        turnstile: tsToken
+      })
+    })
+      .then(function (r) {
+        if (!r.ok) {
+          return r.json().catch(function () { return {}; }).then(function (e) {
+            throw new Error(e.detail || e.error || 'Generation failed');
+          });
+        }
+        return r.json();
+      })
+      .then(function (data) {
+        loading(false);
+        $genBtn.disabled = false;
+        if (!data.scenes || !data.scenes.length) {
+          toast('No scenes returned. Try again.');
+          return;
+        }
+        renderScenes(data.scenes);
+        toast('Scenes ready!', true);
+      })
+      .catch(function (err) {
+        loading(false);
+        $genBtn.disabled = false;
+        toast(err.message || 'Something went wrong.');
+      });
+  });
+
+  // ── Render Scenes ──
+  function renderScenes(scenes) {
+    $scenesList.innerHTML = '';
+    for (var i = 0; i < scenes.length; i++) {
+      var s = scenes[i];
+      var card = document.createElement('div');
+      card.className = 'scene-card';
+      card.innerHTML =
+        '<div class="scene-num">Scene ' + (i + 1) + '</div>' +
+        '<div class="scene-title">' + esc(s.title) + '</div>' +
+        '<div class="scene-block"><div class="scene-block-label">Visual</div><div class="scene-block-text">' + esc(s.description) + '</div></div>' +
+        '<div class="scene-block"><div class="scene-block-label">Voiceover</div><div class="scene-block-text voiceover-text">' + esc(s.voiceover) + '</div></div>';
+      $scenesList.appendChild(card);
+    }
+    $results.classList.add('show');
+
+    // Save to journal
+    try {
+      var journal = JSON.parse(localStorage.getItem('rt_journal') || '[]');
+      journal.unshift({
+        id: Date.now().toString(36),
+        mood: mood,
+        language: $langSel.value,
+        brief: $brief.value.trim(),
+        duration: duration,
+        scenes: scenes,
+        createdAt: new Date().toISOString()
+      });
+      if (journal.length > 50) journal = journal.slice(0, 50);
+      localStorage.setItem('rt_journal', JSON.stringify(journal));
+    } catch (e) {}
+
+    // Scroll to results
+    $results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function esc(str) {
+    if (!str) return '';
+    var d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  // ── New Story ──
+  $newBtn.addEventListener('click', function () {
+    $results.classList.remove('show');
+    $scenesList.innerHTML = '';
+    $brief.value = '';
+    mood = '';
+    var all = $moodChips.querySelectorAll('.chip');
+    for (var i = 0; i < all.length; i++) all[i].classList.remove('on');
+    // Reset turnstile
+    if (tsWidgetId !== null && window.turnstile) {
+      try { window.turnstile.reset(tsWidgetId); } catch (e) {}
+    }
+    tsToken = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+})();

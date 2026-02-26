@@ -3,10 +3,6 @@
 (function () {
   'use strict';
 
-  // ============================================
-  // LOADING OVERLAY
-  // ============================================
-
   function showLoading(text) {
     var overlay = document.getElementById('loader');
     var loadingText = document.getElementById('loader-msg');
@@ -21,16 +17,11 @@
   function hideLoading() {
     var overlay = document.getElementById('loader');
     if (!overlay) return;
-
     overlay.classList.remove('show');
   }
 
   window.showLoading = showLoading;
   window.hideLoading = hideLoading;
-
-  // ============================================
-  // TOAST NOTIFICATIONS
-  // ============================================
 
   var toastCooldownUntil = 0;
 
@@ -39,32 +30,23 @@
     if (now < toastCooldownUntil) return;
     toastCooldownUntil = now + 800;
 
-    var toastHost = document.getElementById('toast');
-
-    // If there's a built-in toast element (your new page has one), use it.
-    if (toastHost) {
-      toastHost.textContent = message || '';
-      toastHost.className = 'toast show';
-      if (type === 'success' || type === 'ok') {
-        toastHost.classList.add('ok');
-      } else {
-        toastHost.classList.remove('ok');
-      }
+    var host = document.getElementById('toast');
+    if (host) {
+      host.textContent = message || '';
+      host.className = 'toast show';
+      if (type === 'success' || type === 'ok') host.classList.add('ok');
+      else host.classList.remove('ok');
       setTimeout(function () {
-        toastHost.classList.remove('show');
+        host.classList.remove('show');
       }, 3000);
       return;
     }
 
-    // Fallback: create a temporary toast element if no #toast exists.
     var toast = document.createElement('div');
     toast.className = 'toast toast-' + (type || 'info');
     toast.textContent = message || '';
     toast.style.cssText =
-      'position:fixed;' +
-      'bottom:2rem;' +
-      'left:50%;' +
-      'transform:translateX(-50%);' +
+      'position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);' +
       'background:' +
       (type === 'error'
         ? '#EF4444'
@@ -75,21 +57,14 @@
       'z-index:9999;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,0.35);';
 
     document.body.appendChild(toast);
-
     setTimeout(function () {
       toast.style.opacity = '0';
       toast.style.transition = 'opacity 0.3s ease';
-      setTimeout(function () {
-        toast.remove();
-      }, 300);
+      setTimeout(function () { toast.remove(); }, 300);
     }, 3000);
   }
 
   window.showToast = showToast;
-
-  // ============================================
-  // GLOBAL ERROR HANDLING
-  // ============================================
 
   window.addEventListener('error', function (e) {
     console.error('Global error:', e && (e.error || e.message || e));

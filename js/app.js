@@ -19,28 +19,52 @@
   var toastTimer = null;
 
   // ── DOM ──
-  var $home      = document.getElementById('s-home');
-  var $create    = document.getElementById('s-create');
-  var $loader    = document.getElementById('loader');
-  var $loaderMsg = document.getElementById('loader-msg');
-  var $toastEl   = document.getElementById('toast');
-  var $moodChips = document.getElementById('mood-chips');
-  var $langSel   = document.getElementById('lang-sel');
-  var $brief     = document.getElementById('brief');
-  var $durRow    = document.getElementById('dur-row');
-  var $genBtn    = document.getElementById('gen-btn');
-  var $results   = document.getElementById('results');
-  var $scenesList= document.getElementById('scenes-list');
-  var $newBtn    = document.getElementById('new-btn');
-  var $goCreate  = document.getElementById('go-create');
-  var $logo      = document.getElementById('logo');
+  var $home       = document.getElementById('s-home');
+  var $create     = document.getElementById('s-create');
+  var $loader     = document.getElementById('loader');
+  var $loaderMsg  = document.getElementById('loader-msg');
+  var $toastEl    = document.getElementById('toast');
+  var $moodChips  = document.getElementById('mood-chips');
+  var $langSel    = document.getElementById('lang-sel');
+  var $brief      = document.getElementById('brief');
+  var $durRow     = document.getElementById('dur-row');
+  var $genBtn     = document.getElementById('gen-btn');
+  var $results    = document.getElementById('results');
+  var $scenesList = document.getElementById('scenes-list');
+  var $newBtn     = document.getElementById('new-btn');
+  var $goCreate   = document.getElementById('go-create');
+  var $logo       = document.getElementById('logo');
 
-  // ── Restore language ──
+  // ── Restore saved language ──
   var savedLang = localStorage.getItem('rt_lang');
   if (savedLang) $langSel.value = savedLang;
+
   $langSel.addEventListener('change', function () {
     localStorage.setItem('rt_lang', $langSel.value);
   });
+
+  // ── Live Clock ──
+  function tickClock() {
+    var now = new Date();
+    var h = now.getHours() % 12;
+    var m = now.getMinutes();
+    var s = now.getSeconds();
+
+    var hAngle = (h * 30) + (m * 0.5);
+    var mAngle = m * 6;
+    var sAngle = s * 6;
+
+    var $h = document.getElementById('clock-h');
+    var $m = document.getElementById('clock-m');
+    var $s = document.getElementById('clock-s');
+
+    if ($h) $h.setAttribute('transform', 'rotate(' + hAngle + ' 50 50)');
+    if ($m) $m.setAttribute('transform', 'rotate(' + mAngle + ' 50 50)');
+    if ($s) $s.setAttribute('transform', 'rotate(' + sAngle + ' 50 50)');
+  }
+
+  tickClock();
+  setInterval(tickClock, 1000);
 
   // ── Navigation ──
   function showHome() {
@@ -118,13 +142,14 @@
     $toastEl.className = 'toast show' + (ok ? ' ok' : '');
     toastTimer = setTimeout(function () {
       $toastEl.classList.remove('show');
-    }, 3500);
+    }, 4000);
   }
 
   // ── Loader ──
   function loading(show, msg) {
     $loaderMsg.textContent = msg || 'Generating scenes...';
-    $loader.classList.toggle('show', show);
+    if (show) $loader.classList.add('show');
+    else $loader.classList.remove('show');
   }
 
   // ── Generate ──
@@ -144,14 +169,20 @@
         brief: $brief.value.trim(),
         mood: mood,
         language: $langSel.value,
-        durationMinutes: parseInt(duration, 10),
-        turnstile: tsToken
+        durationMinutes: parseInt(duration, 10)
       })
     })
     .then(function (r) {
       if (!r.ok) {
-        return r.json().catch(function () { return {}; }).then(function (e) {
-          throw new Error(e.detail || e.error || 'Generation failed');
+        return r.text().then(function (txt) {
+          var errMsg = 'Generation failed (HTTP ' + r.status + ')';
+          try {
+            var parsed = JSON.parse(txt);
+            errMsg = parsed.detail || parsed.error || errMsg;
+          } catch (e) {
+            if (txt && txt.length < 200) errMsg = txt;
+          }
+          throw new Error(errMsg);
         });
       }
       return r.json();
@@ -159,19 +190,31 @@
     .then(function (data) {
       loading(false);
       $genBtn.disabled = false;
+
       if (!data.scenes || !data.scenes.length) {
         toast('No scenes returned. Try again.');
+        resetTurnstile();
         return;
       }
+
       renderScenes(data.scenes);
       toast('Scenes ready!', true);
+      resetTurnstile();
     })
     .catch(function (err) {
       loading(false);
       $genBtn.disabled = false;
       toast(err.message || 'Something went wrong.');
+      resetTurnstile();
     });
   });
+
+  function resetTurnstile() {
+    if (tsWidgetId !== null && window.turnstile) {
+      try { window.turnstile.reset(tsWidgetId); } catch (e) {}
+    }
+    tsToken = '';
+  }
 
   // ── Render Scenes ──
   function renderScenes(scenes) {
@@ -182,14 +225,19 @@
       card.className = 'scene-card';
       card.innerHTML =
         '<div class="scene-num">Scene ' + (i + 1) + '</div>' +
-        '<div class="scene-title">' + esc(s.title) + '</div>' +
-        '<div class="scene-block"><div class="scene-block-label">Visual</div><div class="scene-block-text">' + esc(s.description) + '</div></div>' +
-        '<div class="scene-block"><div class="scene-block-label">Voiceover</div><div class="scene-block-text voiceover-text">' + esc(s.voiceover) + '</div></div>';
+        '<div class="scene-title">' + esc(s.title || 'Untitled') + '</div>' +
+        '<div class="scene-block">' +
+          '<div class="scene-block-label">Visual</div>' +
+          '<div class="scene-block-text">' + esc(s.description || '') + '</div>' +
+        '</div>' +
+        '<div class="scene-block">' +
+          '<div class="scene-block-label">Voiceover</div>' +
+          '<div class="scene-block-text voiceover-text">' + esc(s.voiceover || '') + '</div>' +
+        '</div>';
       $scenesList.appendChild(card);
     }
     $results.classList.add('show');
 
-    // Save to journal
     try {
       var journal = JSON.parse(localStorage.getItem('rt_journal') || '[]');
       journal.unshift({
@@ -223,10 +271,7 @@
     mood = '';
     var all = $moodChips.querySelectorAll('.chip');
     for (var i = 0; i < all.length; i++) all[i].classList.remove('on');
-    if (tsWidgetId !== null && window.turnstile) {
-      try { window.turnstile.reset(tsWidgetId); } catch (e) {}
-    }
-    tsToken = '';
+    resetTurnstile();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 

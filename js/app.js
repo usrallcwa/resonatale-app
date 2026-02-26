@@ -4,37 +4,36 @@
   // ── Config ──
   var TURNSTILE_KEY = '0x4AAAAAACLI9vyJZYGLg9lS';
   var API = '/api/story';
-
   var MOODS = ['calm', 'cozy', 'adventure', 'romantic', 'suspense', 'motivational', 'heartwarming'];
   var DURATIONS = [
-    var DURATIONS = [
-  { value: '1', label: '1 min' },
-  { value: '5', label: '5 min' },
-  { value: '10', label: '10 min' }
-];
+    { value: '1', label: '1 min' },
+    { value: '5', label: '5 min' },
+    { value: '10', label: '10 min' }
+  ];
 
   // ── State ──
   var mood = '';
-  var duration = '2';
+  var duration = '5';
   var tsToken = '';
   var tsWidgetId = null;
+  var toastTimer = null;
 
   // ── DOM ──
-  var $home = document.getElementById('s-home');
-  var $create = document.getElementById('s-create');
-  var $loader = document.getElementById('loader');
+  var $home      = document.getElementById('s-home');
+  var $create    = document.getElementById('s-create');
+  var $loader    = document.getElementById('loader');
   var $loaderMsg = document.getElementById('loader-msg');
-  var $toast = document.getElementById('toast');
+  var $toastEl   = document.getElementById('toast');
   var $moodChips = document.getElementById('mood-chips');
-  var $langSel = document.getElementById('lang-sel');
-  var $brief = document.getElementById('brief');
-  var $durRow = document.getElementById('dur-row');
-  var $genBtn = document.getElementById('gen-btn');
-  var $results = document.getElementById('results');
-  var $scenesList = document.getElementById('scenes-list');
-  var $newBtn = document.getElementById('new-btn');
-  var $goCreate = document.getElementById('go-create');
-  var $logo = document.getElementById('logo');
+  var $langSel   = document.getElementById('lang-sel');
+  var $brief     = document.getElementById('brief');
+  var $durRow    = document.getElementById('dur-row');
+  var $genBtn    = document.getElementById('gen-btn');
+  var $results   = document.getElementById('results');
+  var $scenesList= document.getElementById('scenes-list');
+  var $newBtn    = document.getElementById('new-btn');
+  var $goCreate  = document.getElementById('go-create');
+  var $logo      = document.getElementById('logo');
 
   // ── Restore language ──
   var savedLang = localStorage.getItem('rt_lang');
@@ -63,6 +62,7 @@
   MOODS.forEach(function (m) {
     var btn = document.createElement('button');
     btn.className = 'chip';
+    btn.type = 'button';
     btn.setAttribute('data-v', m);
     btn.textContent = m.charAt(0).toUpperCase() + m.slice(1);
     btn.addEventListener('click', function () {
@@ -80,6 +80,7 @@
     $durRow.innerHTML = '';
     DURATIONS.forEach(function (d) {
       var btn = document.createElement('button');
+      btn.type = 'button';
       btn.className = 'dur-opt' + (duration === d.value ? ' on' : '');
       btn.textContent = d.label;
       btn.addEventListener('click', function () {
@@ -95,10 +96,7 @@
   function mountTurnstile() {
     var target = document.getElementById('ts-target');
     if (!target) return;
-    if (!window.turnstile) {
-      setTimeout(mountTurnstile, 300);
-      return;
-    }
+    if (!window.turnstile) { setTimeout(mountTurnstile, 300); return; }
     if (tsWidgetId !== null) {
       try { window.turnstile.remove(tsWidgetId); } catch (e) {}
     }
@@ -114,13 +112,12 @@
   }
 
   // ── Toast ──
-  var toastTimer = null;
   function toast(msg, ok) {
     if (toastTimer) clearTimeout(toastTimer);
-    $toast.textContent = msg;
-    $toast.className = 'toast show' + (ok ? ' ok' : '');
+    $toastEl.textContent = msg;
+    $toastEl.className = 'toast show' + (ok ? ' ok' : '');
     toastTimer = setTimeout(function () {
-      $toast.classList.remove('show');
+      $toastEl.classList.remove('show');
     }, 3500);
   }
 
@@ -151,29 +148,29 @@
         turnstile: tsToken
       })
     })
-      .then(function (r) {
-        if (!r.ok) {
-          return r.json().catch(function () { return {}; }).then(function (e) {
-            throw new Error(e.detail || e.error || 'Generation failed');
-          });
-        }
-        return r.json();
-      })
-      .then(function (data) {
-        loading(false);
-        $genBtn.disabled = false;
-        if (!data.scenes || !data.scenes.length) {
-          toast('No scenes returned. Try again.');
-          return;
-        }
-        renderScenes(data.scenes);
-        toast('Scenes ready!', true);
-      })
-      .catch(function (err) {
-        loading(false);
-        $genBtn.disabled = false;
-        toast(err.message || 'Something went wrong.');
-      });
+    .then(function (r) {
+      if (!r.ok) {
+        return r.json().catch(function () { return {}; }).then(function (e) {
+          throw new Error(e.detail || e.error || 'Generation failed');
+        });
+      }
+      return r.json();
+    })
+    .then(function (data) {
+      loading(false);
+      $genBtn.disabled = false;
+      if (!data.scenes || !data.scenes.length) {
+        toast('No scenes returned. Try again.');
+        return;
+      }
+      renderScenes(data.scenes);
+      toast('Scenes ready!', true);
+    })
+    .catch(function (err) {
+      loading(false);
+      $genBtn.disabled = false;
+      toast(err.message || 'Something went wrong.');
+    });
   });
 
   // ── Render Scenes ──
@@ -208,7 +205,6 @@
       localStorage.setItem('rt_journal', JSON.stringify(journal));
     } catch (e) {}
 
-    // Scroll to results
     $results.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
@@ -227,12 +223,20 @@
     mood = '';
     var all = $moodChips.querySelectorAll('.chip');
     for (var i = 0; i < all.length; i++) all[i].classList.remove('on');
-    // Reset turnstile
     if (tsWidgetId !== null && window.turnstile) {
       try { window.turnstile.reset(tsWidgetId); } catch (e) {}
     }
     tsToken = '';
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // ── Global error handling ──
+  window.addEventListener('error', function () {
+    toast('Something went wrong.');
+  });
+  window.addEventListener('unhandledrejection', function (e) {
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    toast('Network error. Check connection.');
   });
 
 })();

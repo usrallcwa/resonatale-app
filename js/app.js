@@ -6,17 +6,18 @@
   var API = '/api/story';
   var MOODS = ['calm', 'cozy', 'adventure', 'romantic', 'suspense', 'motivational', 'heartwarming'];
   var DURATIONS = [
-    { value: '1', label: '1 min' },
-    { value: '5', label: '5 min' },
-    { value: '10', label: '10 min' }
+    { value: '0.5', label: '30 sec' },
+    { value: '1', label: '60 sec' },
+    { value: '1.5', label: '90 sec' }
   ];
 
   // ── State ──
   var mood = '';
-  var duration = '5';
+  var duration = '1';
   var tsToken = '';
   var tsWidgetId = null;
   var toastTimer = null;
+  var generating = false;
 
   // ── DOM ──
   var $home       = document.getElementById('s-home');
@@ -37,8 +38,9 @@
 
   // ── Restore saved language ──
   var savedLang = localStorage.getItem('rt_lang');
-  if (savedLang) $langSel.value = savedLang;
-
+  if (savedLang && $langSel.querySelector('option[value="' + savedLang + '"]')) {
+    $langSel.value = savedLang;
+  }
   $langSel.addEventListener('change', function () {
     localStorage.setItem('rt_lang', $langSel.value);
   });
@@ -49,20 +51,13 @@
     var h = now.getHours() % 12;
     var m = now.getMinutes();
     var s = now.getSeconds();
-
-    var hAngle = (h * 30) + (m * 0.5);
-    var mAngle = m * 6;
-    var sAngle = s * 6;
-
     var $h = document.getElementById('clock-h');
     var $m = document.getElementById('clock-m');
     var $s = document.getElementById('clock-s');
-
-    if ($h) $h.setAttribute('transform', 'rotate(' + hAngle + ' 50 50)');
-    if ($m) $m.setAttribute('transform', 'rotate(' + mAngle + ' 50 50)');
-    if ($s) $s.setAttribute('transform', 'rotate(' + sAngle + ' 50 50)');
+    if ($h) $h.setAttribute('transform', 'rotate(' + ((h * 30) + (m * 0.5)) + ' 50 50)');
+    if ($m) $m.setAttribute('transform', 'rotate(' + (m * 6) + ' 50 50)');
+    if ($s) $s.setAttribute('transform', 'rotate(' + (s * 6) + ' 50 50)');
   }
-
   tickClock();
   setInterval(tickClock, 1000);
 
@@ -135,6 +130,13 @@
     });
   }
 
+  function resetTurnstile() {
+    if (tsWidgetId !== null && window.turnstile) {
+      try { window.turnstile.reset(tsWidgetId); } catch (e) {}
+    }
+    tsToken = '';
+  }
+
   // ── Toast ──
   function toast(msg, ok) {
     if (toastTimer) clearTimeout(toastTimer);
@@ -142,7 +144,7 @@
     $toastEl.className = 'toast show' + (ok ? ' ok' : '');
     toastTimer = setTimeout(function () {
       $toastEl.classList.remove('show');
-    }, 4000);
+    }, 4500);
   }
 
   // ── Loader ──
@@ -154,33 +156,37 @@
 
   // ── Generate ──
   $genBtn.addEventListener('click', function () {
+    if (generating) return;
     if (!mood) { toast('Select a mood.'); return; }
     if (!$brief.value.trim()) { toast('Enter a story brief.'); return; }
     if ($brief.value.trim().length < 5) { toast('Brief is too short.'); return; }
     if (!tsToken) { toast('Complete the verification.'); return; }
 
+    generating = true;
     loading(true, 'Crafting your scenes...');
     $genBtn.disabled = true;
+
+    var payload = {
+      brief: $brief.value.trim(),
+      mood: mood,
+      language: $langSel.value,
+      durationMinutes: parseFloat(duration)
+    };
 
     fetch(API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        brief: $brief.value.trim(),
-        mood: mood,
-        language: $langSel.value,
-        durationMinutes: parseInt(duration, 10)
-      })
+      body: JSON.stringify(payload)
     })
     .then(function (r) {
       if (!r.ok) {
         return r.text().then(function (txt) {
           var errMsg = 'Generation failed (HTTP ' + r.status + ')';
           try {
-            var parsed = JSON.parse(txt);
-            errMsg = parsed.detail || parsed.error || errMsg;
+            var p = JSON.parse(txt);
+            errMsg = p.detail || p.error || errMsg;
           } catch (e) {
-            if (txt && txt.length < 200) errMsg = txt;
+            if (txt && txt.length < 300) errMsg = txt;
           }
           throw new Error(errMsg);
         });
@@ -188,6 +194,7 @@
       return r.json();
     })
     .then(function (data) {
+      generating = false;
       loading(false);
       $genBtn.disabled = false;
 
@@ -202,19 +209,13 @@
       resetTurnstile();
     })
     .catch(function (err) {
+      generating = false;
       loading(false);
       $genBtn.disabled = false;
       toast(err.message || 'Something went wrong.');
       resetTurnstile();
     });
   });
-
-  function resetTurnstile() {
-    if (tsWidgetId !== null && window.turnstile) {
-      try { window.turnstile.reset(tsWidgetId); } catch (e) {}
-    }
-    tsToken = '';
-  }
 
   // ── Render Scenes ──
   function renderScenes(scenes) {
@@ -277,11 +278,11 @@
 
   // ── Global error handling ──
   window.addEventListener('error', function () {
-    toast('Something went wrong.');
+    if (!generating) toast('Something went wrong.');
   });
   window.addEventListener('unhandledrejection', function (e) {
     if (e && typeof e.preventDefault === 'function') e.preventDefault();
-    toast('Network error. Check connection.');
+    if (!generating) toast('Network error. Check connection.');
   });
 
 })();

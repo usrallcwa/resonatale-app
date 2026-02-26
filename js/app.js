@@ -6,10 +6,10 @@
   var API = '/api/story';
   var MOODS = ['calm', 'cozy', 'adventure', 'romantic', 'suspense', 'motivational', 'heartwarming'];
   var DURATIONS = [
-    { value: '0.5', label: '30 sec' },
-    { value: '1', label: '60 sec' },
-    { value: '1.5', label: '90 sec' }
-  ];
+  { value: '1',  label: '1 min' },
+  { value: '5',  label: '5 min' },
+  { value: '10', label: '10 min' }
+];
 
   // ── State ──
   var mood = '';

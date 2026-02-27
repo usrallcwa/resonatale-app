@@ -63,11 +63,8 @@
   });
 
   // Back buttons
-  document.querySelectorAll('.back-btn').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var target = btn.getAttribute('data-to');
-      if (target) RT.showScreen(target);
-    });
+  document.getElementById('back-to-landing').addEventListener('click', function () {
+    RT.showScreen('landing');
   });
 
   // ══════════════════════════════════════

@@ -59,11 +59,10 @@
   }
 
   // Run immediately so hands show correct time on first frame
-  // Use requestAnimationFrame to ensure SVG is rendered
+  // Use DOMContentLoaded guard to ensure SVG is rendered
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
       tickClock();
-      // Smooth ticking at 60fps for the second hand
       setInterval(tickClock, 50);
     });
   } else {

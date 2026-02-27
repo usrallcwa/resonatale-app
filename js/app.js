@@ -3,13 +3,13 @@
 
   // ── Config ──
   var TURNSTILE_KEY = '0x4AAAAAACLI9vyJZYGLg9lS';
- var API = 'https://api.resonatale.com/api/story';
+  var API = 'https://api.resonatale.com/story';
   var MOODS = ['calm', 'cozy', 'adventure', 'romantic', 'suspense', 'motivational', 'heartwarming'];
   var DURATIONS = [
-  { value: '1',  label: '1 min' },
-  { value: '5',  label: '5 min' },
-  { value: '10', label: '10 min' }
-];
+    { value: '1', label: '1 min' },
+    { value: '5', label: '5 min' },
+    { value: '10', label: '10 min' }
+  ];
 
   // ── State ──
   var mood = '';
@@ -163,7 +163,7 @@
     if (!tsToken) { toast('Complete the verification.'); return; }
 
     generating = true;
-    loading(true, 'Crafting your scenes...');
+    loading(true, 'Writing your scenes...');
     $genBtn.disabled = true;
 
     var payload = {
@@ -220,25 +220,40 @@
   // ── Render Scenes ──
   function renderScenes(scenes) {
     $scenesList.innerHTML = '';
+
     for (var i = 0; i < scenes.length; i++) {
       var s = scenes[i];
       var card = document.createElement('div');
       card.className = 'scene-card';
-      card.innerHTML =
-        '<div class="scene-num">Scene ' + (i + 1) + '</div>' +
+
+      var html =
+        '<div class="scene-num">Scene ' + (i + 1) + ' of ' + scenes.length + '</div>' +
         '<div class="scene-title">' + esc(s.title || 'Untitled') + '</div>' +
         '<div class="scene-block">' +
-          '<div class="scene-block-label">Visual</div>' +
+          '<div class="scene-block-label">Visual Direction</div>' +
           '<div class="scene-block-text">' + esc(s.description || '') + '</div>' +
         '</div>' +
         '<div class="scene-block">' +
           '<div class="scene-block-label">Voiceover</div>' +
           '<div class="scene-block-text voiceover-text">' + esc(s.voiceover || '') + '</div>' +
         '</div>';
+
+      // Show image prompt if present
+      if (s.imagePrompt) {
+        html +=
+          '<div class="scene-block">' +
+            '<div class="scene-block-label">Image Prompt</div>' +
+            '<div class="scene-block-text img-prompt">' + esc(s.imagePrompt) + '</div>' +
+          '</div>';
+      }
+
+      card.innerHTML = html;
       $scenesList.appendChild(card);
     }
+
     $results.classList.add('show');
 
+    // Save to journal
     try {
       var journal = JSON.parse(localStorage.getItem('rt_journal') || '[]');
       journal.unshift({

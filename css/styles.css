@@ -282,3 +282,13 @@ input,select,textarea,button{font-family:inherit}
 @media(min-width:900px){
   .screen-inner{max-width:560px}
 }
+
+/* IMAGE PROMPT */
+.img-prompt{
+  color:var(--blue);
+  font-size:11px;
+  line-height:1.55;
+  opacity:.85;
+  border-left:2px solid rgba(0,229,255,.15);
+  padding-left:10px;
+}

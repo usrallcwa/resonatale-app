@@ -1,197 +1,161 @@
 (function () {
   'use strict';
 
-  // ── State ──
+  // ══════════════════════════════════════
+  // STATE
+  // ══════════════════════════════════════
+
   var mood = '';
   var duration = '1';
   var tsToken = '';
   var tsWidgetId = null;
   var generating = false;
-
-  // ── DOM ──
-  var screens = {
-    landing:   document.getElementById('s-landing'),
-    setup:     document.getElementById('s-setup'),
-    preview:   document.getElementById('s-preview'),
-    auth:      document.getElementById('s-auth'),
-    payment:   document.getElementById('s-payment'),
-    rendering: document.getElementById('s-rendering'),
-    player:    document.getElementById('s-player'),
-    dash:      document.getElementById('s-dash')
-  };
-
-  var $moodChips  = document.getElementById('mood-chips');
-  var $langSel    = document.getElementById('lang-sel');
-  var $brief      = document.getElementById('brief');
-  var $durRow     = document.getElementById('dur-row');
-  var $durPrice   = document.getElementById('dur-price');
-  var $previewScenes = document.getElementById('preview-scenes');
-
-  // Buttons
-  var $btnStart   = document.getElementById('btn-start');
-  var $btnPreview = document.getElementById('btn-preview');
-  var $btnGetFilm = document.getElementById('btn-get-film');
-  var $btnRetry   = document.getElementById('btn-retry');
-  var $btnNewFilm = document.getElementById('btn-new-film');
-  var $btnDashNew = document.getElementById('btn-dash-new');
-
-  // Photo
-  var $photoZone       = document.getElementById('photo-zone');
-  var $photoInput      = document.getElementById('photo-input');
-  var $photoPreview    = document.getElementById('photo-preview');
-  var $photoPlaceholder = document.getElementById('photo-placeholder');
-
-  // Voice
-  var $btnRecord    = document.getElementById('btn-record');
-  var $btnReRecord  = document.getElementById('btn-re-record');
-  var $voiceInput   = document.getElementById('voice-input');
-  var $voiceIdle    = document.getElementById('voice-idle');
-  var $voiceRecording = document.getElementById('voice-recording');
-  var $voiceDone    = document.getElementById('voice-done');
-  var $recTime      = document.getElementById('rec-time');
-
-  // Auth
-  var $btnLogin    = document.getElementById('btn-login');
-  var $btnSignup   = document.getElementById('btn-signup');
-  var $btnForgot   = document.getElementById('btn-forgot');
-  var $btnReset    = document.getElementById('btn-reset');
-  var $showSignup  = document.getElementById('show-signup');
-  var $showLogin   = document.getElementById('show-login');
-  var $showLogin2  = document.getElementById('show-login2');
-  var $showForgot  = document.getElementById('show-forgot');
-  var $btnLogout   = document.getElementById('btn-logout');
-  var $btnAddCredits = document.getElementById('btn-add-credits');
-
-  // Auth forms
-  var $authLogin  = document.getElementById('auth-login');
-  var $authSignup = document.getElementById('auth-signup');
-  var $authForgot = document.getElementById('auth-forgot');
-  var $authReset  = document.getElementById('auth-reset');
-
-  // Voice recording state
-  var mediaRecorder = null;
-  var audioChunks = [];
-  var voiceBlob = null;
+  var currentScenes = null;
   var photoFile = null;
-  var recInterval = null;
-  var recSeconds = 0;
+  var voiceBlob = null;
+  var mediaRecorder = null;
+  var recordChunks = [];
+  var recordTimer = null;
+  var recordStart = 0;
+  var selectedPackage = 'creator';
+
+  // ══════════════════════════════════════
+  // DOM REFS
+  // ══════════════════════════════════════
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  var $langSel    = $('lang-sel');
+  var $brief      = $('brief');
+  var $durRow     = $('dur-row');
+  var $durPrice   = $('dur-price');
+  var $moodChips  = $('mood-chips');
+  var $genBtn     = $('btn-preview');
+  var $photoZone  = $('photo-zone');
+  var $photoInput = $('photo-input');
+  var $photoPreview = $('photo-preview');
+  var $photoPlaceholder = $('photo-placeholder');
+  var $voiceInput = $('voice-input');
+  var $btnRecord  = $('btn-record');
+  var $recTime    = $('rec-time');
+  var $packages   = $('packages');
+
+  // ══════════════════════════════════════
+  // INIT
+  // ══════════════════════════════════════
+
+  // Restore language
+  var savedLang = localStorage.getItem('rt_lang');
+  if (savedLang && $langSel.querySelector('option[value="' + savedLang + '"]')) {
+    $langSel.value = savedLang;
+  }
+  $langSel.addEventListener('change', function () {
+    localStorage.setItem('rt_lang', $langSel.value);
+  });
 
   // ══════════════════════════════════════
   // NAVIGATION
   // ══════════════════════════════════════
 
-  function goTo(screenId) {
-    Object.keys(screens).forEach(function (key) {
-      if (screens[key]) {
-        screens[key].classList.remove('active');
-      }
-    });
-    if (screens[screenId]) {
-      screens[screenId].classList.add('active');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }
+  $('btn-start').addEventListener('click', function () {
+    RT.showScreen('setup');
+    mountTurnstile();
+  });
 
   // Back buttons
   document.querySelectorAll('.back-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var target = btn.getAttribute('data-to');
-      if (target) goTo(target);
+      if (target) RT.showScreen(target);
     });
   });
-
-  // ══════════════════════════════════════
-  // LANDING → SETUP
-  // ══════════════════════════════════════
-
-  if ($btnStart) {
-    $btnStart.addEventListener('click', function () {
-      goTo('setup');
-      mountTurnstile();
-    });
-  }
 
   // ══════════════════════════════════════
   // PHOTO UPLOAD
   // ══════════════════════════════════════
 
-  if ($photoZone && $photoInput) {
-    $photoZone.addEventListener('click', function () {
-      $photoInput.click();
-    });
+  $photoZone.addEventListener('click', function () {
+    $photoInput.click();
+  });
 
-    $photoInput.addEventListener('change', function () {
-      var file = $photoInput.files[0];
-      if (!file) return;
-      if (!file.type.startsWith('image/')) {
-        RT.toast('Please upload an image file.');
-        return;
-      }
-      if (file.size > 10 * 1024 * 1024) {
-        RT.toast('Image must be under 10MB.');
-        return;
-      }
-      photoFile = file;
-      var reader = new FileReader();
-      reader.onload = function (e) {
-        $photoPreview.src = e.target.result;
-        $photoPreview.classList.add('show');
-        $photoPlaceholder.style.display = 'none';
-      };
-      reader.readAsDataURL(file);
-    });
-  }
+  $photoInput.addEventListener('change', function () {
+    var file = $photoInput.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      RT.toast('Please upload an image file.');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      RT.toast('Image must be under 10MB.');
+      return;
+    }
+    photoFile = file;
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      $photoPreview.src = e.target.result;
+      $photoPreview.classList.add('show');
+      $photoPlaceholder.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  });
 
   // ══════════════════════════════════════
   // VOICE RECORDING
   // ══════════════════════════════════════
 
   function showVoiceState(state) {
-    $voiceIdle.classList.add('hide');
-    $voiceRecording.classList.add('hide');
-    $voiceDone.classList.add('hide');
-    if (state === 'idle') $voiceIdle.classList.remove('hide');
-    if (state === 'recording') $voiceRecording.classList.remove('hide');
-    if (state === 'done') $voiceDone.classList.remove('hide');
+    $('voice-idle').classList.add('hide');
+    $('voice-recording').classList.add('hide');
+    $('voice-done').classList.add('hide');
+    $(state).classList.remove('hide');
   }
 
-  if ($btnRecord) {
-    $btnRecord.addEventListener('mousedown', startRecording);
-    $btnRecord.addEventListener('touchstart', function (e) {
-      e.preventDefault();
-      startRecording();
-    });
-    $btnRecord.addEventListener('mouseup', stopRecording);
-    $btnRecord.addEventListener('touchend', stopRecording);
-    $btnRecord.addEventListener('mouseleave', stopRecording);
-  }
+  // Hold-to-record
+  var isRecording = false;
+
+  $btnRecord.addEventListener('mousedown', startRecording);
+  $btnRecord.addEventListener('touchstart', function (e) {
+    e.preventDefault();
+    startRecording();
+  });
+
+  document.addEventListener('mouseup', stopRecording);
+  document.addEventListener('touchend', stopRecording);
 
   function startRecording() {
-    if (mediaRecorder && mediaRecorder.state === 'recording') return;
+    if (isRecording) return;
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      RT.toast('Microphone not supported in this browser.');
+      return;
+    }
 
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then(function (stream) {
-        audioChunks = [];
+        isRecording = true;
+        recordChunks = [];
         mediaRecorder = new MediaRecorder(stream);
+
         mediaRecorder.ondataavailable = function (e) {
-          audioChunks.push(e.data);
+          if (e.data.size > 0) recordChunks.push(e.data);
         };
+
         mediaRecorder.onstop = function () {
+          voiceBlob = new Blob(recordChunks, { type: 'audio/webm' });
           stream.getTracks().forEach(function (t) { t.stop(); });
-          voiceBlob = new Blob(audioChunks, { type: 'audio/webm' });
-          showVoiceState('done');
-          clearInterval(recInterval);
+          showVoiceState('voice-done');
+          clearInterval(recordTimer);
         };
+
         mediaRecorder.start();
-        showVoiceState('recording');
-        recSeconds = 0;
-        $recTime.textContent = '0:00';
-        recInterval = setInterval(function () {
-          recSeconds++;
-          var m = Math.floor(recSeconds / 60);
-          var s = recSeconds % 60;
+        showVoiceState('voice-recording');
+
+        recordStart = Date.now();
+        recordTimer = setInterval(function () {
+          var elapsed = Math.floor((Date.now() - recordStart) / 1000);
+          var m = Math.floor(elapsed / 60);
+          var s = elapsed % 60;
           $recTime.textContent = m + ':' + (s < 10 ? '0' : '') + s;
-        }, 1000);
+        }, 200);
       })
       .catch(function () {
         RT.toast('Microphone access denied.');
@@ -199,37 +163,30 @@
   }
 
   function stopRecording() {
-    if (mediaRecorder && mediaRecorder.state === 'recording') {
+    if (!isRecording || !mediaRecorder) return;
+    isRecording = false;
+    if (mediaRecorder.state === 'recording') {
       mediaRecorder.stop();
     }
   }
 
-  if ($btnReRecord) {
-    $btnReRecord.addEventListener('click', function () {
-      voiceBlob = null;
-      showVoiceState('idle');
-    });
-  }
+  // Re-record
+  $('btn-re-record').addEventListener('click', function () {
+    voiceBlob = null;
+    showVoiceState('voice-idle');
+    $recTime.textContent = '0:00';
+  });
 
-  if ($voiceInput) {
-    $voiceInput.addEventListener('change', function () {
-      var file = $voiceInput.files[0];
-      if (!file) return;
-      voiceBlob = file;
-      showVoiceState('done');
-    });
-  }
-
-  // ══════════════════════════════════════
-  // LANGUAGE
-  // ══════════════════════════════════════
-
-  var savedLang = localStorage.getItem('rt_lang');
-  if (savedLang && $langSel.querySelector('option[value="' + savedLang + '"]')) {
-    $langSel.value = savedLang;
-  }
-  $langSel.addEventListener('change', function () {
-    localStorage.setItem('rt_lang', $langSel.value);
+  // Upload audio file
+  $voiceInput.addEventListener('change', function () {
+    var file = $voiceInput.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('audio/')) {
+      RT.toast('Please upload an audio file.');
+      return;
+    }
+    voiceBlob = file;
+    showVoiceState('voice-done');
   });
 
   // ══════════════════════════════════════
@@ -253,14 +210,8 @@
   });
 
   // ══════════════════════════════════════
-  // DURATION
+  // DURATION TOGGLE
   // ══════════════════════════════════════
-
-  var DURATION_PRICES = {
-    '1': 'Free preview included',
-    '5': '50 credits',
-    '10': '100 credits'
-  };
 
   function renderDuration() {
     $durRow.innerHTML = '';
@@ -272,7 +223,7 @@
       btn.addEventListener('click', function () {
         duration = d.value;
         renderDuration();
-        if ($durPrice) $durPrice.textContent = DURATION_PRICES[d.value] || '';
+        if ($durPrice) $durPrice.textContent = d.price;
       });
       $durRow.appendChild(btn);
     });
@@ -284,7 +235,7 @@
   // ══════════════════════════════════════
 
   function mountTurnstile() {
-    var target = document.getElementById('ts-target');
+    var target = $('ts-target');
     if (!target) return;
     if (!window.turnstile) { setTimeout(mountTurnstile, 300); return; }
     if (tsWidgetId !== null) {
@@ -312,230 +263,344 @@
   // GENERATE PREVIEW
   // ══════════════════════════════════════
 
-  if ($btnPreview) {
-    $btnPreview.addEventListener('click', function () {
-      if (generating) return;
-      if (!mood) { RT.toast('Select a mood.'); return; }
-      if (!$brief.value.trim()) { RT.toast('Describe your story.'); return; }
-      if ($brief.value.trim().length < 10) { RT.toast('Story is too short. Add more detail.'); return; }
-      if (!tsToken) { RT.toast('Complete the verification.'); return; }
+  $genBtn.addEventListener('click', function () {
+    if (generating) return;
+    if (!mood) { RT.toast('Select a mood.'); return; }
+    if (!$brief.value.trim()) { RT.toast('Enter your story.'); return; }
+    if ($brief.value.trim().length < 10) { RT.toast('Story is too short. Add more detail.'); return; }
+    if (!tsToken) { RT.toast('Complete the verification.'); return; }
 
-      generating = true;
-      RT.loading(true, 'Writing your screenplay...');
-      $btnPreview.disabled = true;
+    generating = true;
+    RT.loading(true, 'Writing your screenplay...', [
+      'Analyzing your story brief...',
+      'Crafting cinematic scenes...',
+      'Generating image prompts...'
+    ]);
+    $genBtn.disabled = true;
 
-      var payload = {
-        brief: $brief.value.trim(),
-        mood: mood,
-        language: $langSel.value,
-        durationMinutes: parseFloat(duration)
-      };
+    var payload = {
+      brief: $brief.value.trim(),
+      mood: mood,
+      language: $langSel.value,
+      durationMinutes: parseFloat(duration)
+    };
 
-      RT.generateScenes(payload,
-        function (scenes) {
-          generating = false;
-          RT.loading(false);
-          $btnPreview.disabled = false;
+    RT.generateScenes(payload)
+      .then(function (data) {
+        generating = false;
+        RT.loading(false);
+        $genBtn.disabled = false;
 
-          // Render scenes in preview screen
-          renderPreviewScenes(scenes);
-
-          // Store for later
-          window._lastScenes = scenes;
-          window._lastPayload = payload;
-
-          // Save to journal
-          RT.saveToJournal(mood, $langSel.value, $brief.value.trim(), duration, scenes);
-
-          RT.toast('Preview ready!', true);
+        if (!data.scenes || !data.scenes.length) {
+          RT.toast('No scenes returned. Try again.');
           resetTurnstile();
-          goTo('preview');
-        },
-        function (errMsg) {
-          generating = false;
-          RT.loading(false);
-          $btnPreview.disabled = false;
-          RT.toast(errMsg);
-          resetTurnstile();
+          return;
         }
-      );
-    });
-  }
 
-  // ══════════════════════════════════════
-  // RENDER PREVIEW SCENES
-  // ══════════════════════════════════════
+        currentScenes = data.scenes;
 
-  function renderPreviewScenes(scenes) {
-    if (!$previewScenes) return;
-    $previewScenes.innerHTML = '';
+        // Save to journal
+        RT.saveToJournal({
+          mood: mood,
+          language: $langSel.value,
+          brief: $brief.value.trim(),
+          duration: duration,
+          scenes: data.scenes
+        });
 
-    for (var i = 0; i < scenes.length; i++) {
-      var s = scenes[i];
-      var card = document.createElement('div');
-      card.className = 'scene-card';
+        // Render scenes on preview screen
+        RT.renderScenes(data.scenes);
 
-      var html =
-        '<div class="scene-num">Scene ' + (i + 1) + ' of ' + scenes.length + '</div>' +
-        '<div class="scene-title">' + RT.esc(s.title || 'Untitled') + '</div>' +
-        '<div class="scene-block">' +
-          '<div class="scene-block-label">Visual Direction</div>' +
-          '<div class="scene-block-text">' + RT.esc(s.description || '') + '</div>' +
-        '</div>' +
-        '<div class="scene-block">' +
-          '<div class="scene-block-label">Voiceover</div>' +
-          '<div class="scene-block-text voiceover-text">' + RT.esc(s.voiceover || '') + '</div>' +
-        '</div>';
-
-      if (s.imagePrompt) {
-        html +=
-          '<div class="scene-block">' +
-            '<div class="scene-block-label">Image Prompt</div>' +
-            '<div class="scene-block-text img-prompt">' + RT.esc(s.imagePrompt) + '</div>' +
-          '</div>';
-      }
-
-      card.innerHTML = html;
-      $previewScenes.appendChild(card);
-    }
-  }
+        // Show preview screen
+        RT.showScreen('preview');
+        RT.toast('Preview ready!', true);
+        resetTurnstile();
+      })
+      .catch(function (err) {
+        generating = false;
+        RT.loading(false);
+        $genBtn.disabled = false;
+        RT.toast(err.message || 'Something went wrong.');
+        resetTurnstile();
+      });
+  });
 
   // ══════════════════════════════════════
   // PREVIEW ACTIONS
   // ══════════════════════════════════════
 
-  if ($btnGetFilm) {
-    $btnGetFilm.addEventListener('click', function () {
-      // For now, go to auth — later check if logged in
-      goTo('auth');
-    });
-  }
+  $('btn-get-film').addEventListener('click', function () {
+    if (RT.isLoggedIn()) {
+      RT.showScreen('payment');
+      renderPackages();
+      loadBalance();
+    } else {
+      RT.showScreen('auth');
+      showAuthForm('login');
+    }
+  });
 
-  if ($btnRetry) {
-    $btnRetry.addEventListener('click', function () {
-      goTo('setup');
-      mountTurnstile();
-    });
-  }
+  $('btn-retry').addEventListener('click', function () {
+    RT.showScreen('setup');
+    mountTurnstile();
+  });
 
   // ══════════════════════════════════════
-  // AUTH FORM SWITCHING
+  // AUTH
   // ══════════════════════════════════════
 
   function showAuthForm(form) {
-    $authLogin.classList.add('hide');
-    $authSignup.classList.add('hide');
-    $authForgot.classList.add('hide');
-    $authReset.classList.add('hide');
-    form.classList.remove('hide');
-  }
-
-  if ($showSignup) $showSignup.addEventListener('click', function () { showAuthForm($authSignup); });
-  if ($showLogin) $showLogin.addEventListener('click', function () { showAuthForm($authLogin); });
-  if ($showLogin2) $showLogin2.addEventListener('click', function () { showAuthForm($authLogin); });
-  if ($showForgot) $showForgot.addEventListener('click', function () { showAuthForm($authForgot); });
-
-  // Auth buttons — placeholder actions
-  if ($btnLogin) {
-    $btnLogin.addEventListener('click', function () {
-      var email = document.getElementById('login-email').value.trim();
-      var pass = document.getElementById('login-pass').value;
-      if (!email || !pass) { RT.toast('Fill in all fields.'); return; }
-      RT.toast('Login coming soon — proceeding to payment.', true);
-      goTo('payment');
+    var forms = ['auth-login', 'auth-signup', 'auth-forgot', 'auth-reset'];
+    forms.forEach(function (f) {
+      var el = $(f);
+      if (el) {
+        if (f === 'auth-' + form) el.classList.remove('hide');
+        else el.classList.add('hide');
+      }
     });
   }
 
-  if ($btnSignup) {
-    $btnSignup.addEventListener('click', function () {
-      var email = document.getElementById('signup-email').value.trim();
-      var pass = document.getElementById('signup-pass').value;
-      if (!email || !pass) { RT.toast('Fill in all fields.'); return; }
-      if (pass.length < 6) { RT.toast('Password must be 6+ characters.'); return; }
-      RT.toast('Signup coming soon — proceeding to payment.', true);
-      goTo('payment');
+  $('show-signup').addEventListener('click', function () { showAuthForm('signup'); });
+  $('show-login').addEventListener('click', function () { showAuthForm('login'); });
+  $('show-forgot').addEventListener('click', function () { showAuthForm('forgot'); });
+  $('show-login2').addEventListener('click', function () { showAuthForm('login'); });
+
+  // Login
+  $('btn-login').addEventListener('click', function () {
+    var email = $('login-email').value.trim();
+    var pass = $('login-pass').value;
+    if (!email || !pass) { RT.toast('Fill in all fields.'); return; }
+
+    RT.loading(true, 'Logging in...');
+    RT.login(email, pass)
+      .then(function () {
+        RT.loading(false);
+        RT.toast('Welcome back!', true);
+        RT.showScreen('payment');
+        renderPackages();
+        loadBalance();
+      })
+      .catch(function (err) {
+        RT.loading(false);
+        RT.toast(err.message || 'Login failed.');
+      });
+  });
+
+  // Signup
+  $('btn-signup').addEventListener('click', function () {
+    var email = $('signup-email').value.trim();
+    var pass = $('signup-pass').value;
+    if (!email || !pass) { RT.toast('Fill in all fields.'); return; }
+    if (pass.length < 6) { RT.toast('Password must be 6+ characters.'); return; }
+
+    RT.loading(true, 'Creating account...');
+    RT.signup(email, pass)
+      .then(function () {
+        RT.loading(false);
+        RT.toast('Account created!', true);
+        RT.showScreen('payment');
+        renderPackages();
+        loadBalance();
+      })
+      .catch(function (err) {
+        RT.loading(false);
+        RT.toast(err.message || 'Signup failed.');
+      });
+  });
+
+  // Forgot password
+  $('btn-forgot').addEventListener('click', function () {
+    var email = $('forgot-email').value.trim();
+    if (!email) { RT.toast('Enter your email.'); return; }
+
+    RT.loading(true, 'Sending reset code...');
+    RT.forgotPassword(email)
+      .then(function () {
+        RT.loading(false);
+        RT.toast('Check your email for the code.', true);
+        showAuthForm('reset');
+      })
+      .catch(function (err) {
+        RT.loading(false);
+        RT.toast(err.message || 'Failed to send code.');
+      });
+  });
+
+  // Reset password
+  $('btn-reset').addEventListener('click', function () {
+    var code = $('reset-code').value.trim();
+    var pass = $('reset-pass').value;
+    var email = $('forgot-email').value.trim();
+    if (!code || !pass) { RT.toast('Fill in all fields.'); return; }
+
+    RT.loading(true, 'Resetting password...');
+    RT.resetPassword(email, code, pass)
+      .then(function () {
+        RT.loading(false);
+        RT.toast('Password reset! Log in now.', true);
+        showAuthForm('login');
+      })
+      .catch(function (err) {
+        RT.loading(false);
+        RT.toast(err.message || 'Reset failed.');
+      });
+  });
+
+  // ══════════════════════════════════════
+  // PAYMENT
+  // ══════════════════════════════════════
+
+  function renderPackages() {
+    if (!$packages) return;
+    $packages.innerHTML = '';
+
+    RT.PACKAGES.forEach(function (pkg) {
+      var card = document.createElement('div');
+      card.className = 'pkg-card' + (selectedPackage === pkg.id ? ' selected' : '') + (pkg.popular ? ' popular' : '');
+      card.innerHTML =
+        (pkg.popular ? '<div class="pkg-badge">Most Popular</div>' : '') +
+        '<div class="pkg-top">' +
+          '<div class="pkg-label">' + RT.esc(pkg.label) + '</div>' +
+          '<div class="pkg-desc">' + RT.esc(pkg.desc) + '</div>' +
+        '</div>' +
+        '<div class="pkg-price">$' + (pkg.price / 100).toFixed(2) + '</div>';
+
+      card.addEventListener('click', function () {
+        selectedPackage = pkg.id;
+        renderPackages();
+      });
+      $packages.appendChild(card);
     });
+
+    // Buy button
+    var buyBtn = document.createElement('button');
+    buyBtn.className = 'btn-primary';
+    buyBtn.textContent = 'Purchase Credits';
+    buyBtn.style.marginTop = '16px';
+    buyBtn.addEventListener('click', handleCheckout);
+    $packages.appendChild(buyBtn);
   }
 
-  if ($btnForgot) {
-    $btnForgot.addEventListener('click', function () {
-      var email = document.getElementById('forgot-email').value.trim();
-      if (!email) { RT.toast('Enter your email.'); return; }
-      RT.toast('Reset code sent (coming soon).', true);
-      showAuthForm($authReset);
-    });
+  function handleCheckout() {
+    RT.loading(true, 'Creating checkout...');
+    RT.createCheckout(selectedPackage)
+      .then(function (data) {
+        RT.loading(false);
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          RT.toast('Checkout created.', true);
+          startRender();
+        }
+      })
+      .catch(function (err) {
+        RT.loading(false);
+        RT.toast(err.message || 'Checkout failed.');
+      });
   }
 
-  if ($btnReset) {
-    $btnReset.addEventListener('click', function () {
-      RT.toast('Password reset coming soon.', true);
-      showAuthForm($authLogin);
-    });
-  }
-
-  if ($btnLogout) {
-    $btnLogout.addEventListener('click', function () {
-      RT.toast('Logged out.', true);
-      goTo('landing');
-    });
+  function loadBalance() {
+    RT.getBalance()
+      .then(function (data) {
+        var credits = data.credits || 0;
+        var $payBal = $('pay-balance');
+        var $dashCredits = $('dash-credits');
+        if ($payBal) $payBal.textContent = credits;
+        if ($dashCredits) $dashCredits.textContent = credits;
+      })
+      .catch(function () {});
   }
 
   // ══════════════════════════════════════
-  // DASHBOARD / PLAYER / NEW FILM
+  // RENDERING
   // ══════════════════════════════════════
 
-  if ($btnNewFilm) {
-    $btnNewFilm.addEventListener('click', function () {
-      goTo('setup');
-      resetForm();
+  function startRender() {
+    RT.showScreen('rendering');
+    updateRenderStep(1);
+
+    // Simulate progress (replace with real polling later)
+    var steps = [
+      { step: 1, delay: 0, msg: 'Writing screenplay...' },
+      { step: 2, delay: 3000, msg: 'Painting scenes...' },
+      { step: 3, delay: 8000, msg: 'Recording voiceover...' },
+      { step: 4, delay: 14000, msg: 'Bringing art to life...' },
+      { step: 5, delay: 20000, msg: 'Composing final film...' }
+    ];
+
+    steps.forEach(function (s) {
+      setTimeout(function () {
+        updateRenderStep(s.step);
+        $('render-status').textContent = s.msg;
+      }, s.delay);
     });
   }
 
-  if ($btnDashNew) {
-    $btnDashNew.addEventListener('click', function () {
-      goTo('setup');
-      resetForm();
-    });
+  function updateRenderStep(activeStep) {
+    for (var i = 1; i <= 5; i++) {
+      var el = $('rs-' + i);
+      if (!el) continue;
+      el.classList.remove('active', 'done');
+      if (i < activeStep) el.classList.add('done');
+      else if (i === activeStep) el.classList.add('active');
+    }
   }
 
-  if ($btnAddCredits) {
-    $btnAddCredits.addEventListener('click', function () {
-      goTo('payment');
-    });
-  }
+  // ══════════════════════════════════════
+  // PLAYER
+  // ══════════════════════════════════════
+
+  $('btn-new-film').addEventListener('click', function () {
+    resetForm();
+    RT.showScreen('landing');
+  });
+
+  // ══════════════════════════════════════
+  // DASHBOARD
+  // ══════════════════════════════════════
+
+  $('btn-dash-new').addEventListener('click', function () {
+    resetForm();
+    RT.showScreen('setup');
+    mountTurnstile();
+  });
+
+  $('btn-add-credits').addEventListener('click', function () {
+    RT.showScreen('payment');
+    renderPackages();
+    loadBalance();
+  });
+
+  $('btn-logout').addEventListener('click', function () {
+    RT.logout();
+    RT.toast('Logged out.', true);
+    RT.showScreen('landing');
+  });
 
   // ══════════════════════════════════════
   // RESET FORM
   // ══════════════════════════════════════
 
   function resetForm() {
-    $brief.value = '';
     mood = '';
+    duration = '1';
+    currentScenes = null;
     photoFile = null;
     voiceBlob = null;
-
-    // Reset photo
-    if ($photoPreview) {
-      $photoPreview.classList.remove('show');
-      $photoPreview.src = '';
-    }
-    if ($photoPlaceholder) $photoPlaceholder.style.display = '';
-    if ($photoInput) $photoInput.value = '';
-
-    // Reset voice
-    showVoiceState('idle');
-
-    // Reset chips
+    $brief.value = '';
+    $photoPreview.classList.remove('show');
+    $photoPreview.src = '';
+    $photoPlaceholder.style.display = '';
+    showVoiceState('voice-idle');
+    $recTime.textContent = '0:00';
+    renderDuration();
     var all = $moodChips.querySelectorAll('.chip');
     for (var i = 0; i < all.length; i++) all[i].classList.remove('on');
-
-    // Reset turnstile
     resetTurnstile();
-    mountTurnstile();
   }
 
   // ══════════════════════════════════════
-  // GLOBAL ERROR HANDLING
+  // GLOBAL ERROR HANDLERS
   // ══════════════════════════════════════
 
   window.addEventListener('error', function () {
@@ -546,5 +611,14 @@
     if (e && typeof e.preventDefault === 'function') e.preventDefault();
     if (!generating) RT.toast('Network error. Check connection.');
   });
+
+  // ══════════════════════════════════════
+  // AUTO-CHECK AUTH ON LOAD
+  // ══════════════════════════════════════
+
+  if (RT.isLoggedIn()) {
+    // Could auto-redirect to dashboard
+    // RT.showScreen('dash');
+  }
 
 })();

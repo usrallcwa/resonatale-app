@@ -3,7 +3,7 @@
 
   // ── Config ──
   var TURNSTILE_KEY = '0x4AAAAAACLI9vyJZYGLg9lS';
-  var API = '/api/story';
+ var API = 'https://api.resonatale.com/api/story';
   var MOODS = ['calm', 'cozy', 'adventure', 'romantic', 'suspense', 'motivational', 'heartwarming'];
   var DURATIONS = [
   { value: '1',  label: '1 min' },

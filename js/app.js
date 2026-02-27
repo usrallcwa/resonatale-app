@@ -618,4 +618,126 @@
     // RT.showScreen('dash');
   }
 
+  // ══════════════════════════════════════
+  // RETURNING USER — LOAD PROFILE
+  // ══════════════════════════════════════
+
+  function loadProfile() {
+    if (!RT.isLoggedIn()) return;
+
+    fetch(RT.API_BASE + '/profile', {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + RT.authToken
+      }
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (data.error) return;
+
+      // Update credits everywhere
+      var $payBal = document.getElementById('pay-balance');
+      var $dashCredits = document.getElementById('dash-credits');
+      if ($payBal) $payBal.textContent = data.credits || 0;
+      if ($dashCredits) $dashCredits.textContent = data.credits || 0;
+
+      // If they already have photo + voice, skip upload sections
+      if (data.hasPhoto && data.hasVoice) {
+        var photoSection = $photoZone ? $photoZone.closest('.section') : null;
+        var voiceSection = document.getElementById('voice-zone') ? document.getElementById('voice-zone').closest('.section') : null;
+
+        if (photoSection) {
+          photoSection.innerHTML =
+            '<label class="label">Your Photo</label>' +
+            '<div class="returning-asset">' +
+              '<span class="voice-check">✓</span>' +
+              '<span>Photo on file</span>' +
+              '<button type="button" class="btn-text" id="btn-change-photo">Change</button>' +
+            '</div>';
+
+          var changePhotoBtn = document.getElementById('btn-change-photo');
+          if (changePhotoBtn) {
+            changePhotoBtn.addEventListener('click', function () {
+              // Rebuild photo upload
+              location.reload();
+            });
+          }
+        }
+
+        if (voiceSection) {
+          voiceSection.innerHTML =
+            '<label class="label">Your Voice</label>' +
+            '<div class="returning-asset">' +
+              '<span class="voice-check">✓</span>' +
+              '<span>Voice clone ready</span>' +
+              '<button type="button" class="btn-text" id="btn-change-voice">Change</button>' +
+            '</div>';
+
+          var changeVoiceBtn = document.getElementById('btn-change-voice');
+          if (changeVoiceBtn) {
+            changeVoiceBtn.addEventListener('click', function () {
+              location.reload();
+            });
+          }
+        }
+      }
+    })
+    .catch(function () {});
+  }
+
+  // ══════════════════════════════════════
+  // UPLOAD ASSETS TO SERVER AFTER GENERATE
+  // ══════════════════════════════════════
+
+  function uploadAssetsIfNeeded() {
+    if (!RT.isLoggedIn()) return Promise.resolve();
+
+    var promises = [];
+
+    // Upload photo
+    if (photoFile) {
+      var photoPromise = new Promise(function (resolve) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          fetch(RT.API_BASE + '/profile/photo', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + RT.authToken
+            },
+            body: JSON.stringify({ photo: e.target.result })
+          }).then(function () { resolve(); }).catch(function () { resolve(); });
+        };
+        reader.readAsDataURL(photoFile);
+      });
+      promises.push(photoPromise);
+    }
+
+    // Upload voice
+    if (voiceBlob) {
+      var voicePromise = new Promise(function (resolve) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          fetch(RT.API_BASE + '/profile/voice', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + RT.authToken
+            },
+            body: JSON.stringify({ audio: e.target.result })
+          }).then(function () { resolve(); }).catch(function () { resolve(); });
+        };
+        reader.readAsDataURL(voiceBlob);
+      });
+      promises.push(voicePromise);
+    }
+
+    return Promise.all(promises);
+  }
+
+  // Load profile on startup if logged in
+  if (RT.isLoggedIn()) {
+    loadProfile();
+  }
+  
 })();

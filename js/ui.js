@@ -32,20 +32,44 @@
   }
 
   // ── Live Clock ──
+  // Uses the user's local time automatically via new Date()
+  // No timezone config needed — JavaScript Date() always returns local time
+
   function tickClock() {
     var now = new Date();
-    var h = now.getHours() % 12;
-    var m = now.getMinutes();
-    var s = now.getSeconds();
+    var hours = now.getHours() % 12;
+    var minutes = now.getMinutes();
+    var seconds = now.getSeconds();
+    var millis = now.getMilliseconds();
+
+    // Smooth second hand (includes milliseconds)
+    var secAngle = (seconds * 6) + (millis * 0.006);
+    // Minute hand moves smoothly with seconds
+    var minAngle = (minutes * 6) + (seconds * 0.1);
+    // Hour hand moves smoothly with minutes
+    var hourAngle = (hours * 30) + (minutes * 0.5);
+
     var $h = document.getElementById('c-h');
     var $m = document.getElementById('c-m');
     var $s = document.getElementById('c-s');
-    if ($h) $h.setAttribute('transform', 'rotate(' + ((h * 30) + (m * 0.5)) + ' 100 100)');
-    if ($m) $m.setAttribute('transform', 'rotate(' + (m * 6) + ' 100 100)');
-    if ($s) $s.setAttribute('transform', 'rotate(' + (s * 6) + ' 100 100)');
+
+    if ($h) $h.setAttribute('transform', 'rotate(' + hourAngle + ' 100 100)');
+    if ($m) $m.setAttribute('transform', 'rotate(' + minAngle + ' 100 100)');
+    if ($s) $s.setAttribute('transform', 'rotate(' + secAngle + ' 100 100)');
   }
-  tickClock();
-  setInterval(tickClock, 1000);
+
+  // Run immediately so hands show correct time on first frame
+  // Use requestAnimationFrame to ensure SVG is rendered
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () {
+      tickClock();
+      // Smooth ticking at 60fps for the second hand
+      setInterval(tickClock, 50);
+    });
+  } else {
+    tickClock();
+    setInterval(tickClock, 50);
+  }
 
   // ── Export ──
   window.RT = window.RT || {};

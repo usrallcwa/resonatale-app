@@ -1,12 +1,14 @@
 (function () {
   'use strict';
 
-  var $scenesList = document.getElementById('scenes-list');
-  var $results = document.getElementById('results');
+  window.RT = window.RT || {};
 
   // ── Render scene cards ──
-  function renderScenes(scenes) {
-    $scenesList.innerHTML = '';
+  RT.renderScenes = function (scenes, container) {
+    var $el = container || document.getElementById('preview-scenes');
+    if (!$el) return;
+
+    $el.innerHTML = '';
 
     for (var i = 0; i < scenes.length; i++) {
       var s = scenes[i];
@@ -34,33 +36,26 @@
       }
 
       card.innerHTML = html;
-      $scenesList.appendChild(card);
+      $el.appendChild(card);
     }
-
-    $results.classList.add('show');
-    $results.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
+  };
 
   // ── Save to journal ──
-  function saveToJournal(mood, language, brief, duration, scenes) {
+  RT.saveToJournal = function (data) {
     try {
       var journal = JSON.parse(localStorage.getItem('rt_journal') || '[]');
       journal.unshift({
         id: Date.now().toString(36),
-        mood: mood,
-        language: language,
-        brief: brief,
-        duration: duration,
-        scenes: scenes,
+        mood: data.mood || '',
+        language: data.language || '',
+        brief: data.brief || '',
+        duration: data.duration || '',
+        scenes: data.scenes || [],
         createdAt: new Date().toISOString()
       });
       if (journal.length > 50) journal = journal.slice(0, 50);
       localStorage.setItem('rt_journal', JSON.stringify(journal));
     } catch (e) {}
-  }
+  };
 
-  // Export
-  window.RT = window.RT || {};
-  RT.renderScenes = renderScenes;
-  RT.saveToJournal = saveToJournal;
 })();

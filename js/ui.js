@@ -18,7 +18,7 @@
 
   // ── Loader ──
   function loading(show, msg) {
-    $loaderMsg.textContent = msg || 'Generating scenes...';
+    $loaderMsg.textContent = msg || 'Preparing your experience...';
     if (show) $loader.classList.add('show');
     else $loader.classList.remove('show');
   }
@@ -31,23 +31,23 @@
     return d.innerHTML;
   }
 
-  // ── Clock ──
+  // ── Live Clock ──
   function tickClock() {
     var now = new Date();
     var h = now.getHours() % 12;
     var m = now.getMinutes();
     var s = now.getSeconds();
-    var $h = document.getElementById('clock-h');
-    var $m = document.getElementById('clock-m');
-    var $s = document.getElementById('clock-s');
-    if ($h) $h.setAttribute('transform', 'rotate(' + ((h * 30) + (m * 0.5)) + ' 50 50)');
-    if ($m) $m.setAttribute('transform', 'rotate(' + (m * 6) + ' 50 50)');
-    if ($s) $s.setAttribute('transform', 'rotate(' + (s * 6) + ' 50 50)');
+    var $h = document.getElementById('c-h');
+    var $m = document.getElementById('c-m');
+    var $s = document.getElementById('c-s');
+    if ($h) $h.setAttribute('transform', 'rotate(' + ((h * 30) + (m * 0.5)) + ' 100 100)');
+    if ($m) $m.setAttribute('transform', 'rotate(' + (m * 6) + ' 100 100)');
+    if ($s) $s.setAttribute('transform', 'rotate(' + (s * 6) + ' 100 100)');
   }
   tickClock();
   setInterval(tickClock, 1000);
 
-  // Export
+  // ── Export ──
   window.RT = window.RT || {};
   RT.toast = toast;
   RT.loading = loading;

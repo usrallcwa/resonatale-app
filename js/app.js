@@ -1,30 +1,16 @@
 (function () {
   'use strict';
 
-  // ── Config ──
-  var TURNSTILE_KEY = '0x4AAAAAACLI9vyJZYGLg9lS';
-  var API = 'https://api.resonatale.com/story';
-  var MOODS = ['calm', 'cozy', 'adventure', 'romantic', 'suspense', 'motivational', 'heartwarming'];
-  var DURATIONS = [
-    { value: '1', label: '1 min' },
-    { value: '5', label: '5 min' },
-    { value: '10', label: '10 min' }
-  ];
-
   // ── State ──
   var mood = '';
   var duration = '1';
   var tsToken = '';
   var tsWidgetId = null;
-  var toastTimer = null;
   var generating = false;
 
   // ── DOM ──
   var $home       = document.getElementById('s-home');
   var $create     = document.getElementById('s-create');
-  var $loader     = document.getElementById('loader');
-  var $loaderMsg  = document.getElementById('loader-msg');
-  var $toastEl    = document.getElementById('toast');
   var $moodChips  = document.getElementById('mood-chips');
   var $langSel    = document.getElementById('lang-sel');
   var $brief      = document.getElementById('brief');
@@ -36,7 +22,7 @@
   var $goCreate   = document.getElementById('go-create');
   var $logo       = document.getElementById('logo');
 
-  // ── Restore saved language ──
+  // ── Restore language ──
   var savedLang = localStorage.getItem('rt_lang');
   if (savedLang && $langSel.querySelector('option[value="' + savedLang + '"]')) {
     $langSel.value = savedLang;
@@ -44,22 +30,6 @@
   $langSel.addEventListener('change', function () {
     localStorage.setItem('rt_lang', $langSel.value);
   });
-
-  // ── Live Clock ──
-  function tickClock() {
-    var now = new Date();
-    var h = now.getHours() % 12;
-    var m = now.getMinutes();
-    var s = now.getSeconds();
-    var $h = document.getElementById('clock-h');
-    var $m = document.getElementById('clock-m');
-    var $s = document.getElementById('clock-s');
-    if ($h) $h.setAttribute('transform', 'rotate(' + ((h * 30) + (m * 0.5)) + ' 50 50)');
-    if ($m) $m.setAttribute('transform', 'rotate(' + (m * 6) + ' 50 50)');
-    if ($s) $s.setAttribute('transform', 'rotate(' + (s * 6) + ' 50 50)');
-  }
-  tickClock();
-  setInterval(tickClock, 1000);
 
   // ── Navigation ──
   function showHome() {
@@ -78,7 +48,7 @@
   $logo.addEventListener('click', showHome);
 
   // ── Mood Chips ──
-  MOODS.forEach(function (m) {
+  RT.MOODS.forEach(function (m) {
     var btn = document.createElement('button');
     btn.className = 'chip';
     btn.type = 'button';
@@ -97,7 +67,7 @@
   // ── Duration Toggle ──
   function renderDuration() {
     $durRow.innerHTML = '';
-    DURATIONS.forEach(function (d) {
+    RT.DURATIONS.forEach(function (d) {
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'dur-opt' + (duration === d.value ? ' on' : '');
@@ -121,7 +91,7 @@
     }
     tsToken = '';
     tsWidgetId = window.turnstile.render(target, {
-      sitekey: TURNSTILE_KEY,
+      sitekey: RT.TURNSTILE_KEY,
       theme: 'dark',
       size: 'normal',
       callback: function (token) { tsToken = token; },
@@ -137,33 +107,16 @@
     tsToken = '';
   }
 
-  // ── Toast ──
-  function toast(msg, ok) {
-    if (toastTimer) clearTimeout(toastTimer);
-    $toastEl.textContent = msg;
-    $toastEl.className = 'toast show' + (ok ? ' ok' : '');
-    toastTimer = setTimeout(function () {
-      $toastEl.classList.remove('show');
-    }, 4500);
-  }
-
-  // ── Loader ──
-  function loading(show, msg) {
-    $loaderMsg.textContent = msg || 'Generating scenes...';
-    if (show) $loader.classList.add('show');
-    else $loader.classList.remove('show');
-  }
-
   // ── Generate ──
   $genBtn.addEventListener('click', function () {
     if (generating) return;
-    if (!mood) { toast('Select a mood.'); return; }
-    if (!$brief.value.trim()) { toast('Enter a story brief.'); return; }
-    if ($brief.value.trim().length < 5) { toast('Brief is too short.'); return; }
-    if (!tsToken) { toast('Complete the verification.'); return; }
+    if (!mood) { RT.toast('Select a mood.'); return; }
+    if (!$brief.value.trim()) { RT.toast('Enter a story brief.'); return; }
+    if ($brief.value.trim().length < 5) { RT.toast('Brief is too short.'); return; }
+    if (!tsToken) { RT.toast('Complete the verification.'); return; }
 
     generating = true;
-    loading(true, 'Writing your scenes...');
+    RT.loading(true, 'Writing your scenes...');
     $genBtn.disabled = true;
 
     var payload = {
@@ -173,111 +126,25 @@
       durationMinutes: parseFloat(duration)
     };
 
-    fetch(API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
-    .then(function (r) {
-      if (!r.ok) {
-        return r.text().then(function (txt) {
-          var errMsg = 'Generation failed (HTTP ' + r.status + ')';
-          try {
-            var p = JSON.parse(txt);
-            errMsg = p.detail || p.error || errMsg;
-          } catch (e) {
-            if (txt && txt.length < 300) errMsg = txt;
-          }
-          throw new Error(errMsg);
-        });
-      }
-      return r.json();
-    })
-    .then(function (data) {
-      generating = false;
-      loading(false);
-      $genBtn.disabled = false;
-
-      if (!data.scenes || !data.scenes.length) {
-        toast('No scenes returned. Try again.');
+    RT.generateScenes(payload,
+      function (scenes) {
+        generating = false;
+        RT.loading(false);
+        $genBtn.disabled = false;
+        RT.renderScenes(scenes);
+        RT.saveToJournal(mood, $langSel.value, $brief.value.trim(), duration, scenes);
+        RT.toast('Scenes ready!', true);
         resetTurnstile();
-        return;
+      },
+      function (errMsg) {
+        generating = false;
+        RT.loading(false);
+        $genBtn.disabled = false;
+        RT.toast(errMsg);
+        resetTurnstile();
       }
-
-      renderScenes(data.scenes);
-      toast('Scenes ready!', true);
-      resetTurnstile();
-    })
-    .catch(function (err) {
-      generating = false;
-      loading(false);
-      $genBtn.disabled = false;
-      toast(err.message || 'Something went wrong.');
-      resetTurnstile();
-    });
+    );
   });
-
-  // ── Render Scenes ──
-  function renderScenes(scenes) {
-    $scenesList.innerHTML = '';
-
-    for (var i = 0; i < scenes.length; i++) {
-      var s = scenes[i];
-      var card = document.createElement('div');
-      card.className = 'scene-card';
-
-      var html =
-        '<div class="scene-num">Scene ' + (i + 1) + ' of ' + scenes.length + '</div>' +
-        '<div class="scene-title">' + esc(s.title || 'Untitled') + '</div>' +
-        '<div class="scene-block">' +
-          '<div class="scene-block-label">Visual Direction</div>' +
-          '<div class="scene-block-text">' + esc(s.description || '') + '</div>' +
-        '</div>' +
-        '<div class="scene-block">' +
-          '<div class="scene-block-label">Voiceover</div>' +
-          '<div class="scene-block-text voiceover-text">' + esc(s.voiceover || '') + '</div>' +
-        '</div>';
-
-      // Show image prompt if present
-      if (s.imagePrompt) {
-        html +=
-          '<div class="scene-block">' +
-            '<div class="scene-block-label">Image Prompt</div>' +
-            '<div class="scene-block-text img-prompt">' + esc(s.imagePrompt) + '</div>' +
-          '</div>';
-      }
-
-      card.innerHTML = html;
-      $scenesList.appendChild(card);
-    }
-
-    $results.classList.add('show');
-
-    // Save to journal
-    try {
-      var journal = JSON.parse(localStorage.getItem('rt_journal') || '[]');
-      journal.unshift({
-        id: Date.now().toString(36),
-        mood: mood,
-        language: $langSel.value,
-        brief: $brief.value.trim(),
-        duration: duration,
-        scenes: scenes,
-        createdAt: new Date().toISOString()
-      });
-      if (journal.length > 50) journal = journal.slice(0, 50);
-      localStorage.setItem('rt_journal', JSON.stringify(journal));
-    } catch (e) {}
-
-    $results.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  function esc(str) {
-    if (!str) return '';
-    var d = document.createElement('div');
-    d.textContent = str;
-    return d.innerHTML;
-  }
 
   // ── New Story ──
   $newBtn.addEventListener('click', function () {
@@ -291,13 +158,13 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
-  // ── Global error handling ──
+  // ── Global errors ──
   window.addEventListener('error', function () {
-    if (!generating) toast('Something went wrong.');
+    if (!generating) RT.toast('Something went wrong.');
   });
   window.addEventListener('unhandledrejection', function (e) {
     if (e && typeof e.preventDefault === 'function') e.preventDefault();
-    if (!generating) toast('Network error. Check connection.');
+    if (!generating) RT.toast('Network error. Check connection.');
   });
 
 })();

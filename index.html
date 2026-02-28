@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>ResonaTale — Your Face. Your Voice. Your Movie.</title>
-<meta name="description" content="Star in a cinematic masterpiece created in minutes, not months.">
+<meta name="description" content="Star in a cinematic masterpiece created in minutes. AI films featuring you, in your voice, in any language.">
 <meta name="theme-color" content="#07070B">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -88,9 +88,10 @@
       <button type="button" class="btn-primary" id="btn-start">Create Your Film</button>
 
       <div class="landing-features">
-        <div class="feat"><span class="feat-icon">🎬</span><span>4K Cinematic</span></div>
+        <div class="feat"><span class="feat-icon">🎬</span><span>Real AI Films</span></div>
         <div class="feat"><span class="feat-icon">🧑</span><span>You Star In It</span></div>
-        <div class="feat"><span class="feat-icon">🎙️</span><span>Your Voice</span></div>
+        <div class="feat"><span class="feat-icon">🎙️</span><span>Your Own Voice</span></div>
+        <div class="feat"><span class="feat-icon">🌍</span><span>12 Languages</span></div>
       </div>
 
       <div class="foot">
@@ -101,29 +102,31 @@
     </div>
   </div>
 
-  <!-- ════ SETUP ════ -->
+  <!-- ════ SETUP (photos + voice) ════ -->
   <div id="s-setup" class="screen">
     <div class="screen-inner">
       <button type="button" class="back-btn" id="back-to-landing">← Back</button>
       <h2 class="screen-title">Set Up Your Film</h2>
-      <p class="screen-sub">Upload your photo, record your voice, and describe your story.</p>
+      <p class="screen-sub">Upload selfies and record your voice. We'll put you in the movie.</p>
 
       <div class="section">
-        <label class="label">Your Photo</label>
-        <div class="upload-zone" id="photo-zone">
-          <div class="upload-placeholder" id="photo-placeholder">
-            <span class="upload-icon">📸</span>
-            <span>Tap to upload a clear photo of yourself</span>
-            <span class="upload-hint">Full body or portrait</span>
+        <label class="label">Your Photos <span id="photo-count" class="label-count">0/10 photos</span></label>
+        <p class="upload-hint">Upload 3-5 clear photos. Different angles and poses for best results.</p>
+        <div class="photo-grid-wrap">
+          <div class="photo-grid" id="photo-grid"></div>
+          <div class="upload-zone" id="photo-zone">
+            <div class="upload-placeholder">
+              <span class="upload-icon">📸</span>
+              <span>Tap to add photos</span>
+            </div>
           </div>
-          <img id="photo-preview" class="upload-preview" alt="">
-          <input type="file" id="photo-input" accept="image/*" hidden>
+          <input type="file" id="photo-input" accept="image/*" multiple hidden>
         </div>
       </div>
 
       <div class="section">
         <label class="label">Your Voice</label>
-        <div class="voice-zone" id="voice-zone">
+        <div class="voice-zone">
           <div id="voice-idle" class="voice-state">
             <button type="button" class="voice-record-btn" id="btn-record">
               <span class="rec-dot"></span>
@@ -147,172 +150,10 @@
         </div>
       </div>
 
-      <div class="section">
-        <label class="label">Language</label>
-        <select class="sel" id="lang-sel">
-          <option value="en">🇺🇸  English</option>
-          <option value="es">🇪🇸  Spanish</option>
-          <option value="fr">🇫🇷  French</option>
-          <option value="ja">🇯🇵  Japanese</option>
-          <option value="de">🇩🇪  German</option>
-          <option value="it">🇮🇹  Italian</option>
-          <option value="pt">🇵🇹  Portuguese</option>
-          <option value="ko">🇰🇷  Korean</option>
-          <option value="zh">🇨🇳  Chinese</option>
-          <option value="hi">🇮🇳  Hindi</option>
-          <option value="ar">🇸🇦  Arabic</option>
-          <option value="ru">🇷🇺  Russian</option>
-        </select>
-      </div>
-
-      <div class="section">
-        <label class="label">Film Length</label>
-        <div class="dur-row" id="dur-row"></div>
-        <p class="upload-hint dur-price" id="dur-price">Free preview included</p>
-      </div>
-
-      <div class="section">
-        <label class="label">Mood</label>
-        <div class="chips" id="mood-chips"></div>
-      </div>
-
-      <div class="section">
-        <label class="label">Your Story</label>
-        <textarea class="ta" id="brief" placeholder="I'm walking through a futuristic city at sunset when I discover a hidden portal that leads to..."></textarea>
-        <p class="upload-hint">Describe the film you want to star in. Be vivid.</p>
-      </div>
-
-      <div class="ts-box"><div id="ts-target"></div></div>
+      <p class="setup-progress" id="setup-status">Upload at least 1 photo.</p>
 
       <div class="gen-area">
-        <button type="button" class="btn-primary" id="btn-preview">Generate Free Preview</button>
-        <p class="upload-hint center">10-20 second sample — completely free</p>
+        <button type="button" class="btn-primary" id="btn-save-setup" disabled>Continue</button>
       </div>
     </div>
   </div>
-
-  <!-- ════ PREVIEW ════ -->
-  <div id="s-preview" class="screen">
-    <div class="screen-inner">
-      <h2 class="screen-title">Your Preview</h2>
-      <p class="screen-sub">Here's a taste of your film.</p>
-
-      <div id="preview-scenes" class="preview-scenes"></div>
-
-      <div class="preview-actions">
-        <button type="button" class="btn-primary" id="btn-get-film">Love It — Get Full Film</button>
-        <button type="button" class="btn-secondary" id="btn-retry">Try Different Version</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ════ AUTH ════ -->
-  <div id="s-auth" class="screen">
-    <div class="screen-inner auth-screen">
-      <div id="auth-login" class="auth-form">
-        <h2 class="screen-title">Welcome Back</h2>
-        <p class="screen-sub">Log in to get your full film.</p>
-        <div class="field"><label>Email</label><input type="email" id="login-email" placeholder="you@email.com" autocomplete="email"></div>
-        <div class="field"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"></div>
-        <button type="button" class="btn-primary" id="btn-login">Log In</button>
-        <div class="auth-links">
-          <button type="button" class="btn-text" id="show-signup">Don't have an account? Sign Up</button>
-          <button type="button" class="btn-text" id="show-forgot">Forgot password?</button>
-        </div>
-      </div>
-      <div id="auth-signup" class="auth-form hide">
-        <h2 class="screen-title">Create Account</h2>
-        <p class="screen-sub">Sign up to bring your film to life.</p>
-        <div class="field"><label>Email</label><input type="email" id="signup-email" placeholder="you@email.com" autocomplete="email"></div>
-        <div class="field"><label>Password</label><input type="password" id="signup-pass" placeholder="6+ characters" autocomplete="new-password"></div>
-        <button type="button" class="btn-primary" id="btn-signup">Create Account</button>
-        <div class="auth-links"><button type="button" class="btn-text" id="show-login">Already have an account? Log In</button></div>
-      </div>
-      <div id="auth-forgot" class="auth-form hide">
-        <h2 class="screen-title">Reset Password</h2>
-        <p class="screen-sub">Enter your email to receive a reset code.</p>
-        <div class="field"><label>Email</label><input type="email" id="forgot-email" placeholder="you@email.com"></div>
-        <button type="button" class="btn-primary" id="btn-forgot">Send Reset Code</button>
-        <div class="auth-links"><button type="button" class="btn-text" id="show-login2">Back to Login</button></div>
-      </div>
-      <div id="auth-reset" class="auth-form hide">
-        <h2 class="screen-title">Enter Code</h2>
-        <p class="screen-sub">Check your email for the reset code.</p>
-        <div class="field"><label>Reset Code</label><input type="text" id="reset-code" placeholder="ABC123" autocomplete="off"></div>
-        <div class="field"><label>New Password</label><input type="password" id="reset-pass" placeholder="6+ characters"></div>
-        <button type="button" class="btn-primary" id="btn-reset">Reset Password</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ════ PAYMENT ════ -->
-  <div id="s-payment" class="screen">
-    <div class="screen-inner">
-      <h2 class="screen-title">Choose Your Package</h2>
-      <p class="screen-sub">Premium 4K cinematic films starring you.</p>
-      <div class="packages" id="packages"></div>
-      <div class="payment-balance"><p>Current Balance: <strong id="pay-balance">0</strong> credits</p></div>
-    </div>
-  </div>
-
-  <!-- ════ RENDERING ════ -->
-  <div id="s-rendering" class="screen">
-    <div class="screen-inner rendering-screen">
-      <div class="render-globe"><div class="spin-large"></div></div>
-      <h2 class="screen-title">Creating Your Film</h2>
-      <p class="screen-sub" id="render-status">Preparing scenes...</p>
-      <div class="render-steps">
-        <div class="render-step" id="rs-1"><span class="rs-dot"></span>Writing screenplay</div>
-        <div class="render-step" id="rs-2"><span class="rs-dot"></span>Painting scenes</div>
-        <div class="render-step" id="rs-3"><span class="rs-dot"></span>Recording voiceover</div>
-        <div class="render-step" id="rs-4"><span class="rs-dot"></span>Bringing art to life</div>
-        <div class="render-step" id="rs-5"><span class="rs-dot"></span>Composing final film</div>
-      </div>
-      <p class="render-note">This may take several minutes. You can close this page — we'll email you when it's ready.</p>
-    </div>
-  </div>
-
-  <!-- ════ PLAYER ════ -->
-  <div id="s-player" class="screen">
-    <div class="screen-inner">
-      <h2 class="screen-title">Your Film Is Ready</h2>
-      <p class="screen-sub">Enjoy your cinematic masterpiece.</p>
-      <div class="film-player"><video id="film-video" playsinline controls></video></div>
-      <div class="player-actions">
-        <a class="btn-primary" id="btn-download" download>Download Film</a>
-        <button type="button" class="btn-secondary" id="btn-new-film">Create Another Film</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ════ DASHBOARD ════ -->
-  <div id="s-dash" class="screen">
-    <div class="screen-inner">
-      <div class="dash-header">
-        <h2 class="screen-title">My Films</h2>
-        <div class="dash-balance"><span id="dash-credits">0</span> credits</div>
-      </div>
-      <button type="button" class="btn-primary dash-new" id="btn-dash-new">Create New Film</button>
-      <div id="dash-films" class="dash-films"></div>
-      <div class="dash-empty hide" id="dash-empty"><p>No films yet. Create your first masterpiece.</p></div>
-      <div class="dash-actions">
-        <button type="button" class="btn-secondary" id="btn-add-credits">Add Credits</button>
-        <button type="button" class="btn-text" id="btn-logout">Log Out</button>
-      </div>
-      <div class="foot">
-        <a href="privacy.html">Privacy</a><span class="foot-dot"></span>
-        <a href="terms.html">Terms</a><span class="foot-dot"></span>
-        <a href="mailto:admin@resonatale.com">Contact</a>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<script src="js/config.js"></script>
-<script src="js/ui.js"></script>
-<script src="js/api.js"></script>
-<script src="js/scenes.js"></script>
-<script src="js/app.js"></script>
-</body>
-</html>

@@ -407,19 +407,5 @@
 <script src="js/player.js"></script>
 <script src="js/app.js"></script>
 
-<script>
-(function () {
-  var sel = document.getElementById('lang-sel');
-  if (!sel) return;
-  RT.LANGUAGES.forEach(function (l) {
-    var opt = document.createElement('option');
-    opt.value = l.code;
-    opt.textContent = l.flag + ' ' + l.name;
-    if (l.code === RT.language) opt.selected = true;
-    sel.appendChild(opt);
-  });
-})();
-</script>
-
 </body>
 </html>

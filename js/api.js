@@ -3,119 +3,245 @@
 
   window.RT = window.RT || {};
 
-  var BASE = RT.API_BASE || '';
+  // ══════════════════════════════════════
+  // FETCH WRAPPER
+  // ══════════════════════════════════════
 
-  // ── Helper ──
-  function apiCall(method, path, body) {
+  function api(method, path, body) {
     var opts = {
       method: method,
       headers: { 'Content-Type': 'application/json' }
     };
 
-    var token = RT.authToken;
-    if (token) {
-      opts.headers['Authorization'] = 'Bearer ' + token;
+    if (RT.token) {
+      opts.headers['Authorization'] = 'Bearer ' + RT.token;
     }
 
     if (body) {
       opts.body = JSON.stringify(body);
     }
 
-    return fetch(BASE + path, opts).then(function (r) {
-      if (!r.ok) {
-        return r.text().then(function (txt) {
-          var errMsg = 'Request failed (HTTP ' + r.status + ')';
-          try {
-            var p = JSON.parse(txt);
-            errMsg = p.detail || p.error || errMsg;
-          } catch (e) {
-            if (txt && txt.length < 300) errMsg = txt;
+    return fetch(RT.API + path, opts).then(function (r) {
+      return r.text().then(function (txt) {
+        var data;
+        try { data = JSON.parse(txt); } catch (e) { data = { error: txt }; }
+
+        if (!r.ok) {
+          // Handle expired token
+          if (r.status === 401) {
+            RT.clearAuth();
           }
+          var errMsg = data.detail || data.error || 'Request failed (HTTP ' + r.status + ')';
           throw new Error(errMsg);
-        });
-      }
-      return r.json();
+        }
+
+        return data;
+      });
     });
   }
 
-  // ── Health Check ──
+  // ══════════════════════════════════════
+  // HEALTH
+  // ══════════════════════════════════════
+
   RT.healthCheck = function () {
-    return apiCall('GET', '/health');
+    return api('GET', '/health');
   };
 
-  // ── Story Generation ──
-  RT.generateScenes = function (payload) {
-    return apiCall('POST', '/story', payload);
-  };
+  // ══════════════════════════════════════
+  // AUTH
+  // ══════════════════════════════════════
 
-  // ── Auth ──
-  RT.authToken = localStorage.getItem('rt_token') || '';
-  RT.userEmail = localStorage.getItem('rt_email') || '';
-
-  RT.signup = function (email, password) {
-    return apiCall('POST', '/auth/signup', { email: email, password: password }).then(function (data) {
-      RT.authToken = data.token;
-      RT.userEmail = email;
-      localStorage.setItem('rt_token', data.token);
-      localStorage.setItem('rt_email', email);
+  RT.signup = function (email, password, language) {
+    return api('POST', '/auth/signup', {
+      email: email,
+      password: password,
+      language: language || RT.language
+    }).then(function (data) {
+      RT.saveAuth(data.token, data.email);
+      RT.credits = data.credits || 0;
+      RT.hasPhotos = data.hasPhotos || false;
+      RT.hasVoice = data.hasVoice || false;
+      RT.hasUsedPreview = data.hasUsedPreview || false;
       return data;
     });
   };
 
   RT.login = function (email, password) {
-    return apiCall('POST', '/auth/login', { email: email, password: password }).then(function (data) {
-      RT.authToken = data.token;
-      RT.userEmail = email;
-      localStorage.setItem('rt_token', data.token);
-      localStorage.setItem('rt_email', email);
+    return api('POST', '/auth/login', {
+      email: email,
+      password: password
+    }).then(function (data) {
+      RT.saveAuth(data.token, data.email);
+      RT.credits = data.credits || 0;
+      RT.hasPhotos = data.hasPhotos || false;
+      RT.hasVoice = data.hasVoice || false;
+      RT.hasUsedPreview = data.hasUsedPreview || false;
+      if (data.language) RT.setLanguage(data.language);
       return data;
     });
   };
 
   RT.forgotPassword = function (email) {
-    return apiCall('POST', '/auth/forgot', { email: email });
+    return api('POST', '/auth/forgot', { email: email });
   };
 
-  RT.resetPassword = function (email, code, newPassword) {
-    return apiCall('POST', '/auth/reset', { email: email, code: code, password: newPassword });
+  RT.resetPassword = function (email, code, password) {
+    return api('POST', '/auth/reset', {
+      email: email,
+      code: code,
+      password: password
+    });
   };
 
   RT.logout = function () {
-    RT.authToken = '';
-    RT.userEmail = '';
-    localStorage.removeItem('rt_token');
-    localStorage.removeItem('rt_email');
+    RT.clearAuth();
   };
 
-  RT.isLoggedIn = function () {
-    return !!RT.authToken;
+  // ══════════════════════════════════════
+  // PROFILE
+  // ══════════════════════════════════════
+
+  RT.getProfile = function () {
+    return api('GET', '/profile').then(function (data) {
+      RT.credits = data.credits || 0;
+      RT.hasPhotos = data.hasPhotos || false;
+      RT.hasVoice = data.hasVoice || false;
+      RT.hasUsedPreview = data.hasUsedPreview || false;
+      if (data.language) RT.setLanguage(data.language);
+      RT.updateCredits(data.credits);
+      return data;
+    });
   };
 
-  // ── Credits ──
-  RT.getBalance = function () {
-    return apiCall('GET', '/credits/balance');
+  RT.uploadPhotos = function (photosBase64Array) {
+    return api('POST', '/profile/photos', {
+      photos: photosBase64Array
+    }).then(function (data) {
+      RT.hasPhotos = true;
+      return data;
+    });
   };
 
-  // ── Checkout ──
-  RT.createCheckout = function (packageId) {
-    return apiCall('POST', '/checkout', { packageId: packageId });
+  RT.uploadVoice = function (audioBase64) {
+    return api('POST', '/profile/voice', {
+      audio: audioBase64
+    }).then(function (data) {
+      if (data.cloned) RT.hasVoice = true;
+      return data;
+    });
   };
 
-  // ── Films ──
+  // ══════════════════════════════════════
+  // STORY PREVIEW (free, no auth needed)
+  // ══════════════════════════════════════
+
+  RT.generatePreview = function (brief, mood, language, tier) {
+    return api('POST', '/story', {
+      brief: brief,
+      mood: mood,
+      language: language,
+      tier: tier
+    });
+  };
+
+  // ══════════════════════════════════════
+  // FREE PREVIEW CLIP (1x per account)
+  // ══════════════════════════════════════
+
+  RT.generatePreviewClip = function (sceneDescription, voiceoverText) {
+    return api('POST', '/preview/clip', {
+      sceneDescription: sceneDescription,
+      voiceoverText: voiceoverText
+    });
+  };
+
+  // ══════════════════════════════════════
+  // CREDITS
+  // ══════════════════════════════════════
+
+  RT.getCredits = function () {
+    return api('GET', '/credits').then(function (data) {
+      RT.credits = data.credits || 0;
+      RT.updateCredits(data.credits);
+      return data;
+    });
+  };
+
+  RT.addCredits = function (amount) {
+    return api('POST', '/credits/add', { amount: amount });
+  };
+
+  // ══════════════════════════════════════
+  // FILM PIPELINE
+  // ══════════════════════════════════════
+
+  RT.createFilm = function (brief, mood, language, tier) {
+    return api('POST', '/film/create', {
+      brief: brief,
+      mood: mood,
+      language: language,
+      tier: tier
+    }).then(function (data) {
+      RT.credits = data.creditsRemaining;
+      RT.updateCredits(data.creditsRemaining);
+      return data;
+    });
+  };
+
+  RT.getFilmStatus = function (filmId) {
+    return api('GET', '/film/' + filmId + '/status');
+  };
+
   RT.getFilms = function () {
-    return apiCall('GET', '/films');
+    return api('GET', '/films');
   };
 
-  RT.getFilm = function (filmId) {
-    return apiCall('GET', '/films/' + filmId);
-  };
+  // ══════════════════════════════════════
+  // POLLING HELPER
+  // ══════════════════════════════════════
 
-  RT.renderFilm = function (filmId) {
-    return apiCall('POST', '/films/' + filmId + '/render');
-  };
+  RT.pollFilm = function (filmId, onUpdate, onDone, onError) {
+    var attempts = 0;
+    var maxAttempts = 120; // 10 minutes at 5 sec intervals
+    var interval = 5000;
 
-  RT.pollFilm = function (filmId) {
-    return apiCall('GET', '/films/' + filmId + '/status');
+    function check() {
+      attempts++;
+      if (attempts > maxAttempts) {
+        if (onError) onError(new Error('Polling timed out'));
+        return;
+      }
+
+      RT.getFilmStatus(filmId)
+        .then(function (data) {
+          if (onUpdate) onUpdate(data);
+
+          if (data.status === 'done') {
+            if (onDone) onDone(data);
+            return;
+          }
+
+          if (data.status === 'failed') {
+            if (onError) onError(new Error(data.error || 'Film creation failed'));
+            return;
+          }
+
+          // Still processing — poll again
+          setTimeout(check, interval);
+        })
+        .catch(function (err) {
+          // Network error — retry
+          if (attempts < maxAttempts) {
+            setTimeout(check, interval * 2);
+          } else {
+            if (onError) onError(err);
+          }
+        });
+    }
+
+    // Start polling
+    setTimeout(check, interval);
   };
 
 })();

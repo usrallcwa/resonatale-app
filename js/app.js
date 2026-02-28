@@ -68,33 +68,67 @@
   });
 
   // ══════════════════════════════════════
-  // PHOTO UPLOAD
+  // PHOTO UPLOAD (multi-photo)
   // ══════════════════════════════════════
 
-  $photoZone.addEventListener('click', function () {
-    $photoInput.click();
-  });
+  var $photoGrid = $('photo-grid');
+  var $photoInput = $('photo-input');
+  var $photoZone = $('photo-zone');
 
-  $photoInput.addEventListener('change', function () {
-    var file = $photoInput.files[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      RT.toast('Please upload an image file.');
-      return;
+  if ($photoZone) {
+    $photoZone.addEventListener('click', function () {
+      if (photos.length < 10) $photoInput.click();
+    });
+  }
+
+  if ($photoInput) {
+    $photoInput.addEventListener('change', function () {
+      var files = $photoInput.files;
+      if (!files || files.length === 0) return;
+
+      var loaded = 0;
+      var total = Math.min(files.length, 10 - photos.length);
+
+      for (var i = 0; i < total; i++) {
+        var file = files[i];
+        if (!file.type.startsWith('image/')) continue;
+        if (file.size > 10 * 1024 * 1024) {
+          RT.toast('Photo too large. Max 10MB each.');
+          continue;
+        }
+        (function (f) {
+          var reader = new FileReader();
+          reader.onload = function (e) {
+            photos.push(e.target.result);
+            loaded++;
+            if (loaded >= total) renderPhotos();
+          };
+          reader.readAsDataURL(f);
+        })(file);
+      }
+
+      $photoInput.value = '';
+    });
+  }
+
+  function renderPhotos() {
+    if (photos.length > 0) {
+      $photoZone.style.display = 'none';
+      $photoGrid.style.display = 'flex';
+    } else {
+      $photoZone.style.display = '';
+      $photoGrid.style.display = 'none';
     }
-    if (file.size > 10 * 1024 * 1024) {
-      RT.toast('Image must be under 10MB.');
-      return;
-    }
-    photoFile = file;
-    var reader = new FileReader();
-    reader.onload = function (e) {
-      $photoPreview.src = e.target.result;
-      $photoPreview.classList.add('show');
-      $photoPlaceholder.style.display = 'none';
-    };
-    reader.readAsDataURL(file);
-  });
+
+    RT.renderPhotoGrid($photoGrid, photos, function (index) {
+      photos.splice(index, 1);
+      renderPhotos();
+    });
+    updateSetupProgress();
+  }
+
+  // Initialize
+  renderPhotos();
 
   // ══════════════════════════════════════
   // VOICE RECORDING

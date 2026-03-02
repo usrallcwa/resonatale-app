@@ -4,7 +4,7 @@
   window.RT = window.RT || {};
 
   // API
-  RT.API = 'https://api.resonatale.com';
+  RT.API = '/api';
   RT.TURNSTILE_KEY = '0x4AAAAAACLI9vyJZYGLg9lS';
 
   // Tiers

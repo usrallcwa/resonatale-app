@@ -22,74 +22,56 @@
   <div class="loader-content">
     <div class="spin"></div>
     <p id="loader-msg">Preparing your experience...</p>
-    <div class="loader-steps" id="loader-steps"></div>
   </div>
 </div>
 
 <div id="app">
 
   <!-- ════ NAV BAR ════ -->
-  <div id="nav-bar" class="nav-bar">
-    <div class="nav-left">
-      <span class="nav-logo" onclick="RT.showScreen('landing')">RT</span>
-    </div>
-    <div class="nav-right">
-      <button type="button" class="nav-credit-btn" onclick="RT.showScreen('credits'); RT.renderCredits();">
-        <span class="credit-icon">💎</span>
-        <span id="nav-credits" class="js-credits">0</span>
-      </button>
-      <button type="button" class="nav-menu-btn" id="btn-menu">☰</button>
+  <div id="nav-bar" class="nav-bar hide">
+    <div class="nav-inner">
+      <button type="button" class="nav-logo" id="nav-logo">RT</button>
+      <div class="nav-right">
+        <button type="button" class="nav-credit-btn" id="nav-credits">
+          <span class="credit-icon">💎</span>
+          <span class="js-credits">0</span>
+        </button>
+        <button type="button" class="nav-menu-btn" id="btn-menu">☰</button>
+      </div>
     </div>
   </div>
 
   <!-- ════ MENU OVERLAY ════ -->
   <div id="menu-overlay" class="menu-overlay">
-    <div class="menu-panel">
+    <div class="menu-panel" id="menu-inner">
       <div class="menu-header">
-        <span class="menu-title">RESONATALE</span>
+        <h3 class="menu-title">RESONATALE</h3>
         <button type="button" class="menu-close" id="btn-menu-close">✕</button>
       </div>
 
       <div class="menu-credits-card">
         <span class="credit-icon">💎</span>
-        <span id="menu-credit-count" class="js-credits">0</span>
-        <span class="menu-credits-label">credits</span>
+        <span class="menu-credit-amount"><span id="menu-credit-count">0</span> Credits</span>
       </div>
 
-      <nav class="menu-nav">
-        <button type="button" class="menu-item" id="menu-credits">
-          <span class="menu-icon">💰</span>
-          <span>Add Credits</span>
-        </button>
-        <button type="button" class="menu-item" id="menu-create">
-          <span class="menu-icon">✨</span>
-          <span>Create New Film</span>
-        </button>
-        <button type="button" class="menu-item" id="menu-films">
-          <span class="menu-icon">🎬</span>
-          <span>My Films</span>
-        </button>
-        <button type="button" class="menu-item" id="menu-profile">
-          <span class="menu-icon">👤</span>
-          <span>My Profile</span>
-        </button>
-        <button type="button" class="menu-item" id="menu-invite">
-          <span class="menu-icon">🔗</span>
-          <span>Invite Friends</span>
-        </button>
-      </nav>
+      <button type="button" class="menu-item menu-item-primary" id="menu-credits">+ Add Credits</button>
 
       <div class="menu-divider"></div>
 
-      <nav class="menu-nav menu-nav-secondary">
-        <a href="privacy.html" class="menu-item"><span class="menu-icon">📜</span><span>Privacy Policy</span></a>
-        <a href="terms.html" class="menu-item"><span class="menu-icon">📋</span><span>Terms</span></a>
-        <a href="mailto:admin@resonatale.com" class="menu-item"><span class="menu-icon">✉️</span><span>Contact</span></a>
-        <button type="button" class="menu-item menu-logout" id="menu-logout">
-          <span class="menu-icon">🚪</span>
-          <span>Log Out</span>
-        </button>
-      </nav>
+      <button type="button" class="menu-item" id="menu-create">✨ Create New Film</button>
+      <button type="button" class="menu-item" id="menu-films">🎬 My Films</button>
+      <button type="button" class="menu-item" id="menu-profile">👤 My Profile</button>
+      <button type="button" class="menu-item" id="menu-invite">🔗 Invite Friends</button>
+
+      <div class="menu-divider"></div>
+
+      <a href="privacy.html" class="menu-item menu-item-small">📜 Privacy Policy</a>
+      <a href="terms.html" class="menu-item menu-item-small">📋 Terms of Service</a>
+      <a href="mailto:admin@resonatale.com" class="menu-item menu-item-small">✉️ Contact</a>
+
+      <div class="menu-divider"></div>
+
+      <button type="button" class="menu-item menu-item-danger" id="menu-logout">🚪 Log Out</button>
     </div>
   </div>
 
@@ -116,26 +98,10 @@
             <ellipse cx="100" cy="100" rx="45" ry="85" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="0.6" transform="rotate(-20 100 100)"/>
             <line x1="15" y1="100" x2="185" y2="100" stroke="rgba(255,255,255,.04)" stroke-width="0.8"/>
             <line x1="100" y1="15" x2="100" y2="185" stroke="rgba(255,255,255,.04)" stroke-width="0.8"/>
-            <circle cx="100" cy="15" r="2" fill="rgba(0,229,255,.4)"/>
-            <circle cx="185" cy="100" r="1.5" fill="rgba(255,46,209,.3)"/>
-            <circle cx="100" cy="185" r="2" fill="rgba(198,255,0,.3)"/>
-            <circle cx="15" cy="100" r="1.5" fill="rgba(0,229,255,.3)"/>
           </svg>
           <svg class="globe globe-static" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
             <defs><linearGradient id="grd2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00E5FF"/><stop offset="100%" stop-color="#FF2ED1"/></linearGradient></defs>
             <circle cx="100" cy="100" r="78" fill="#07070B"/>
-            <circle cx="100" cy="30" r="2" fill="rgba(255,255,255,.25)"/>
-            <circle cx="100" cy="170" r="2" fill="rgba(255,255,255,.25)"/>
-            <circle cx="30" cy="100" r="2" fill="rgba(255,255,255,.25)"/>
-            <circle cx="170" cy="100" r="2" fill="rgba(255,255,255,.25)"/>
-            <circle cx="135" cy="39" r="1.2" fill="rgba(255,255,255,.12)"/>
-            <circle cx="161" cy="65" r="1.2" fill="rgba(255,255,255,.12)"/>
-            <circle cx="161" cy="135" r="1.2" fill="rgba(255,255,255,.12)"/>
-            <circle cx="135" cy="161" r="1.2" fill="rgba(255,255,255,.12)"/>
-            <circle cx="65" cy="161" r="1.2" fill="rgba(255,255,255,.12)"/>
-            <circle cx="39" cy="135" r="1.2" fill="rgba(255,255,255,.12)"/>
-            <circle cx="39" cy="65" r="1.2" fill="rgba(255,255,255,.12)"/>
-            <circle cx="65" cy="39" r="1.2" fill="rgba(255,255,255,.12)"/>
             <circle cx="100" cy="100" r="68" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="0.5"/>
             <line id="c-h" x1="100" y1="100" x2="100" y2="58" stroke="rgba(255,255,255,.85)" stroke-width="2.8" stroke-linecap="round"/>
             <line id="c-m" x1="100" y1="100" x2="100" y2="42" stroke="rgba(255,255,255,.55)" stroke-width="2" stroke-linecap="round"/>
@@ -157,6 +123,37 @@
         <div class="feat"><span class="feat-icon">🧑</span><span>You Star In It</span></div>
         <div class="feat"><span class="feat-icon">🎙️</span><span>Your Own Voice</span></div>
         <div class="feat"><span class="feat-icon">🌍</span><span>12 Languages</span></div>
+      </div>
+
+      <!-- HOW IT WORKS -->
+      <div class="how-section">
+        <h2 class="how-title">How It Works</h2>
+        <div class="how-steps">
+          <div class="how-step">
+            <div class="how-num">1</div>
+            <div class="how-icon">📸</div>
+            <h3>Upload Your Selfies</h3>
+            <p>Upload 3-5 photos. Different angles and poses. AI learns your face.</p>
+          </div>
+          <div class="how-step">
+            <div class="how-num">2</div>
+            <div class="how-icon">🎙️</div>
+            <h3>Record Your Voice</h3>
+            <p>Speak for 10-30 seconds. AI clones your voice in any language.</p>
+          </div>
+          <div class="how-step">
+            <div class="how-num">3</div>
+            <div class="how-icon">✍️</div>
+            <h3>Describe Your Film</h3>
+            <p>Pick a mood, language, and write your story idea. AI writes the screenplay.</p>
+          </div>
+          <div class="how-step">
+            <div class="how-num">4</div>
+            <div class="how-icon">🎬</div>
+            <h3>Get Your Film</h3>
+            <p>AI generates video scenes starring you, narrated in your voice. Download and share.</p>
+          </div>
+        </div>
       </div>
 
       <div class="foot">
@@ -266,10 +263,6 @@
     <div class="screen-inner">
       <div class="create-header">
         <h2 class="screen-title">Create Your Film</h2>
-        <div class="credit-pill">
-          <span class="credit-icon">💎</span>
-          <span class="js-credits">0</span> credits
-        </div>
       </div>
 
       <div class="section">
@@ -312,12 +305,16 @@
       <div id="preview-scenes" class="scenes"></div>
 
       <div class="preview-actions">
-        <button type="button" class="btn-primary" id="btn-preview-clip">🎬 Generate Free 10-Second Clip</button>
+        <button type="button" class="btn-primary" id="btn-preview-clip">
+          🎬 Generate Free 10-Second Clip
+        </button>
         <p class="gen-hint">See yourself in the first scene — free, one time only.</p>
 
         <div class="divider"></div>
 
-        <button type="button" class="btn-primary btn-gold" id="btn-get-film">🎥 Create Full Film</button>
+        <button type="button" class="btn-primary btn-gold" id="btn-get-film">
+          🎥 Create Full Film
+        </button>
         <p class="gen-hint">Uses credits based on film length.</p>
 
         <button type="button" class="btn-text" id="btn-retry">← Edit Story</button>
@@ -332,11 +329,26 @@
       <p class="render-sub" id="render-status">Writing your screenplay...</p>
 
       <div class="render-steps">
-        <div class="render-step" id="rs-1"><div class="rs-dot"></div><div class="rs-label">Writing Script</div></div>
-        <div class="render-step" id="rs-2"><div class="rs-dot"></div><div class="rs-label">Filming Scenes</div></div>
-        <div class="render-step" id="rs-3"><div class="rs-dot"></div><div class="rs-label">Recording Voice</div></div>
-        <div class="render-step" id="rs-4"><div class="rs-dot"></div><div class="rs-label">Stitching Film</div></div>
-        <div class="render-step" id="rs-5"><div class="rs-dot"></div><div class="rs-label">Complete</div></div>
+        <div class="render-step" id="rs-1">
+          <div class="rs-dot"></div>
+          <div class="rs-label">Writing Script</div>
+        </div>
+        <div class="render-step" id="rs-2">
+          <div class="rs-dot"></div>
+          <div class="rs-label">Filming Scenes</div>
+        </div>
+        <div class="render-step" id="rs-3">
+          <div class="rs-dot"></div>
+          <div class="rs-label">Recording Voice</div>
+        </div>
+        <div class="render-step" id="rs-4">
+          <div class="rs-dot"></div>
+          <div class="rs-label">Stitching Film</div>
+        </div>
+        <div class="render-step" id="rs-5">
+          <div class="rs-dot"></div>
+          <div class="rs-label">Complete</div>
+        </div>
       </div>
 
       <div class="spin render-spin"></div>
@@ -379,7 +391,10 @@
         <label class="label">Choose Amount</label>
         <p class="credit-display" id="credit-amount">$50</p>
         <input type="range" id="credit-slider" class="slider" min="20" max="1000" step="10" value="50">
-        <div class="slider-labels"><span>$20</span><span>$1,000</span></div>
+        <div class="slider-labels">
+          <span>$20</span>
+          <span>$1,000</span>
+        </div>
         <p class="gen-hint">$1 = 1 credit. Minimum $20.</p>
       </div>
 
@@ -397,10 +412,6 @@
       <div class="gen-area">
         <button type="button" class="btn-primary btn-gold" id="btn-add-credits">Add Credits</button>
       </div>
-
-      <div class="nav-links">
-        <button type="button" class="btn-text" onclick="RT.showScreen('create'); RT.mountTurnstile();">← Back to Create</button>
-      </div>
     </div>
   </div>
 
@@ -412,34 +423,46 @@
       <div class="profile-card">
         <div class="profile-avatar">👤</div>
         <p class="profile-email" id="profile-email"></p>
-        <p class="profile-since" id="profile-since"></p>
+        <p class="profile-member">Member since <span id="profile-since"></span></p>
       </div>
 
-      <div class="section">
-        <label class="label">Photos</label>
+      <div class="profile-section">
         <div class="profile-row">
-          <span id="profile-photo-count">0 photos uploaded</span>
-          <button type="button" class="btn-text" id="btn-update-photos">Update Photos</button>
+          <div class="profile-row-left">
+            <p class="profile-label">Credits</p>
+            <p class="profile-value"><span id="profile-credits">0</span></p>
+          </div>
+          <button type="button" class="btn-outline btn-sm" onclick="RT.showScreen('credits'); RT.renderCredits();">+ Add</button>
         </div>
       </div>
 
-      <div class="section">
-        <label class="label">Voice</label>
+      <div class="profile-section">
         <div class="profile-row">
-          <span id="profile-voice-status" class="profile-status">Not recorded</span>
-          <button type="button" class="btn-text" id="btn-rerecord">Re-record</button>
+          <div class="profile-row-left">
+            <p class="profile-label">Photos</p>
+            <p id="profile-photo-status" class="profile-status"></p>
+          </div>
+          <button type="button" class="btn-outline btn-sm" id="btn-update-photos">Update</button>
         </div>
       </div>
 
-      <div class="section">
-        <label class="label">Language</label>
+      <div class="profile-section">
         <div class="profile-row">
-          <span id="profile-lang">🇺🇸 English</span>
+          <div class="profile-row-left">
+            <p class="profile-label">Voice</p>
+            <p id="profile-voice-status" class="profile-status"></p>
+          </div>
+          <button type="button" class="btn-outline btn-sm" id="btn-update-voice">Re-record</button>
         </div>
       </div>
 
-      <div class="nav-links">
-        <button type="button" class="btn-text" onclick="RT.showScreen('create'); RT.mountTurnstile();">← Back to Create</button>
+      <div class="profile-section">
+        <div class="profile-row">
+          <div class="profile-row-left">
+            <p class="profile-label">Language</p>
+            <p id="profile-lang" class="profile-status"></p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -448,27 +471,24 @@
   <div id="s-invite" class="screen">
     <div class="screen-inner">
       <h2 class="screen-title">Invite Friends</h2>
-      <p class="screen-sub">Share ResonaTale with friends and earn 5 free credits for every friend who creates their first film!</p>
+      <p class="screen-sub">Share ResonaTale and earn 5 free credits for every friend who creates their first film!</p>
 
       <div class="invite-card">
-        <label class="label">Your Referral Link</label>
-        <div class="invite-link-row">
-          <input type="text" class="input" id="invite-link" value="https://resonatale.com" readonly>
-          <button type="button" class="btn-outline" id="btn-copy-invite">Copy</button>
-        </div>
+        <p class="invite-label">Your Referral Link</p>
+        <p class="invite-link" id="invite-link"></p>
+        <button type="button" class="btn-primary" id="btn-copy-invite">Copy Link</button>
       </div>
 
       <div class="invite-share">
-        <h3 class="label">Share via</h3>
+        <p class="label">Share via</p>
         <div class="invite-buttons">
-          <a href="https://api.whatsapp.com/send?text=Create%20AI%20films%20starring%20you!%20https://resonatale.com" target="_blank" class="share-btn"><span class="share-icon">💬</span><span>WhatsApp</span></a>
-          <a href="https://twitter.com/intent/tweet?text=Create%20AI%20films%20starring%20you!&url=https://resonatale.com" target="_blank" class="share-btn"><span class="share-icon">𝕏</span><span>X</span></a>
-          <a href="https://www.facebook.com/sharer/sharer.php?u=https://resonatale.com" target="_blank" class="share-btn"><span class="share-icon">f</span><span>Facebook</span></a>
+          <a href="#" target="_blank" rel="noopener" class="share-btn" id="btn-invite-whatsapp">
+            <span class="share-icon">💬</span><span class="share-label">WhatsApp</span>
+          </a>
+          <a href="#" target="_blank" rel="noopener" class="share-btn" id="btn-invite-x">
+            <span class="share-icon">𝕏</span><span class="share-label">X / Twitter</span>
+          </a>
         </div>
-      </div>
-
-      <div class="nav-links">
-        <button type="button" class="btn-text" onclick="RT.showScreen('create'); RT.mountTurnstile();">← Back to Create</button>
       </div>
     </div>
   </div>
@@ -478,16 +498,6 @@
     <div class="screen-inner">
       <div class="dash-header">
         <h2 class="screen-title">My Films</h2>
-        <div class="credit-pill">
-          <span class="credit-icon">💎</span>
-          <span class="js-credits">0</span> credits
-        </div>
-      </div>
-
-      <div class="dash-actions">
-        <button type="button" class="btn-primary" id="btn-dash-new">+ New Film</button>
-        <button type="button" class="btn-outline" id="btn-dash-credits">Add Credits</button>
-        <button type="button" class="btn-text" id="btn-logout">Log Out</button>
       </div>
 
       <div id="dash-films" class="dash-films"></div>
@@ -513,6 +523,7 @@
 <script src="js/player.js"></script>
 <script src="js/menu.js"></script>
 <script src="js/profile.js"></script>
+<script src="js/invite.js"></script>
 <script src="js/app.js"></script>
 
 </body>

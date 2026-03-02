@@ -4,7 +4,7 @@
   // ── Setup Progress Check ──
 
   RT.checkSetup = function () {
-    var hasP = RT.photos.length >= 1;
+    var hasP = RT.photos && RT.photos.length >= 1;
     var hasV = !!RT.voiceBlob;
     var btn = RT.$('btn-save-setup');
     if (btn) btn.disabled = !(hasP && hasV);
@@ -20,7 +20,7 @@
   // ── After Auth ──
 
   RT.afterAuth = function () {
-    if (RT.photos.length > 0 && RT.voiceBlob) {
+    if (RT.photos && RT.photos.length > 0 && RT.voiceBlob) {
       uploadAssets();
     } else if (RT.hasPhotos && RT.hasVoice) {
       RT.showScreen('create');
@@ -33,6 +33,16 @@
   // ── Upload Assets ──
 
   function uploadAssets() {
+    // Debug: verify RT and uploadPhotos exist
+    console.log('RT in uploadAssets:', RT);
+    console.log('typeof RT.uploadPhotos:', typeof RT.uploadPhotos);
+    console.log('RT.photos:', RT.photos);
+
+    if (!RT || typeof RT.uploadPhotos !== 'function') {
+      RT.toast('Photo upload is not available right now. Please reload the page.');
+      return;
+    }
+
     RT.loading(true, 'Uploading your photos...');
 
     RT.uploadPhotos(RT.photos).then(function () {
@@ -48,7 +58,10 @@
       RT.loading(false);
       RT.hasPhotos = true;
       RT.hasVoice = data.cloned;
-      RT.toast(data.cloned ? 'Setup complete!' : 'Photos saved. Voice processing.', true);
+      RT.toast(
+        data.cloned ? 'Setup complete!' : 'Photos saved. Voice processing.',
+        true
+      );
       RT.showScreen('create');
       RT.mountTurnstile();
     }).catch(function (err) {
@@ -62,50 +75,66 @@
   var saveBtn = RT.$('btn-save-setup');
   if (saveBtn) {
     saveBtn.addEventListener('click', function () {
-      if (RT.photos.length === 0) { RT.toast('Upload at least 1 photo.'); return; }
-      if (!RT.voiceBlob) { RT.toast('Record your voice.'); return; }
-      if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('signup'); return; }
+      if (!RT.photos || RT.photos.length === 0) {
+        RT.toast('Upload at least 1 photo.');
+        return;
+      }
+      if (!RT.voiceBlob) {
+        RT.toast('Record your voice.');
+        return;
+      }
+      if (!RT.isLoggedIn()) {
+        RT.showScreen('auth');
+        RT.showAuthForm('signup');
+        return;
+      }
       uploadAssets();
     });
   }
 
-  // ── Start Button ──
+      // ── Start Button ──
 
   var startBtn = RT.$('btn-start');
   if (startBtn) {
     startBtn.addEventListener('click', function () {
-      if (RT.isLoggedIn()) {
-        RT.getProfile().then(function () {
-          if (RT.hasPhotos && RT.hasVoice) {
-            RT.showScreen('create');
-            RT.mountTurnstile();
-          } else {
+      if (RT.isLoggedIn() && typeof RT.getProfile === 'function') {
+        RT.getProfile()
+          .then(function () {
+            if (RT.hasPhotos && RT.hasVoice) {
+              RT.showScreen('create');
+              RT.mountTurnstile();
+            } else {
+              RT.showScreen('setup');
+            }
+          })
+          .catch(function () {
             RT.showScreen('setup');
-          }
-        }).catch(function () {
-          RT.showScreen('setup');
-        });
+          });
       } else {
         RT.showScreen('setup');
       }
     });
   }
+  uploadAssets();
+});
 
   // ── Back Button ──
 
   var backBtn = RT.$('back-to-landing');
   if (backBtn) {
-    backBtn.addEventListener('click', function () { RT.showScreen('landing'); });
-  }
-
-  // ── Auto-load Profile ──
-
-  if (RT.isLoggedIn()) {
-    RT.getProfile().then(function () {
-      RT.updateCredits(RT.credits);
-    }).catch(function () {
-      RT.clearAuth();
+    backBtn.addEventListener('click', function () {
+      RT.showScreen('landing');
     });
   }
 
-})();
+    // ── Auto-load Profile ──
+
+  if (RT.isLoggedIn() && typeof RT.getProfile === 'function') {
+    RT.getProfile()
+      .then(function () {
+        RT.updateCredits(RT.credits);
+      })
+      .catch(function () {
+        RT.clearAuth();
+      });
+  }

@@ -97,6 +97,7 @@
       writing: 'Writing your screenplay...',
       filming: 'Generating video scenes with your face...',
       voiceover: 'Recording narration in your voice...',
+      syncing: 'Syncing lips to your voice...',
       stitching: 'Assembling your final film...',
       composing: 'Final touches...',
       done: 'Your film is ready!',
@@ -137,10 +138,10 @@
   // ── Render Step Indicator ──
 
   function setStep(status) {
-    var map = { writing: 1, filming: 2, voiceover: 3, stitching: 4, composing: 4, done: 5, failed: 0 };
+    var map = { writing: 1, filming: 2, voiceover: 3, syncing: 4, stitching: 5, composing: 5, done: 6, failed: 0 };
     var active = map[status] || 0;
 
-    for (var i = 1; i <= 5; i++) {
+    for (var i = 1; i <= 6; i++) {
       var el = RT.$('rs-' + i);
       if (!el) continue;
       el.classList.remove('active', 'done');

@@ -1341,9 +1341,33 @@ a:hover { text-decoration: underline; }
 
 .invite-buttons {
   display: flex;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 12px;
   justify-content: center;
   margin-top: 12px;
+}
+
+.share-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 20px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+.share-circle:hover {
+  border-color: var(--blue);
+  box-shadow: 0 0 15px rgba(0,229,255,.15);
+  transform: scale(1.1);
+  text-decoration: none;
 }
 
 /* ══════════════════════════════════════ */

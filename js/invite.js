@@ -21,7 +21,6 @@
       };
     }
 
-    // Render all share platforms
     var container = RT.$('invite-share-buttons');
     if (container) {
       container.innerHTML = '';
@@ -30,22 +29,37 @@
 
       var platforms = [
         { label: 'WhatsApp', icon: '💬', href: 'https://api.whatsapp.com/send?text=' + msg },
-        { label: 'X / Twitter', icon: '𝕏', href: 'https://twitter.com/intent/tweet?text=' + msg },
-        { label: 'Facebook', icon: 'f', href: 'https://www.facebook.com/sharer/sharer.php?u=' + url + '&quote=' + msg },
+        { label: 'X', icon: '𝕏', href: 'https://twitter.com/intent/tweet?text=' + msg },
+        { label: 'Facebook', icon: 'f', href: 'https://www.facebook.com/sharer/sharer.php?u=' + url },
         { label: 'Telegram', icon: '✈', href: 'https://t.me/share/url?url=' + url + '&text=' + msg },
         { label: 'LinkedIn', icon: 'in', href: 'https://www.linkedin.com/sharing/share-offsite/?url=' + url },
-        { label: 'Reddit', icon: '🔴', href: 'https://www.reddit.com/submit?url=' + url + '&title=' + msg },
-        { label: 'Email', icon: '✉️', href: 'mailto:?subject=' + encodeURIComponent('Check out ResonaTale!') + '&body=' + msg },
-        { label: 'SMS', icon: '💬', href: 'sms:?body=' + msg },
+        { label: 'Reddit', icon: '●', href: 'https://www.reddit.com/submit?url=' + url + '&title=' + msg },
+        { label: 'Email', icon: '✉', href: 'mailto:?subject=' + encodeURIComponent('Check out ResonaTale!') + '&body=' + msg },
+        { label: 'SMS', icon: '✆', href: 'sms:?body=' + msg },
+        { label: 'Copy', icon: '🔗', href: '#' },
       ];
 
       platforms.forEach(function (p) {
         var a = document.createElement('a');
-        a.className = 'share-btn';
+        a.className = 'share-circle';
+        a.title = p.label;
         a.target = '_blank';
         a.rel = 'noopener noreferrer';
         a.href = p.href;
-        a.innerHTML = '<span class="share-icon">' + p.icon + '</span><span class="share-label">' + p.label + '</span>';
+        a.textContent = p.icon;
+
+        if (p.label === 'Copy') {
+          a.href = '#';
+          a.addEventListener('click', function (e) {
+            e.preventDefault();
+            if (navigator.clipboard) {
+              navigator.clipboard.writeText(link).then(function () {
+                RT.toast('Link copied!', true);
+              });
+            }
+          });
+        }
+
         container.appendChild(a);
       });
     }

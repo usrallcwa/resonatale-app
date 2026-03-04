@@ -72,6 +72,7 @@
       RT.loading(false);
       RT.currentFilmId = data.filmId;
       RT.showScreen('rendering');
+      RT.toast('Film started! You can navigate away — we\'ll keep working.', true);
       pollFilm(data.filmId);
     }).catch(function (err) {
       RT.loading(false);
@@ -86,38 +87,51 @@
 
   // ── Poll Film Status ──
 
+  var pollTimer = null;
+
   function pollFilm(filmId) {
     setStep('writing');
+    if (pollTimer) clearInterval(pollTimer);
 
     var msgs = {
       writing: 'Writing your screenplay...',
       filming: 'Generating video scenes with your face...',
       voiceover: 'Recording narration in your voice...',
       stitching: 'Assembling your final film...',
-      composing: 'Final touches...'
+      composing: 'Final touches...',
+      done: 'Your film is ready!',
+      failed: 'Something went wrong.'
     };
 
-    RT.pollFilm(filmId,
-      function (data) {
+    pollTimer = setInterval(function () {
+      RT.getFilmStatus(filmId).then(function (data) {
+
         setStep(data.status);
         var el = RT.$('render-status');
         if (el) el.textContent = msgs[data.status] || data.status;
-      },
-      function (data) {
-        setStep('done');
-        var v = RT.$('film-video');
-        if (v && data.videoUrl) v.src = data.videoUrl;
-        var dl = RT.$('btn-download');
-        if (dl && data.videoUrl) dl.href = data.videoUrl;
-        RT.renderShareButtons(RT.$('share-buttons'), data.videoUrl);
-        RT.showScreen('player');
-        RT.toast('Your film is ready!', true);
-      },
-      function (err) {
-        setStep('failed');
-        RT.toast(err.message || 'Failed. Credits refunded.');
-      }
-    );
+
+        if (data.status === 'done') {
+          clearInterval(pollTimer);
+          pollTimer = null;
+          var v = RT.$('film-video');
+          if (v && data.videoUrl) v.src = data.videoUrl;
+          var dl = RT.$('btn-download');
+          if (dl && data.videoUrl) dl.href = data.videoUrl;
+          RT.renderShareButtons(RT.$('share-buttons'), data.videoUrl);
+          RT.showScreen('player');
+          RT.toast('Your film is ready!', true);
+        }
+
+        if (data.status === 'failed') {
+          clearInterval(pollTimer);
+          pollTimer = null;
+          RT.toast(data.error || 'Failed. Credits refunded.');
+        }
+
+      }).catch(function () {
+        // Network error — keep polling
+      });
+    }, 15000); // Poll every 15 seconds
   }
 
   // ── Render Step Indicator ──

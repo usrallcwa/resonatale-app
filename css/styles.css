@@ -1511,9 +1511,4 @@ a:hover { text-decoration: underline; }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.screen.active .screen-inner { animation: fadeIn .4s ease-out; }
-<<<<<<< HEAD
 .screen.active .landing { animation: fadeIn .5s ease-out; }
-=======
-.screen.active .landing { animation: fadeIn .5s ease-out; }
->>>>>>> 9da706a26b3c4c77ad464ac2413eaa1b6bbcdaa9

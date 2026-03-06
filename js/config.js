@@ -9,11 +9,11 @@
 
   // Tiers
   RT.TIERS = [
-    { id: 'short',    label: 'Short',    minutes: 1,  scenes: 3,  credits: 8,   price: '$8',   desc: 'Quick clip' },
-    { id: 'standard', label: 'Standard', minutes: 5,  scenes: 12, credits: 30,  price: '$30',  desc: 'Short film' },
-    { id: 'extended', label: 'Extended', minutes: 10, scenes: 20, credits: 50,  price: '$50',  desc: 'Mini movie' },
-    { id: 'feature',  label: 'Feature',  minutes: 30, scenes: 38, credits: 120, price: '$120', desc: 'Full feature' },
-    { id: 'epic',     label: 'Epic',     minutes: 60, scenes: 55, credits: 199, price: '$199', desc: 'Cinema experience' }
+    { id: 'short',    label: 'Trailer',  minutes: 0.5, scenes: 3,  credits: 8,   price: '$8',   desc: '30 second trailer' },
+    { id: 'standard', label: 'Short',    minutes: 2,   scenes: 12, credits: 30,  price: '$30',  desc: '2 minute short' },
+    { id: 'extended', label: 'Standard', minutes: 3,   scenes: 20, credits: 50,  price: '$50',  desc: '3 minute film' },
+    { id: 'feature',  label: 'Feature',  minutes: 6,   scenes: 38, credits: 120, price: '$120', desc: '6 minute feature' },
+    { id: 'epic',     label: 'Epic',     minutes: 9,   scenes: 55, credits: 199, price: '$199', desc: '9 minute epic' },
   ];
 
   // Moods

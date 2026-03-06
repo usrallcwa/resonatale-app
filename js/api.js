@@ -1,100 +1,98 @@
 (function () {
   'use strict';
 
-  window.RT = window.RT || {};
+  function authHeaders() {
+    var h = { 'Content-Type': 'application/json' };
+    if (RT.token) h['Authorization'] = 'Bearer ' + RT.token;
+    return h;
+  }
 
-  // API
-  RT.API = 'https://api.resonatale.com';
-  RT.TURNSTILE_KEY = '0x4AAAAAACLI9vyJZYGLg9lS';
+  function apiFetch(method, path, body) {
+    var opts = { method: method, headers: authHeaders() };
+    if (body) opts.body = JSON.stringify(body);
+    return fetch(RT.API + path, opts).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (data) {
+        if (!res.ok) throw new Error(data.error || 'Request failed');
+        return data;
+      });
+    });
+  }
 
-  // Tiers (honest durations based on 10 sec per scene)
-  RT.TIERS = [
-    { id: 'short',    label: 'Trailer',  minutes: 0.5, scenes: 3,  credits: 8,   price: '$8',   desc: '30 second trailer' },
-    { id: 'standard', label: 'Short',    minutes: 2,   scenes: 12, credits: 30,  price: '$30',  desc: '2 minute short' },
-    { id: 'extended', label: 'Standard', minutes: 3,   scenes: 20, credits: 50,  price: '$50',  desc: '3 minute film' },
-    { id: 'feature',  label: 'Feature',  minutes: 6,   scenes: 38, credits: 120, price: '$120', desc: '6 minute feature' },
-    { id: 'epic',     label: 'Epic',     minutes: 9,   scenes: 55, credits: 199, price: '$199', desc: '9 minute epic' },
-  ];
-
-  // Genres
-  RT.GENRES = [
-    { id: 'action',       label: 'Action & Thriller', icon: '🎬' },
-    { id: 'fantasy',      label: 'Fantasy & Sci-Fi',  icon: '🧙' },
-    { id: 'romance',      label: 'Romance & Drama',   icon: '💕' },
-    { id: 'comedy',       label: 'Comedy',            icon: '😂' },
-    { id: 'music',        label: 'Music Video',       icon: '🎵' },
-    { id: 'documentary',  label: 'Documentary',       icon: '📖' },
-    { id: 'travel',       label: 'Travel & Adventure',icon: '🌍' },
-    { id: 'horror',       label: 'Horror & Mystery',  icon: '👻' },
-    { id: 'business',     label: 'Business & Pitch',  icon: '💼' },
-    { id: 'education',    label: 'Education',         icon: '📚' },
-    { id: 'gaming',       label: 'Gaming & Anime',    icon: '🎮' },
-    { id: 'motivational', label: 'Motivational',      icon: '✨' },
-    { id: 'food',         label: 'Food & Lifestyle',  icon: '🍳' },
-    { id: 'sports',       label: 'Sports',            icon: '⚽' },
-    { id: 'holiday',      label: 'Holiday & Events',  icon: '🎄' },
-  ];
-
-  // Moods
-  RT.MOODS = ['epic', 'calm', 'dark', 'upbeat', 'intense', 'romantic', 'mysterious', 'inspiring'];
-
-  // Languages
-  RT.LANGUAGES = [
-    { code: 'en', flag: '🇺🇸', name: 'English' },
-    { code: 'es', flag: '🇪🇸', name: 'Spanish' },
-    { code: 'fr', flag: '🇫🇷', name: 'French' },
-    { code: 'ja', flag: '🇯🇵', name: 'Japanese' },
-    { code: 'de', flag: '🇩🇪', name: 'German' },
-    { code: 'it', flag: '🇮🇹', name: 'Italian' },
-    { code: 'pt', flag: '🇵🇹', name: 'Portuguese' },
-    { code: 'ko', flag: '🇰🇷', name: 'Korean' },
-    { code: 'zh', flag: '🇨🇳', name: 'Chinese' },
-    { code: 'hi', flag: '🇮🇳', name: 'Hindi' },
-    { code: 'ar', flag: '🇸🇦', name: 'Arabic' },
-    { code: 'ru', flag: '🇷🇺', name: 'Russian' },
-  ];
-
-  // Share platforms
-  RT.SHARE = [
-    { id: 'youtube',   label: 'YouTube',   icon: '▶',  url: 'https://www.youtube.com/upload' },
-    { id: 'tiktok',    label: 'TikTok',    icon: '♪',  url: 'https://www.tiktok.com/upload' },
-    { id: 'x',         label: 'X',         icon: '𝕏',  url: 'https://twitter.com/intent/tweet?text={text}&url={url}' },
-    { id: 'instagram', label: 'Instagram', icon: '📷', url: 'https://www.instagram.com/' },
-    { id: 'facebook',  label: 'Facebook',  icon: 'f',  url: 'https://www.facebook.com/sharer/sharer.php?u={url}' },
-    { id: 'whatsapp',  label: 'WhatsApp',  icon: '💬', url: 'https://api.whatsapp.com/send?text={text}%20{url}' },
-  ];
-
-  // Auth state
-  RT.token = localStorage.getItem('rt_token') || '';
-  RT.email = localStorage.getItem('rt_email') || '';
-  RT.credits = 0;
-  RT.hasVoice = false;
-  RT.hasUsedPreview = false;
-  RT.language = localStorage.getItem('rt_lang') || 'en';
-
-  RT.isLoggedIn = function () { return !!RT.token; };
-
-  RT.saveAuth = function (token, email) {
-    RT.token = token;
-    RT.email = email;
-    localStorage.setItem('rt_token', token);
-    localStorage.setItem('rt_email', email);
+  // Auth
+  RT.signup = function (email, password, language, ref) {
+    return apiFetch('POST', '/auth/signup', { email: email, password: password, language: language, ref: ref }).then(function (d) {
+      if (d.token) RT.saveAuth(d.token, d.email);
+      return d;
+    });
   };
 
-  RT.clearAuth = function () {
-    RT.token = '';
-    RT.email = '';
-    RT.credits = 0;
-    RT.hasVoice = false;
-    localStorage.removeItem('rt_token');
-    localStorage.removeItem('rt_email');
+  RT.login = function (email, password) {
+    return apiFetch('POST', '/auth/login', { email: email, password: password }).then(function (d) {
+      if (d.token) RT.saveAuth(d.token, d.email);
+      RT.credits = d.credits || 0;
+      RT.hasVoice = d.hasVoice || false;
+      RT.hasUsedPreview = d.hasUsedPreview || false;
+      return d;
+    });
   };
 
-  RT.logout = RT.clearAuth;
+  RT.forgotPassword = function (email) {
+    return apiFetch('POST', '/auth/forgot', { email: email });
+  };
 
-  RT.setLanguage = function (code) {
-    RT.language = code;
-    localStorage.setItem('rt_lang', code);
+  RT.resetPassword = function (email, code, password) {
+    return apiFetch('POST', '/auth/reset', { email: email, code: code, password: password });
+  };
+
+  RT.logout = function () {
+    RT.clearAuth();
+  };
+
+  // Profile
+  RT.getProfile = function () {
+    return apiFetch('GET', '/profile').then(function (d) {
+      RT.credits = d.credits || 0;
+      RT.hasVoice = d.hasVoice || false;
+      RT.hasUsedPreview = d.hasUsedPreview || false;
+      RT.updateCredits(d.credits);
+      return d;
+    });
+  };
+
+  // Voice
+  RT.uploadVoice = function (audioBase64) {
+    return apiFetch('POST', '/profile/voice', { audio: audioBase64 });
+  };
+
+  // Credits
+  RT.getCredits = function () {
+    return apiFetch('GET', '/credits').then(function (d) {
+      RT.credits = d.credits || 0;
+      RT.updateCredits(d.credits);
+      return d;
+    });
+  };
+
+  RT.addCredits = function (amount) {
+    return apiFetch('POST', '/credits/add', { amount: amount });
+  };
+
+  // Preview
+  RT.generatePreview = function (brief, mood, language, tier) {
+    return apiFetch('POST', '/story', { brief: brief, mood: mood, language: language, tier: tier });
+  };
+
+  // Films
+  RT.createFilm = function (brief, mood, language, tier) {
+    return apiFetch('POST', '/film/create', { brief: brief, mood: mood, language: language, tier: tier });
+  };
+
+  RT.getFilmStatus = function (filmId) {
+    return apiFetch('GET', '/film/' + filmId + '/status');
+  };
+
+  RT.getFilms = function () {
+    return apiFetch('GET', '/films');
   };
 
 })();

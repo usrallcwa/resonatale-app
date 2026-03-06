@@ -15,10 +15,29 @@
     langSel.addEventListener('change', function () { RT.setLanguage(langSel.value); });
   }
 
+  // ── Genre Chips ──
+
+  var genreChips = RT.$('genre-chips');
+  if (genreChips) {
+    RT.GENRES.forEach(function (g) {
+      var btn = document.createElement('button');
+      btn.className = 'chip';
+      btn.type = 'button';
+      btn.setAttribute('data-v', g.id);
+      btn.textContent = g.icon + ' ' + g.label;
+      btn.addEventListener('click', function () {
+        RT.genre = g.id;
+        var all = genreChips.querySelectorAll('.chip');
+        for (var i = 0; i < all.length; i++) all[i].classList.toggle('on', all[i].getAttribute('data-v') === g.id);
+      });
+      genreChips.appendChild(btn);
+    });
+  }
+
   // ── Mood Chips ──
 
-  var chips = RT.$('mood-chips');
-  if (chips) {
+  var moodChips = RT.$('mood-chips');
+  if (moodChips) {
     RT.MOODS.forEach(function (m) {
       var btn = document.createElement('button');
       btn.className = 'chip';
@@ -27,10 +46,10 @@
       btn.textContent = m.charAt(0).toUpperCase() + m.slice(1);
       btn.addEventListener('click', function () {
         RT.mood = m;
-        var all = chips.querySelectorAll('.chip');
+        var all = moodChips.querySelectorAll('.chip');
         for (var i = 0; i < all.length; i++) all[i].classList.toggle('on', all[i].getAttribute('data-v') === m);
       });
-      chips.appendChild(btn);
+      moodChips.appendChild(btn);
     });
   }
 
@@ -80,6 +99,7 @@
       if (RT.generating) return;
 
       var brief = RT.$('brief') ? RT.$('brief').value.trim() : '';
+      if (!RT.genre) { RT.toast('Select a genre.'); return; }
       if (!RT.mood) { RT.toast('Select a mood.'); return; }
       if (!brief || brief.length < 10) { RT.toast('Describe your story in more detail.'); return; }
       if (!RT.tsToken) { RT.toast('Complete the verification.'); return; }
@@ -87,7 +107,10 @@
       RT.generating = true;
       RT.loading(true, 'Writing your screenplay...');
 
-      RT.generatePreview(brief, RT.mood, RT.language, RT.tier).then(function (data) {
+      // Send genre + mood combined as the mood parameter
+      var combinedMood = RT.genre + ' / ' + RT.mood;
+
+      RT.generatePreview(brief, combinedMood, RT.language, RT.tier).then(function (data) {
         RT.generating = false;
         RT.loading(false);
 
@@ -103,7 +126,7 @@
         var info = RT.$('preview-tier-info');
         if (info) {
           var t = RT.TIERS.find(function (x) { return x.id === RT.tier; });
-          if (t) info.textContent = t.label + ' · ' + t.minutes + ' min · ' + t.scenes + ' scenes · ' + t.price;
+          if (t) info.textContent = t.label + ' · ' + t.desc + ' · ' + t.scenes + ' scenes · ' + t.price;
         }
 
         RT.showScreen('preview');
@@ -123,12 +146,17 @@
 
   RT.resetForm = function () {
     RT.mood = '';
+    RT.genre = '';
     RT.tier = 'short';
     RT.currentScenes = null;
     RT.currentFilmId = null;
     if (RT.$('brief')) RT.$('brief').value = '';
-    if (chips) {
-      var all = chips.querySelectorAll('.chip');
+    if (genreChips) {
+      var all = genreChips.querySelectorAll('.chip');
+      for (var i = 0; i < all.length; i++) all[i].classList.remove('on');
+    }
+    if (moodChips) {
+      var all = moodChips.querySelectorAll('.chip');
       for (var i = 0; i < all.length; i++) all[i].classList.remove('on');
     }
     RT.refreshTiers();

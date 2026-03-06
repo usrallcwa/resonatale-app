@@ -38,10 +38,10 @@
     });
   }
 
-  RT.afterAuth = function () {
-    if (RT.photos.length > 0 && RT.voiceBlob) {
-      uploadAssets();
-    } else if (RT.hasPhotos && RT.hasVoice) {
+ RT.afterAuth = function () {
+    if (RT.voiceBlob) {
+      uploadVoice();
+    } else if (RT.hasVoice) {
       RT.showScreen('create');
       RT.mountTurnstile();
     } else {

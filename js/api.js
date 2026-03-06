@@ -1,135 +1,100 @@
 (function () {
   'use strict';
 
-  function api(method, path, body) {
-    var opts = {
-      method: method,
-      headers: { 'Content-Type': 'application/json' }
-    };
-    if (RT.token) {
-      opts.headers['Authorization'] = 'Bearer ' + RT.token;
-    }
-    if (body) {
-      opts.body = JSON.stringify(body);
-    }
-    return fetch(RT.API + path, opts).then(function (r) {
-      return r.text().then(function (txt) {
-        var data;
-        try { data = JSON.parse(txt); } catch (e) { data = { error: txt }; }
-        if (!r.ok) {
-          if (r.status === 401) RT.clearAuth();
-          throw new Error(data.detail || data.error || 'Request failed');
-        }
-        return data;
-      });
-    });
-  }
+  window.RT = window.RT || {};
 
-  RT.healthCheck = function () { return api('GET', '/health'); };
+  // API
+  RT.API = 'https://api.resonatale.com';
+  RT.TURNSTILE_KEY = '0x4AAAAAACLI9vyJZYGLg9lS';
 
-  RT.signup = function (email, password, language) {
-    return api('POST', '/auth/signup', { email: email, password: password, language: language || RT.language }).then(function (d) {
-      RT.saveAuth(d.token, d.email);
-      RT.credits = d.credits || 0;
-      RT.hasPhotos = d.hasPhotos || false;
-      RT.hasVoice = d.hasVoice || false;
-      RT.hasUsedPreview = d.hasUsedPreview || false;
-      return d;
-    });
+  // Tiers (honest durations based on 10 sec per scene)
+  RT.TIERS = [
+    { id: 'short',    label: 'Trailer',  minutes: 0.5, scenes: 3,  credits: 8,   price: '$8',   desc: '30 second trailer' },
+    { id: 'standard', label: 'Short',    minutes: 2,   scenes: 12, credits: 30,  price: '$30',  desc: '2 minute short' },
+    { id: 'extended', label: 'Standard', minutes: 3,   scenes: 20, credits: 50,  price: '$50',  desc: '3 minute film' },
+    { id: 'feature',  label: 'Feature',  minutes: 6,   scenes: 38, credits: 120, price: '$120', desc: '6 minute feature' },
+    { id: 'epic',     label: 'Epic',     minutes: 9,   scenes: 55, credits: 199, price: '$199', desc: '9 minute epic' },
+  ];
+
+  // Genres
+  RT.GENRES = [
+    { id: 'action',       label: 'Action & Thriller', icon: '🎬' },
+    { id: 'fantasy',      label: 'Fantasy & Sci-Fi',  icon: '🧙' },
+    { id: 'romance',      label: 'Romance & Drama',   icon: '💕' },
+    { id: 'comedy',       label: 'Comedy',            icon: '😂' },
+    { id: 'music',        label: 'Music Video',       icon: '🎵' },
+    { id: 'documentary',  label: 'Documentary',       icon: '📖' },
+    { id: 'travel',       label: 'Travel & Adventure',icon: '🌍' },
+    { id: 'horror',       label: 'Horror & Mystery',  icon: '👻' },
+    { id: 'business',     label: 'Business & Pitch',  icon: '💼' },
+    { id: 'education',    label: 'Education',         icon: '📚' },
+    { id: 'gaming',       label: 'Gaming & Anime',    icon: '🎮' },
+    { id: 'motivational', label: 'Motivational',      icon: '✨' },
+    { id: 'food',         label: 'Food & Lifestyle',  icon: '🍳' },
+    { id: 'sports',       label: 'Sports',            icon: '⚽' },
+    { id: 'holiday',      label: 'Holiday & Events',  icon: '🎄' },
+  ];
+
+  // Moods
+  RT.MOODS = ['epic', 'calm', 'dark', 'upbeat', 'intense', 'romantic', 'mysterious', 'inspiring'];
+
+  // Languages
+  RT.LANGUAGES = [
+    { code: 'en', flag: '🇺🇸', name: 'English' },
+    { code: 'es', flag: '🇪🇸', name: 'Spanish' },
+    { code: 'fr', flag: '🇫🇷', name: 'French' },
+    { code: 'ja', flag: '🇯🇵', name: 'Japanese' },
+    { code: 'de', flag: '🇩🇪', name: 'German' },
+    { code: 'it', flag: '🇮🇹', name: 'Italian' },
+    { code: 'pt', flag: '🇵🇹', name: 'Portuguese' },
+    { code: 'ko', flag: '🇰🇷', name: 'Korean' },
+    { code: 'zh', flag: '🇨🇳', name: 'Chinese' },
+    { code: 'hi', flag: '🇮🇳', name: 'Hindi' },
+    { code: 'ar', flag: '🇸🇦', name: 'Arabic' },
+    { code: 'ru', flag: '🇷🇺', name: 'Russian' },
+  ];
+
+  // Share platforms
+  RT.SHARE = [
+    { id: 'youtube',   label: 'YouTube',   icon: '▶',  url: 'https://www.youtube.com/upload' },
+    { id: 'tiktok',    label: 'TikTok',    icon: '♪',  url: 'https://www.tiktok.com/upload' },
+    { id: 'x',         label: 'X',         icon: '𝕏',  url: 'https://twitter.com/intent/tweet?text={text}&url={url}' },
+    { id: 'instagram', label: 'Instagram', icon: '📷', url: 'https://www.instagram.com/' },
+    { id: 'facebook',  label: 'Facebook',  icon: 'f',  url: 'https://www.facebook.com/sharer/sharer.php?u={url}' },
+    { id: 'whatsapp',  label: 'WhatsApp',  icon: '💬', url: 'https://api.whatsapp.com/send?text={text}%20{url}' },
+  ];
+
+  // Auth state
+  RT.token = localStorage.getItem('rt_token') || '';
+  RT.email = localStorage.getItem('rt_email') || '';
+  RT.credits = 0;
+  RT.hasVoice = false;
+  RT.hasUsedPreview = false;
+  RT.language = localStorage.getItem('rt_lang') || 'en';
+
+  RT.isLoggedIn = function () { return !!RT.token; };
+
+  RT.saveAuth = function (token, email) {
+    RT.token = token;
+    RT.email = email;
+    localStorage.setItem('rt_token', token);
+    localStorage.setItem('rt_email', email);
   };
 
-  RT.login = function (email, password) {
-    return api('POST', '/auth/login', { email: email, password: password }).then(function (d) {
-      RT.saveAuth(d.token, d.email);
-      RT.credits = d.credits || 0;
-      RT.hasPhotos = d.hasPhotos || false;
-      RT.hasVoice = d.hasVoice || false;
-      RT.hasUsedPreview = d.hasUsedPreview || false;
-      if (d.language) RT.setLanguage(d.language);
-      return d;
-    });
+  RT.clearAuth = function () {
+    RT.token = '';
+    RT.email = '';
+    RT.credits = 0;
+    RT.hasVoice = false;
+    localStorage.removeItem('rt_token');
+    localStorage.removeItem('rt_email');
   };
 
-  RT.forgotPassword = function (email) { return api('POST', '/auth/forgot', { email: email }); };
+  RT.logout = RT.clearAuth;
 
-  RT.resetPassword = function (email, code, password) {
-    return api('POST', '/auth/reset', { email: email, code: code, password: password });
-  };
-
-  RT.logout = function () { RT.clearAuth(); };
-
-  RT.getProfile = function () {
-    return api('GET', '/profile').then(function (d) {
-      RT.credits = d.credits || 0;
-      RT.hasPhotos = d.hasPhotos || false;
-      RT.hasVoice = d.hasVoice || false;
-      RT.hasUsedPreview = d.hasUsedPreview || false;
-      if (d.language) RT.setLanguage(d.language);
-      RT.updateCredits(d.credits);
-      return d;
-    });
-  };
-
-  RT.uploadPhotos = function (photos) {
-    return api('POST', '/profile/photos', { photos: photos }).then(function (d) {
-      RT.hasPhotos = true;
-      return d;
-    });
-  };
-
-  RT.uploadVoice = function (audio) {
-    return api('POST', '/profile/voice', { audio: audio }).then(function (d) {
-      if (d.cloned) RT.hasVoice = true;
-      return d;
-    });
-  };
-
-  RT.generatePreview = function (brief, mood, language, tier) {
-    return api('POST', '/story', { brief: brief, mood: mood, language: language, tier: tier });
-  };
-
-  RT.generatePreviewClip = function (desc, text) {
-    return api('POST', '/preview/clip', { sceneDescription: desc, voiceoverText: text });
-  };
-
-  RT.getCredits = function () {
-    return api('GET', '/credits').then(function (d) {
-      RT.credits = d.credits || 0;
-      RT.updateCredits(d.credits);
-      return d;
-    });
-  };
-
-  RT.addCredits = function (amount) { return api('POST', '/credits/add', { amount: amount }); };
-
-  RT.createFilm = function (brief, mood, language, tier) {
-    return api('POST', '/film/create', { brief: brief, mood: mood, language: language, tier: tier }).then(function (d) {
-      RT.credits = d.creditsRemaining;
-      RT.updateCredits(d.creditsRemaining);
-      return d;
-    });
-  };
-
-  RT.getFilmStatus = function (id) { return api('GET', '/film/' + id + '/status'); };
-
-  RT.getFilms = function () { return api('GET', '/films'); };
-
-  RT.pollFilm = function (filmId, onUpdate, onDone, onError) {
-    var attempts = 0;
-    function check() {
-      attempts++;
-      if (attempts > 120) { if (onError) onError(new Error('Timed out')); return; }
-      RT.getFilmStatus(filmId).then(function (d) {
-        if (onUpdate) onUpdate(d);
-        if (d.status === 'done') { if (onDone) onDone(d); return; }
-        if (d.status === 'failed') { if (onError) onError(new Error(d.error || 'Failed')); return; }
-        setTimeout(check, 5000);
-      }).catch(function (e) {
-        if (attempts < 120) setTimeout(check, 10000);
-        else if (onError) onError(e);
-      });
-    }
-    setTimeout(check, 5000);
+  RT.setLanguage = function (code) {
+    RT.language = code;
+    localStorage.setItem('rt_lang', code);
   };
 
 })();

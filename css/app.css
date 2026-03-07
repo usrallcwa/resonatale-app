@@ -772,3 +772,169 @@ a:hover { color: #9dd0ff; }
   background: #1c1c1e;
   color: #f5f5f7;
 }
+/* ── Tier Cards ── */
+.tier-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+.tier-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 16px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #f5f5f7;
+}
+.tier-card:hover { background: rgba(255,255,255,0.06); }
+.tier-card.selected {
+  border-color: #6eb6ff;
+  background: rgba(110,182,255,0.08);
+}
+.tier-top { margin-bottom: 8px; }
+.tier-label { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.tier-price { font-size: 20px; font-weight: 800; color: #6eb6ff; }
+.tier-bottom {}
+.tier-duration { font-size: 12px; color: #8e8e93; }
+
+/* ── Share Buttons ── */
+.share-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #f5f5f7;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.share-btn:hover { background: rgba(255,255,255,0.1); color: #f5f5f7; }
+.share-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+
+/* ── Voice Section ── */
+.voice-section {
+  text-align: center;
+  padding: 32px 0;
+}
+.voice-icon { font-size: 48px; margin-bottom: 16px; }
+.voice-hint {
+  font-size: 14px;
+  color: #8e8e93;
+  line-height: 1.5;
+  margin-bottom: 24px;
+  max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.voice-controls { margin-bottom: 16px; }
+.btn-record {
+  background: rgba(255,59,48,0.15);
+  border: 2px solid #ff3b30;
+  color: #ff3b30;
+  padding: 14px 32px;
+  border-radius: 30px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-record:hover { background: rgba(255,59,48,0.25); }
+.btn-record.recording {
+  background: #ff3b30;
+  color: #fff;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,59,48,0.4); }
+  50% { box-shadow: 0 0 0 12px rgba(255,59,48,0); }
+}
+.voice-timer { font-size: 24px; font-weight: 700; margin-top: 12px; color: #ff3b30; }
+.voice-playback { width: 100%; margin-top: 12px; }
+.voice-status { font-size: 13px; color: #8e8e93; margin-top: 8px; }
+
+/* ── Chips ── */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.chip {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: #8e8e93;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.chip:hover { background: rgba(255,255,255,0.08); }
+.chip.on {
+  background: rgba(110,182,255,0.15);
+  border-color: #6eb6ff;
+  color: #6eb6ff;
+}
+
+/* ── Scene Cards ── */
+.scene-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.scene-num { font-size: 11px; font-weight: 700; color: #6eb6ff; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+.scene-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+.scene-direction { font-size: 13px; color: #8e8e93; line-height: 1.5; margin-bottom: 8px; }
+.scene-voiceover { font-size: 13px; color: #a0a0a5; font-style: italic; line-height: 1.5; }
+
+/* ── Player ── */
+.player-wrap { margin-bottom: 24px; }
+.film-video { width: 100%; border-radius: 12px; background: #111; }
+.btn-download {
+  display: block;
+  text-align: center;
+  margin-top: 12px;
+}
+.player-actions { margin-top: 24px; }
+
+/* ── Invite ── */
+.invite-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 24px;
+}
+.invite-label { font-size: 13px; color: #8e8e93; margin-bottom: 8px; }
+.invite-link { font-size: 14px; color: #6eb6ff; word-break: break-all; margin-bottom: 16px; }
+.invite-share { text-align: center; }
+.invite-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+/* ── Dashboard ── */
+.dash-header { margin-bottom: 16px; }
+.dash-films { display: grid; gap: 12px; }
+.dash-empty { text-align: center; padding: 60px 20px; color: #8e8e93; }
+.dash-empty p { margin-bottom: 16px; }

@@ -1,14 +1,14 @@
 (function () {
   'use strict';
 
-  // ── Language Dropdown ──
+  // ── Language Dropdown with Flags ──
 
   var langSel = RT.$('lang-sel');
   if (langSel) {
     RT.LANGUAGES.forEach(function (l) {
       var opt = document.createElement('option');
       opt.value = l.code;
-      opt.textContent = l.flag + ' ' + l.name;
+      opt.textContent = l.flag + '  ' + l.name;
       if (l.code === RT.language) opt.selected = true;
       langSel.appendChild(opt);
     });
@@ -19,12 +19,13 @@
 
   var moodChips = RT.$('mood-chips');
   if (moodChips) {
+    var moodIcons = { calm: '🌅', cozy: '☕', adventure: '🔥', romantic: '❤️', suspense: '🌙', motivational: '💪', heartwarming: '💛', dramatic: '🎭' };
     RT.MOODS.forEach(function (m) {
       var btn = document.createElement('button');
       btn.className = 'chip';
       btn.type = 'button';
       btn.setAttribute('data-v', m);
-      btn.textContent = m.charAt(0).toUpperCase() + m.slice(1);
+      btn.textContent = (moodIcons[m] || '') + ' ' + m.charAt(0).toUpperCase() + m.slice(1);
       btn.addEventListener('click', function () {
         RT.mood = m;
         var all = moodChips.querySelectorAll('.chip');
@@ -45,10 +46,14 @@
       var card = document.createElement('button');
       card.type = 'button';
       card.className = 'tier-card' + (RT.tier === t.id ? ' selected' : '');
-      card.innerHTML = '<div class="tier-label">' + t.label + '</div>' +
-        '<div class="tier-duration">' + t.desc + '</div>' +
-        '<div class="tier-price">' + t.price + '</div>' +
-        '<div class="tier-scenes">' + t.scenes + ' scenes</div>';
+      card.innerHTML =
+        '<div class="tier-top">' +
+          '<div class="tier-label">' + t.label + '</div>' +
+          '<div class="tier-price">' + t.price + '</div>' +
+        '</div>' +
+        '<div class="tier-bottom">' +
+          '<div class="tier-duration">' + t.desc + '</div>' +
+        '</div>';
       card.addEventListener('click', function () {
         RT.tier = t.id;
         renderTiers();
@@ -94,7 +99,8 @@
     scenes.forEach(function (s, i) {
       var div = document.createElement('div');
       div.className = 'scene-card';
-      div.innerHTML = '<div class="scene-num">Scene ' + (i + 1) + '</div>' +
+      div.innerHTML =
+        '<div class="scene-num">Scene ' + (i + 1) + '</div>' +
         '<h3 class="scene-title">' + (s.title || '') + '</h3>' +
         '<p class="scene-direction">' + (s.direction || '') + '</p>' +
         '<p class="scene-voiceover">"' + (s.voiceover || '') + '"</p>';

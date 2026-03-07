@@ -1,20 +1,113 @@
 (function () {
   'use strict';
 
-  // ── Setup Progress Check (voice only) ──
+  // ── Clock ──
+
+  function drawClock() {
+    var c = document.getElementById('clock');
+    if (!c) return;
+    var ctx = c.getContext('2d');
+    var w = c.width, h = c.height, cx = w / 2, cy = h / 2, r = 70;
+
+    function frame() {
+      ctx.clearRect(0, 0, w, h);
+      var now = new Date();
+      var sec = now.getSeconds() + now.getMilliseconds() / 1000;
+      var min = now.getMinutes() + sec / 60;
+      var hr = (now.getHours() % 12) + min / 60;
+
+      // Outer glow ring
+      var grad = ctx.createLinearGradient(0, 0, w, h);
+      grad.addColorStop(0, '#6eb6ff');
+      grad.addColorStop(0.5, '#bf5af2');
+      grad.addColorStop(1, '#ff375f');
+      ctx.beginPath();
+      ctx.arc(cx, cy, r + 8, 0, Math.PI * 2);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 2;
+      ctx.shadowColor = '#6eb6ff';
+      ctx.shadowBlur = 20;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      // Face
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,0,0,0.6)';
+      ctx.fill();
+
+      // Hour markers
+      for (var i = 0; i < 12; i++) {
+        var a = (i * Math.PI) / 6;
+        var x1 = cx + Math.cos(a) * (r - 10);
+        var y1 = cy + Math.sin(a) * (r - 10);
+        var x2 = cx + Math.cos(a) * (r - 4);
+        var y2 = cy + Math.sin(a) * (r - 4);
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+
+      // Hour hand
+      var ha = ((hr * Math.PI) / 6) - Math.PI / 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + Math.cos(ha) * 36, cy + Math.sin(ha) * 36);
+      ctx.strokeStyle = '#f5f5f7';
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      // Minute hand
+      var ma = ((min * Math.PI) / 30) - Math.PI / 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + Math.cos(ma) * 50, cy + Math.sin(ma) * 50);
+      ctx.strokeStyle = '#f5f5f7';
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      // Second hand
+      var sa = ((sec * Math.PI) / 30) - Math.PI / 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + Math.cos(sa) * 55, cy + Math.sin(sa) * 55);
+      ctx.strokeStyle = '#6eb6ff';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Center dot
+      ctx.beginPath();
+      ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+      ctx.fillStyle = '#6eb6ff';
+      ctx.fill();
+
+      // RT text
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.font = '600 11px -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('R T', cx, cy + 24);
+
+      requestAnimationFrame(frame);
+    }
+    frame();
+  }
+
+  drawClock();
+
+  // ── Setup Check (voice only) ──
 
   RT.checkSetup = function () {
     var hasV = !!RT.voiceBlob;
-    var btn = RT.$('btn-save-setup');
+    var btn = RT.$('btn-setup-done');
     if (btn) btn.disabled = !hasV;
-    var st = RT.$('setup-status');
-    if (st) {
-      if (hasV) st.textContent = 'Ready to continue!';
-      else st.textContent = 'Record your voice to get started.';
-    }
   };
 
-  // ── Upload Voice Only ──
+  // ── Upload Voice ──
 
   function uploadVoice() {
     RT.loading(true, 'Cloning your voice...');
@@ -49,45 +142,49 @@
     }
   };
 
-  // ── Save Setup Button (voice only) ──
+  // ── Setup Done Button ──
 
-  var saveBtn = RT.$('btn-save-setup');
-  if (saveBtn) {
-    saveBtn.addEventListener('click', function () {
+  var setupBtn = RT.$('btn-setup-done');
+  if (setupBtn) {
+    setupBtn.addEventListener('click', function () {
       if (!RT.voiceBlob) { RT.toast('Record your voice first.'); return; }
       if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('signup'); return; }
       uploadVoice();
     });
   }
 
-  // ── Start Button ──
+  // ── Start Buttons ──
 
-  var startBtn = RT.$('btn-start');
-  if (startBtn) {
-    startBtn.addEventListener('click', function () {
-      if (RT.isLoggedIn()) {
-        RT.getProfile().then(function () {
-          if (RT.hasVoice) {
-            RT.showScreen('create');
-            RT.mountTurnstile();
-          } else {
-            RT.showScreen('setup');
-          }
-        }).catch(function () {
+  function handleStart() {
+    if (RT.isLoggedIn()) {
+      RT.getProfile().then(function () {
+        if (RT.hasVoice) {
+          RT.showScreen('create');
+          RT.mountTurnstile();
+        } else {
           RT.showScreen('setup');
-        });
-      } else {
+        }
+      }).catch(function () {
         RT.showScreen('setup');
-      }
-    });
+      });
+    } else {
+      RT.showScreen('setup');
+    }
   }
 
-  // ── Back Button ──
+  var startBtn = RT.$('btn-start');
+  if (startBtn) startBtn.addEventListener('click', handleStart);
 
-  var backBtn = RT.$('back-to-landing');
-  if (backBtn) {
-    backBtn.addEventListener('click', function () {
-      RT.showScreen('landing');
+  var startBtn2 = RT.$('btn-start-2');
+  if (startBtn2) startBtn2.addEventListener('click', handleStart);
+
+  // ── New Film Button (player screen) ──
+
+  var newFilmBtn = RT.$('btn-new-film');
+  if (newFilmBtn) {
+    newFilmBtn.addEventListener('click', function () {
+      RT.showScreen('create');
+      RT.mountTurnstile();
     });
   }
 

@@ -25,14 +25,26 @@
 
   var items = {
     'menu-home': function () { RT.closeMenu(); RT.showScreen('landing'); },
-    'menu-create': function () { RT.closeMenu(); RT.showScreen('create'); RT.mountTurnstile(); },
-    'menu-films': function () { RT.closeMenu(); RT.showScreen('dash'); },
-    'menu-credits': function () { RT.closeMenu(); RT.showScreen('credits'); RT.renderCredits(); },
-    'menu-profile': function () { RT.closeMenu(); RT.showScreen('profile'); RT.loadProfile(); },
-    'menu-invite': function () { RT.closeMenu(); RT.showScreen('invite'); RT.loadInvite(); },
+    'menu-create': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('signup'); return; } RT.showScreen('create'); RT.mountTurnstile(); },
+    'menu-films': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('login'); return; } RT.showScreen('dash'); },
+    'menu-credits': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('signup'); return; } RT.showScreen('credits'); RT.renderCredits(); },
+    'menu-profile': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('login'); return; } RT.showScreen('profile'); RT.loadProfile(); },
+    'menu-invite': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('login'); return; } RT.showScreen('invite'); RT.loadInvite(); },
     'menu-how': function () { RT.closeMenu(); RT.showScreen('how'); },
-    'menu-logout': function () { RT.closeMenu(); RT.clearAuth(); RT.toast('Logged out.', true); RT.showScreen('landing'); }
+    'menu-auth': function () { RT.closeMenu(); RT.showScreen('auth'); RT.showAuthForm('login'); },
+    'menu-logout': function () { RT.closeMenu(); RT.clearAuth(); RT.toast('Logged out.', true); updateAuthButton(); RT.showScreen('landing'); }
   };
+  function updateAuthButton() {
+    var logoutBtn = RT.$('menu-logout');
+    var authBtn = RT.$('menu-auth');
+    if (RT.isLoggedIn()) {
+      if (logoutBtn) logoutBtn.style.display = 'block';
+      if (authBtn) authBtn.style.display = 'none';
+    } else {
+      if (logoutBtn) logoutBtn.style.display = 'none';
+      if (authBtn) authBtn.style.display = 'block';
+    }
+  }
 
   Object.keys(items).forEach(function (id) {
     var el = RT.$(id);
@@ -67,5 +79,5 @@
       else { nav.classList.remove('hide'); RT.updateMenuCredits(); }
     }
   };
-
+updateAuthButton();
 })();

@@ -1,27 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>ResonaTale — Your Face. Your Voice. Your Movie.</title>
-<meta name="description" content="Star in a cinematic masterpiece created in minutes. AI films featuring you, in your voice, in any language.">
-<meta name="theme-color" content="#07070B">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css">
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#07070B">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>ResonaTale — AI Cinema</title>
+  <meta name="description" content="Type a story. Get a film. AI-generated cinema narrated in your own voice.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+  <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
 
 <div id="toast" class="toast"></div>
-
-<div id="loader" class="loader">
-  <div class="loader-content">
+<div id="loading-overlay" class="loading-overlay hide">
+  <div class="loading-card">
     <div class="spin"></div>
-    <p id="loader-msg">Preparing your experience...</p>
+    <p id="loading-msg">Loading...</p>
   </div>
 </div>
 
@@ -48,156 +44,157 @@
         <h3 class="menu-title">RESONATALE</h3>
         <button type="button" class="menu-close" id="btn-menu-close">✕</button>
       </div>
-
       <div class="menu-credits-card">
         <span class="credit-icon">💎</span>
         <span class="menu-credit-amount"><span id="menu-credit-count">0</span> Credits</span>
       </div>
-
       <button type="button" class="menu-item menu-item-primary" id="menu-credits">+ Add Credits</button>
-
       <div class="menu-divider"></div>
-
       <button type="button" class="menu-item" id="menu-create">✨ Create New Film</button>
       <button type="button" class="menu-item" id="menu-films">🎬 My Films</button>
       <button type="button" class="menu-item" id="menu-profile">👤 My Profile</button>
       <button type="button" class="menu-item" id="menu-invite">🔗 Invite Friends</button>
-
       <div class="menu-divider"></div>
-
-      <a href="privacy.html" class="menu-item menu-item-small">📜 Privacy Policy</a>
-      <a href="terms.html" class="menu-item menu-item-small">📋 Terms of Service</a>
+      <a href="privacy.html" class="menu-item menu-item-small">📜 Privacy</a>
+      <a href="terms.html" class="menu-item menu-item-small">📋 Terms</a>
       <a href="mailto:admin@resonatale.com" class="menu-item menu-item-small">✉️ Contact</a>
-
       <div class="menu-divider"></div>
-
       <button type="button" class="menu-item menu-item-danger" id="menu-logout">🚪 Log Out</button>
     </div>
   </div>
 
   <!-- ════ LANDING ════ -->
   <div id="s-landing" class="screen active">
-    <div class="landing">
 
-      <div class="globe-wrap">
-        <div class="globe-glow"></div>
-        <div class="globe-container">
-          <svg class="globe globe-spin" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="grd" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#00E5FF"/>
-                <stop offset="50%" stop-color="#FF2ED1"/>
-                <stop offset="100%" stop-color="#C6FF00"/>
-              </linearGradient>
-              <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-            </defs>
-            <circle cx="100" cy="100" r="85" fill="none" stroke="url(#grd)" stroke-width="2" filter="url(#glow)"/>
-            <ellipse cx="100" cy="100" rx="85" ry="40" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="0.8"/>
-            <ellipse cx="100" cy="100" rx="60" ry="85" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="0.8"/>
-            <ellipse cx="100" cy="100" rx="85" ry="65" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="0.6" transform="rotate(30 100 100)"/>
-            <ellipse cx="100" cy="100" rx="45" ry="85" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="0.6" transform="rotate(-20 100 100)"/>
-            <line x1="15" y1="100" x2="185" y2="100" stroke="rgba(255,255,255,.04)" stroke-width="0.8"/>
-            <line x1="100" y1="15" x2="100" y2="185" stroke="rgba(255,255,255,.04)" stroke-width="0.8"/>
-          </svg>
-          <svg class="globe globe-static" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-            <defs><linearGradient id="grd2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00E5FF"/><stop offset="100%" stop-color="#FF2ED1"/></linearGradient></defs>
-            <circle cx="100" cy="100" r="78" fill="#07070B"/>
-            <circle cx="100" cy="100" r="68" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="0.5"/>
-            <line id="c-h" x1="100" y1="100" x2="100" y2="58" stroke="rgba(255,255,255,.85)" stroke-width="2.8" stroke-linecap="round"/>
-            <line id="c-m" x1="100" y1="100" x2="100" y2="42" stroke="rgba(255,255,255,.55)" stroke-width="2" stroke-linecap="round"/>
-            <line id="c-s" x1="100" y1="100" x2="100" y2="35" stroke="#00E5FF" stroke-width="1" stroke-linecap="round"/>
-            <circle cx="100" cy="100" r="4" fill="url(#grd2)"/>
-            <text x="100" y="140" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-weight="900" font-size="16" fill="rgba(255,255,255,.5)" letter-spacing="3">RT</text>
-          </svg>
-        </div>
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-glow"></div>
+      <div class="clock-wrap">
+        <canvas id="clock" width="170" height="170"></canvas>
       </div>
-
-      <h1 class="landing-title">RESONATALE</h1>
-      <p class="landing-tag">Your Face. Your Voice. Your Movie.</p>
-      <p class="landing-sub">Star in a cinematic masterpiece — created in minutes, not months.</p>
-
-      <button type="button" class="btn-primary" id="btn-start">Create Your Film</button>
-
-      <div class="landing-features">
-        <div class="feat"><span class="feat-icon">🎬</span><span>Real AI Films</span></div>
-        <div class="feat"><span class="feat-icon">🧑</span><span>You Star In It</span></div>
-        <div class="feat"><span class="feat-icon">🎙️</span><span>Your Own Voice</span></div>
-        <div class="feat"><span class="feat-icon">🌍</span><span>12 Languages</span></div>
-      </div>
-
-      <!-- HOW IT WORKS -->
-     <div class="how-steps">
-        <div class="how-step">
-          <div class="how-num">1</div>
-          <div class="how-icon">🎙️</div>
-          <h3>Record Your Voice</h3>
-          <p>Speak for 10-30 seconds. AI clones your voice in any language.</p>
-        </div>
-        <div class="how-step">
-          <div class="how-num">2</div>
-          <div class="how-icon">✍️</div>
-          <h3>Describe Your Film</h3>
-          <p>Pick a genre, mood, and describe your story. AI writes the screenplay.</p>
-        </div>
-        <div class="how-step">
-          <div class="how-num">3</div>
-          <div class="how-icon">🎬</div>
-          <h3>AI Creates Your Film</h3>
-          <p>Stunning 4K cinematic scenes generated by AI, narrated in your voice.</p>
-        </div>
-        <div class="how-step">
-          <div class="how-num">4</div>
-          <div class="how-icon">🎥</div>
-          <h3>Download & Share</h3>
-          <p>Get your film in HD. Share on YouTube, TikTok, Instagram, and more.</p>
-        </div>
-      </div>
-      <div class="foot">
-        <a href="privacy.html">Privacy</a><span class="foot-dot"></span>
-        <a href="terms.html">Terms</a><span class="foot-dot"></span>
-        <a href="mailto:admin@resonatale.com">Contact</a>
+      <div class="hero-badge">AI CINEMA</div>
+      <h1 class="hero-title">RESONATALE</h1>
+      <p class="hero-tagline">Type a story. Get a film.</p>
+      <p class="hero-sub">AI-generated cinema — narrated in your own voice.</p>
+      <button type="button" class="btn-hero" id="btn-start">Create Your Film</button>
+      <div class="hero-features">
+        <span class="hero-chip">🎬 AI Video</span>
+        <span class="hero-chip">🎙️ Your Voice</span>
+        <span class="hero-chip">🌍 12 Languages</span>
+        <span class="hero-chip">⚡ Minutes, Not Months</span>
       </div>
     </div>
-  </div>
 
- <!-- ════ SETUP ════ -->
-  <div id="s-setup" class="screen">
-    <div class="screen-inner">
-      <button type="button" class="back-btn" id="back-to-landing">← Back</button>
-      <h2 class="screen-title">Setup Your Voice</h2>
-      <p class="screen-sub">Record a short voice sample. AI will clone your voice to narrate your films.</p>
-
-      <div class="section">
-        <label class="label">Record Your Voice</label>
-        <div class="voice-zone" id="voice-zone">
-          <div class="voice-state" id="voice-idle">
-            <button type="button" class="voice-record-btn" id="btn-record">
-              <span class="rec-dot"></span> Hold to Record
-            </button>
-            <p class="upload-hint">Speak naturally for 10-30 seconds. Read a paragraph or tell a short story.</p>
-            <p class="voice-or">— or —</p>
-            <label class="voice-upload-label">
-              Upload audio file
-              <input type="file" id="voice-upload" accept="audio/*" style="display:none;">
-            </label>
-          </div>
-          <div class="voice-state hide" id="voice-recording">
-            <div class="rec-pulse"></div>
-            <p class="rec-time" id="rec-time">0:00</p>
-            <p class="upload-hint">Recording... release to stop</p>
-          </div>
-          <div class="voice-state hide" id="voice-done">
-            <div class="voice-check">✓</div>
-            <p>Voice recorded!</p>
-            <audio id="voice-playback" controls></audio>
-            <button type="button" class="btn-text" id="btn-rerecord">Re-record</button>
-          </div>
+    <!-- How It Works -->
+    <div class="section-dark">
+      <h2 class="section-title">How It Works</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-icon">✍️</div>
+          <h3 class="step-title">Describe Your Story</h3>
+          <p class="step-desc">Type your idea. A spy in Tokyo. A love story in Paris. Anything you imagine.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-icon">🎬</div>
+          <h3 class="step-title">AI Creates Cinema</h3>
+          <p class="step-desc">AI writes the screenplay and generates stunning cinematic video scenes.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-icon">🎙️</div>
+          <h3 class="step-title">Your Voice Narrates</h3>
+          <p class="step-desc">Record once. AI clones your voice and narrates every film you create.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-icon">🚀</div>
+          <h3 class="step-title">Download & Share</h3>
+          <p class="step-desc">Get your HD film in minutes. Share on YouTube, TikTok, Instagram, anywhere.</p>
         </div>
       </div>
+    </div>
 
-      <p class="setup-progress" id="setup-status">Record your voice to get started.</p>
+    <!-- Moods -->
+    <div class="section-dark">
+      <h2 class="section-title">Any Story. Any Mood.</h2>
+      <div class="mood-showcase">
+        <span class="mood-pill">🌅 Calm</span>
+        <span class="mood-pill">🔥 Adventure</span>
+        <span class="mood-pill">❤️ Romance</span>
+        <span class="mood-pill">🌙 Suspense</span>
+        <span class="mood-pill">💪 Motivational</span>
+        <span class="mood-pill">🎭 Dramatic</span>
+        <span class="mood-pill">💛 Heartwarming</span>
+        <span class="mood-pill">☕ Cozy</span>
+      </div>
+    </div>
 
-      <button type="button" class="btn-primary" id="btn-save-setup" disabled>Continue</button>
+    <!-- Pricing -->
+    <div class="section-dark">
+      <h2 class="section-title">Simple Pricing</h2>
+      <p class="section-sub">Pay per film. No subscription. Credits never expire.</p>
+      <div class="pricing-grid">
+        <div class="price-card">
+          <div class="price-label">Trailer</div>
+          <div class="price-duration">24 sec</div>
+          <div class="price-amount">$5</div>
+        </div>
+        <div class="price-card">
+          <div class="price-label">Short</div>
+          <div class="price-duration">1 min</div>
+          <div class="price-amount">$12</div>
+        </div>
+        <div class="price-card popular">
+          <div class="price-badge">Most Popular</div>
+          <div class="price-label">Standard</div>
+          <div class="price-duration">3 min</div>
+          <div class="price-amount">$30</div>
+        </div>
+        <div class="price-card">
+          <div class="price-label">Feature</div>
+          <div class="price-duration">5 min</div>
+          <div class="price-amount">$50</div>
+        </div>
+        <div class="price-card">
+          <div class="price-label">Epic</div>
+          <div class="price-duration">10 min</div>
+          <div class="price-amount">$90</div>
+        </div>
+      </div>
+      <button type="button" class="btn-hero btn-hero-sm" id="btn-start-2">Start Creating</button>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <a href="privacy.html">Privacy</a>
+      <span class="footer-dot">·</span>
+      <a href="terms.html">Terms</a>
+      <span class="footer-dot">·</span>
+      <a href="mailto:admin@resonatale.com">Contact</a>
+      <p class="footer-copy">© 2026 ResonaTale. All rights reserved.</p>
+    </div>
+  </div>
+  <!-- ════ SETUP (Voice Only) ════ -->
+  <div id="s-setup" class="screen">
+    <div class="screen-inner">
+      <h2 class="screen-title">Setup Your Voice</h2>
+      <p class="screen-sub">Record your voice once. AI clones it to narrate all your films.</p>
+
+      <div class="voice-section">
+        <div class="voice-icon">🎙️</div>
+        <p class="voice-hint">Speak naturally for 10-30 seconds. Read anything — a paragraph, a quote, or just talk about your day.</p>
+        <div class="voice-controls">
+          <button type="button" class="btn-record" id="btn-record">Hold to Record</button>
+          <div class="voice-timer hide" id="voice-timer">0:00</div>
+          <audio id="voice-playback" class="voice-playback hide" controls></audio>
+        </div>
+        <div class="voice-status" id="voice-status"></div>
+      </div>
+
+      <button type="button" class="btn-primary" id="btn-setup-done">Continue</button>
+      <p class="gen-hint">Your voice is encrypted and never shared.</p>
     </div>
   </div>
 
@@ -242,9 +239,7 @@
   <!-- ════ CREATE ════ -->
   <div id="s-create" class="screen">
     <div class="screen-inner">
-      <div class="create-header">
-        <h2 class="screen-title">Create Your Film</h2>
-      </div>
+      <h2 class="screen-title">Create Your Film</h2>
 
       <div class="section">
         <label class="label">Language</label>
@@ -269,8 +264,8 @@
       <div class="ts-wrap" id="ts-target"></div>
 
       <div class="gen-area">
-        <button type="button" class="btn-primary" id="btn-generate">Generate Free Preview</button>
-        <p class="gen-hint">Preview your script for free. Film creation costs credits.</p>
+        <button type="button" class="btn-primary" id="btn-generate">Preview Script — Free</button>
+        <p class="gen-hint">Preview your screenplay for free before spending credits.</p>
       </div>
     </div>
   </div>
@@ -281,36 +276,32 @@
       <h2 class="screen-title">Your Screenplay</h2>
       <p class="preview-tier" id="preview-tier-info"></p>
 
-      <video id="preview-video" class="preview-video" controls playsinline style="display:none;"></video>
-
       <div id="preview-scenes" class="scenes"></div>
 
       <div class="preview-actions">
-        <button type="button" class="btn-primary" id="btn-preview-clip">
-          🎬 Generate Free 10-Second Clip
-        </button>
-        <p class="gen-hint">See yourself in the first scene — free, one time only.</p>
-
-        <div class="divider"></div>
-
         <button type="button" class="btn-primary btn-gold" id="btn-get-film">
           🎥 Create Full Film
         </button>
         <p class="gen-hint">Uses credits based on film length.</p>
-
         <button type="button" class="btn-text" id="btn-retry">← Edit Story</button>
       </div>
     </div>
   </div>
 
   <!-- ════ RENDERING ════ -->
-  <<div class="render-step" id="rs-1">
+  <div id="s-rendering" class="screen">
+    <div class="screen-inner render-screen">
+      <h2 class="screen-title">Creating Your Film</h2>
+      <p class="render-sub" id="render-status">Writing your screenplay...</p>
+
+      <div class="render-steps">
+        <div class="render-step" id="rs-1">
           <div class="rs-dot"></div>
           <div class="rs-label">Writing Script</div>
         </div>
         <div class="render-step" id="rs-2">
           <div class="rs-dot"></div>
-          <div class="rs-label">Creating Scenes</div>
+          <div class="rs-label">Generating Scenes</div>
         </div>
         <div class="render-step" id="rs-3">
           <div class="rs-dot"></div>
@@ -324,6 +315,13 @@
           <div class="rs-dot"></div>
           <div class="rs-label">Complete</div>
         </div>
+      </div>
+
+      <div class="spin render-spin"></div>
+      <p class="render-patience">This may take several minutes. You can navigate away — we'll keep working.</p>
+    </div>
+  </div>
+
   <!-- ════ PLAYER ════ -->
   <div id="s-player" class="screen">
     <div class="screen-inner">
@@ -344,8 +342,7 @@
       </div>
     </div>
   </div>
-
-  <!-- ════ CREDITS ════ -->
+<!-- ════ CREDITS ════ -->
   <div id="s-credits" class="screen">
     <div class="screen-inner">
       <h2 class="screen-title">Add Credits</h2>
@@ -357,23 +354,23 @@
 
       <div class="section">
         <label class="label">Choose Amount</label>
-        <p class="credit-display" id="credit-amount">$50</p>
-        <input type="range" id="credit-slider" class="slider" min="20" max="1000" step="10" value="50">
+        <p class="credit-display" id="credit-amount">$10</p>
+        <input type="range" id="credit-slider" class="slider" min="10" max="500" step="5" value="10">
         <div class="slider-labels">
-          <span>$20</span>
-          <span>$1,000</span>
+          <span>$10</span>
+          <span>$500</span>
         </div>
-        <p class="gen-hint">$1 = 1 credit. Minimum $20.</p>
+        <p class="gen-hint">$1 = 1 credit. Credits never expire.</p>
       </div>
 
       <div class="tier-summary">
         <h3 class="label">What Credits Buy</h3>
         <div class="credit-tier-list">
-          <div class="credit-tier-item"><span>🎬 Short (1 min)</span><span>8 credits</span></div>
-          <div class="credit-tier-item"><span>🎬 Standard (5 min)</span><span>30 credits</span></div>
-          <div class="credit-tier-item"><span>🎬 Extended (10 min)</span><span>50 credits</span></div>
-          <div class="credit-tier-item"><span>🎬 Feature (30 min)</span><span>120 credits</span></div>
-          <div class="credit-tier-item"><span>🎬 Epic (60 min)</span><span>199 credits</span></div>
+          <div class="credit-tier-item"><span>🎬 Trailer (24 sec)</span><span>5 credits</span></div>
+          <div class="credit-tier-item"><span>🎬 Short (1 min)</span><span>12 credits</span></div>
+          <div class="credit-tier-item"><span>🎬 Standard (3 min)</span><span>30 credits</span></div>
+          <div class="credit-tier-item"><span>🎬 Feature (5 min)</span><span>50 credits</span></div>
+          <div class="credit-tier-item"><span>🎬 Epic (10 min)</span><span>90 credits</span></div>
         </div>
       </div>
 
@@ -401,16 +398,6 @@
             <p class="profile-value"><span id="profile-credits">0</span></p>
           </div>
           <button type="button" class="btn-outline btn-sm" onclick="RT.showScreen('credits'); RT.renderCredits();">+ Add</button>
-        </div>
-      </div>
-
-      <div class="profile-section">
-        <div class="profile-row">
-          <div class="profile-row-left">
-            <p class="profile-label">Photos</p>
-            <p id="profile-photo-status" class="profile-status"></p>
-          </div>
-          <button type="button" class="btn-outline btn-sm" id="btn-update-photos">Update</button>
         </div>
       </div>
 
@@ -449,7 +436,12 @@
 
       <div class="invite-share">
         <p class="label">Share via</p>
-        <div class="invite-buttons" id="invite-share-buttons"></div>
+        <div class="invite-buttons">
+          <a href="#" target="_blank" rel="noopener" class="share-btn share-whatsapp" id="btn-invite-whatsapp">💬 WhatsApp</a>
+          <a href="#" target="_blank" rel="noopener" class="share-btn share-x" id="btn-invite-x">𝕏 Twitter</a>
+          <a href="#" target="_blank" rel="noopener" class="share-btn share-facebook" id="btn-invite-facebook">f Facebook</a>
+          <a href="#" target="_blank" rel="noopener" class="share-btn share-telegram" id="btn-invite-telegram">✈ Telegram</a>
+        </div>
       </div>
     </div>
   </div>
@@ -460,21 +452,21 @@
       <div class="dash-header">
         <h2 class="screen-title">My Films</h2>
       </div>
-
       <div id="dash-films" class="dash-films"></div>
       <div id="dash-empty" class="dash-empty hide">
         <p>No films yet. Create your first one!</p>
+        <button type="button" class="btn-primary" onclick="RT.showScreen('create'); RT.mountTurnstile();">Create Film</button>
       </div>
     </div>
   </div>
 
 </div>
 
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 <script src="js/config.js"></script>
 <script src="js/state.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/api.js"></script>
-<script src="js/photos.js"></script>
 <script src="js/voice.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/create.js"></script>

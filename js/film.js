@@ -1,36 +1,6 @@
 (function () {
   'use strict';
 
-  // ── Free Preview Clip ──
-
-  var clipBtn = RT.$('btn-preview-clip');
-  if (clipBtn) {
-    clipBtn.addEventListener('click', function () {
-      if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('signup'); return; }
-      if (RT.hasUsedPreview) { RT.toast('Free preview already used. Add credits.'); return; }
-      if (!RT.currentScenes || !RT.currentScenes.length) { RT.toast('Generate a script first.'); return; }
-      if (!RT.hasPhotos) { RT.toast('Upload photos first.'); RT.showScreen('setup'); return; }
-
-      var scene = RT.currentScenes[0];
-      RT.loading(true, 'Creating your 10-second preview...');
-
-      RT.generatePreviewClip(scene.direction || scene.description, scene.voiceover).then(function (data) {
-        RT.loading(false);
-        RT.hasUsedPreview = true;
-        RT.toast('Preview clip ready!', true);
-        var v = RT.$('preview-video');
-        if (v && data.clipUrl) {
-          v.src = data.clipUrl;
-          v.style.display = 'block';
-          v.play().catch(function () {});
-        }
-      }).catch(function (err) {
-        RT.loading(false);
-        RT.toast(err.message || 'Preview failed.');
-      });
-    });
-  }
-
   // ── Create Full Film ──
 
   var filmBtn = RT.$('btn-get-film');
@@ -93,11 +63,9 @@
     setStep('writing');
     if (pollTimer) clearInterval(pollTimer);
 
-     = {
-
-      var msgs = {
+    var msgs = {
       writing: 'Writing your screenplay...',
-      imaging: 'Creating cinematic scenes...',
+      filming: 'Generating cinematic scenes...',
       voiceover: 'Recording narration in your voice...',
       stitching: 'Assembling your final film...',
       done: 'Your film is ready!',
@@ -129,16 +97,14 @@
           RT.toast(data.error || 'Failed. Credits refunded.');
         }
 
-      }).catch(function () {
-        // Network error — keep polling
-      });
-    }, 15000); // Poll every 15 seconds
+      }).catch(function () {});
+    }, 15000);
   }
 
   // ── Render Step Indicator ──
 
   function setStep(status) {
-    var map = { writing: 1, imaging: 2, voiceover: 3, stitching: 4, done: 5, failed: 0 };
+    var map = { writing: 1, filming: 2, voiceover: 3, stitching: 4, done: 5, failed: 0 };
     var active = map[status] || 0;
 
     for (var i = 1; i <= 5; i++) {
@@ -150,7 +116,6 @@
     }
   }
 
-  // Expose for dashboard reuse
   RT.pollFilmStatus = pollFilm;
 
 })();

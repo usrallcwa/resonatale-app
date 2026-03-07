@@ -5,7 +5,7 @@
 
   RT.mood = '';
   RT.genre = '';
-  RT.tier = 'short';
+  RT.tier = 'trailer';
   RT.tsToken = '';
   RT.tsWidgetId = null;
   RT.generating = false;

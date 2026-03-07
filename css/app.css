@@ -749,3 +749,8 @@ a:hover { color: #9dd0ff; }
   .pricing-grid { grid-template-columns: repeat(3, 1fr); }
   .price-card.popular { grid-column: span 1; }
 }
+.chip.on {
+  background: rgba(110,182,255,0.15);
+  border-color: #6eb6ff;
+  color: #6eb6ff;
+}

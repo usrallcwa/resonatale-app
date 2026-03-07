@@ -15,25 +15,6 @@
     langSel.addEventListener('change', function () { RT.setLanguage(langSel.value); });
   }
 
-  // ── Genre Chips ──
-
-  var genreChips = RT.$('genre-chips');
-  if (genreChips) {
-    RT.GENRES.forEach(function (g) {
-      var btn = document.createElement('button');
-      btn.className = 'chip';
-      btn.type = 'button';
-      btn.setAttribute('data-v', g.id);
-      btn.textContent = g.icon + ' ' + g.label;
-      btn.addEventListener('click', function () {
-        RT.genre = g.id;
-        var all = genreChips.querySelectorAll('.chip');
-        for (var i = 0; i < all.length; i++) all[i].classList.toggle('on', all[i].getAttribute('data-v') === g.id);
-      });
-      genreChips.appendChild(btn);
-    });
-  }
-
   // ── Mood Chips ──
 
   var moodChips = RT.$('mood-chips');
@@ -57,14 +38,27 @@
 
   var tierContainer = RT.$('tier-cards');
 
-  RT.refreshTiers = function () {
-    RT.renderTiers(tierContainer, RT.tier, function (id) {
-      RT.tier = id;
-      RT.refreshTiers();
+  function renderTiers() {
+    if (!tierContainer) return;
+    tierContainer.innerHTML = '';
+    RT.TIERS.forEach(function (t) {
+      var card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'tier-card' + (RT.tier === t.id ? ' selected' : '');
+      card.innerHTML = '<div class="tier-label">' + t.label + '</div>' +
+        '<div class="tier-duration">' + t.desc + '</div>' +
+        '<div class="tier-price">' + t.price + '</div>' +
+        '<div class="tier-scenes">' + t.scenes + ' scenes</div>';
+      card.addEventListener('click', function () {
+        RT.tier = t.id;
+        renderTiers();
+      });
+      tierContainer.appendChild(card);
     });
-  };
+  }
 
-  if (tierContainer) RT.refreshTiers();
+  RT.refreshTiers = renderTiers;
+  renderTiers();
 
   // ── Turnstile ──
 
@@ -91,6 +85,23 @@
     RT.tsToken = '';
   };
 
+  // ── Render Scenes ──
+
+  RT.renderScenes = function (scenes) {
+    var container = RT.$('preview-scenes');
+    if (!container) return;
+    container.innerHTML = '';
+    scenes.forEach(function (s, i) {
+      var div = document.createElement('div');
+      div.className = 'scene-card';
+      div.innerHTML = '<div class="scene-num">Scene ' + (i + 1) + '</div>' +
+        '<h3 class="scene-title">' + (s.title || '') + '</h3>' +
+        '<p class="scene-direction">' + (s.direction || '') + '</p>' +
+        '<p class="scene-voiceover">"' + (s.voiceover || '') + '"</p>';
+      container.appendChild(div);
+    });
+  };
+
   // ── Generate Preview ──
 
   var genBtn = RT.$('btn-generate');
@@ -99,7 +110,6 @@
       if (RT.generating) return;
 
       var brief = RT.$('brief') ? RT.$('brief').value.trim() : '';
-      if (!RT.genre) { RT.toast('Select a genre.'); return; }
       if (!RT.mood) { RT.toast('Select a mood.'); return; }
       if (!brief || brief.length < 10) { RT.toast('Describe your story in more detail.'); return; }
       if (!RT.tsToken) { RT.toast('Complete the verification.'); return; }
@@ -107,10 +117,7 @@
       RT.generating = true;
       RT.loading(true, 'Writing your screenplay...');
 
-      // Send genre + mood combined as the mood parameter
-      var combinedMood = RT.genre + ' / ' + RT.mood;
-
-      RT.generatePreview(brief, combinedMood, RT.language, RT.tier).then(function (data) {
+      RT.generatePreview(brief, RT.mood, RT.language, RT.tier).then(function (data) {
         RT.generating = false;
         RT.loading(false);
 
@@ -142,24 +149,19 @@
     });
   }
 
-  // ── Reset Create Form ──
+  // ── Reset Form ──
 
   RT.resetForm = function () {
     RT.mood = '';
-    RT.genre = '';
-    RT.tier = 'short';
+    RT.tier = 'trailer';
     RT.currentScenes = null;
     RT.currentFilmId = null;
     if (RT.$('brief')) RT.$('brief').value = '';
-    if (genreChips) {
-      var all = genreChips.querySelectorAll('.chip');
-      for (var i = 0; i < all.length; i++) all[i].classList.remove('on');
-    }
     if (moodChips) {
       var all = moodChips.querySelectorAll('.chip');
       for (var i = 0; i < all.length; i++) all[i].classList.remove('on');
     }
-    RT.refreshTiers();
+    renderTiers();
     RT.resetTurnstile();
   };
 

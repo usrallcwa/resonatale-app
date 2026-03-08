@@ -671,5 +671,16 @@ select option {
   text-align: center;
   margin-top: 8px;
 }
-#s-rendering { background: #000; }
-#s-rendering.active { z-index: 50; }
+#s-rendering {
+  background: #000;
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: none;
+}
+#s-rendering.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#s-rendering:not(.active) { display: none !important; }

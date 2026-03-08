@@ -65,8 +65,7 @@
 
     var msgs = {
       writing: 'Writing your screenplay...',
-      filming: 'Generating cinematic scenes...',
-      voiceover: 'Recording narration in your voice...',
+      filming: 'Filming cinematic scenes...',
       stitching: 'Assembling your final film...',
       done: 'Your film is ready!',
       failed: 'Something went wrong.'
@@ -104,10 +103,10 @@
   // ── Render Step Indicator ──
 
   function setStep(status) {
-    var map = { writing: 1, filming: 2, voiceover: 3, stitching: 4, done: 5, failed: 0 };
+    var map = { writing: 1, filming: 2, stitching: 3, done: 4, failed: 0 };
     var active = map[status] || 0;
 
-    for (var i = 1; i <= 5; i++) {
+    for (var i = 1; i <= 4; i++) {
       var el = RT.$('rs-' + i);
       if (!el) continue;
       el.classList.remove('active', 'done');

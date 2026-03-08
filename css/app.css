@@ -671,3 +671,5 @@ select option {
   text-align: center;
   margin-top: 8px;
 }
+#s-rendering { background: #000; }
+#s-rendering.active { z-index: 50; }

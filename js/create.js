@@ -43,11 +43,12 @@
 
   // Slider stops: maps slider value (0-4) to tier
   var stops = [
-    { value: 0, id: 'trailer',  label: '24 seconds', scenes: 3,  credits: 5,  price: '$5' },
-    { value: 1, id: 'short',    label: '1 minute',   scenes: 8,  credits: 12, price: '$12' },
-    { value: 2, id: 'standard', label: '3 minutes',  scenes: 18, credits: 30, price: '$30' },
-    { value: 3, id: 'feature',  label: '5 minutes',  scenes: 35, credits: 50, price: '$50' },
-    { value: 4, id: 'epic',     label: '10 minutes',  scenes: 60, credits: 90, price: '$90' }
+    { value: 0, id: 'trailer',  label: '24 seconds', scenes: 3,   credits: 5,   price: '$5' },
+    { value: 1, id: 'short',    label: '1 minute',   scenes: 8,   credits: 12,  price: '$12' },
+    { value: 2, id: 'standard', label: '3 minutes',  scenes: 18,  credits: 30,  price: '$30' },
+    { value: 3, id: 'feature',  label: '5 minutes',  scenes: 35,  credits: 50,  price: '$50' },
+    { value: 4, id: 'epic',     label: '10 minutes',  scenes: 60,  credits: 90,  price: '$90' },
+    { value: 5, id: 'cinema',   label: '20 minutes',  scenes: 150, credits: 199, price: '$199' }
   ];
 
   function updateDuration() {

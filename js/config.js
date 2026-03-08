@@ -7,13 +7,13 @@
   RT.API = 'https://api.resonatale.com';
   RT.TURNSTILE_KEY = '0x4AAAAAACLI9vyJZYGLg9lS';
 
-  // Tiers
-  RT.TIERS = [
-    { id: 'trailer',  label: 'Trailer',  minutes: 0.5, scenes: 3,  credits: 5,   price: '$5',   desc: '24 second trailer' },
-    { id: 'short',    label: 'Short',    minutes: 1,   scenes: 8,  credits: 12,  price: '$12',  desc: '1 minute short' },
-    { id: 'standard', label: 'Standard', minutes: 3,   scenes: 18, credits: 30,  price: '$30',  desc: '3 minute film' },
-    { id: 'feature',  label: 'Feature',  minutes: 5,   scenes: 35, credits: 50,  price: '$50',  desc: '5 minute feature' },
-    { id: 'epic',     label: 'Epic',     minutes: 10,  scenes: 60, credits: 90,  price: '$90',  desc: '10 minute epic' }
+ RT.TIERS = [
+    { id: 'trailer',  label: 'Trailer',  minutes: 0.5, scenes: 3,   credits: 5,   price: '$5',   desc: '24 second trailer' },
+    { id: 'short',    label: 'Short',    minutes: 1,   scenes: 8,   credits: 12,  price: '$12',  desc: '1 minute short' },
+    { id: 'standard', label: 'Standard', minutes: 3,   scenes: 18,  credits: 30,  price: '$30',  desc: '3 minute film' },
+    { id: 'feature',  label: 'Feature',  minutes: 5,   scenes: 35,  credits: 50,  price: '$50',  desc: '5 minute feature' },
+    { id: 'epic',     label: 'Epic',     minutes: 10,  scenes: 60,  credits: 90,  price: '$90',  desc: '10 minute epic' },
+    { id: 'cinema',   label: 'Cinema',   minutes: 20,  scenes: 150, credits: 199, price: '$199', desc: '20 minute cinema' }
   ];
 
   // Moods

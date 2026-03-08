@@ -1,9 +1,35 @@
 (function () {
   'use strict';
 
+  // ── Render Film Card ──
+
+  RT.renderFilmCard = function (film) {
+    var card = document.createElement('div');
+    card.className = 'dash-card';
+
+    var statusClass = 'processing';
+    if (film.status === 'done') statusClass = 'done';
+    if (film.status === 'failed') statusClass = 'failed';
+
+    var date = film.created_at ? new Date(film.created_at).toLocaleDateString() : '';
+
+    card.innerHTML =
+      '<div class="dash-card-top">' +
+        '<div class="dash-card-title">' + (film.brief || 'Untitled').slice(0, 40) + '</div>' +
+        '<div class="dash-card-status ' + statusClass + '">' + film.status + '</div>' +
+      '</div>' +
+      '<div class="dash-card-meta">' +
+        '<span>' + (film.mood || '') + '</span>' +
+        '<span>' + (film.duration_min || 0) + ' min</span>' +
+        '<span>' + date + '</span>' +
+      '</div>';
+
+    return card;
+  };
+
   // ── Load Dashboard ──
 
-  function loadDash() {
+  RT.loadDash = function () {
     RT.getCredits().catch(function () {});
 
     RT.getFilms().then(function (data) {
@@ -46,48 +72,19 @@
     }).catch(function (err) {
       RT.toast(err.message || 'Failed to load films.');
     });
-  }
+  };
 
-  // ── Dashboard Button ──
+  // ── Auto-load when screen shows ──
 
-  var dashBtn = RT.$('btn-dashboard');
-  if (dashBtn) {
-    dashBtn.addEventListener('click', function () {
-      RT.showScreen('dash');
-      loadDash();
-    });
-  }
-
-  // ── New Film ──
-
-  var newBtn = RT.$('btn-dash-new');
-  if (newBtn) {
-    newBtn.addEventListener('click', function () {
-      RT.resetForm();
-      RT.showScreen('create');
-      RT.mountTurnstile();
-    });
-  }
-
-  // ── Add Credits from Dash ──
-
-  var credBtn = RT.$('btn-dash-credits');
-  if (credBtn) {
-    credBtn.addEventListener('click', function () {
-      RT.showScreen('credits');
-      RT.renderCredits();
-    });
-  }
-
-  // ── Logout ──
-
-  var logoutBtn = RT.$('btn-logout');
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', function () {
-      RT.logout();
-      RT.toast('Logged out.', true);
-      RT.showScreen('landing');
-    });
+  var origShow = RT.showScreen;
+  var wrapped = false;
+  if (!wrapped) {
+    wrapped = true;
+    var prevShowScreen = RT.showScreen;
+    RT.showScreen = function (id) {
+      prevShowScreen(id);
+      if (id === 'dash' && RT.isLoggedIn()) RT.loadDash();
+    };
   }
 
 })();

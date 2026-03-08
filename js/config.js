@@ -21,18 +21,18 @@
 
   // Languages
   RT.LANGUAGES = [
-    { code: 'en', flag: '🇺🇸', name: 'English' },
-    { code: 'es', flag: '🇪🇸', name: 'Spanish' },
-    { code: 'fr', flag: '🇫🇷', name: 'French' },
-    { code: 'ja', flag: '🇯🇵', name: 'Japanese' },
-    { code: 'de', flag: '🇩🇪', name: 'German' },
-    { code: 'it', flag: '🇮🇹', name: 'Italian' },
-    { code: 'pt', flag: '🇵🇹', name: 'Portuguese' },
-    { code: 'ko', flag: '🇰🇷', name: 'Korean' },
-    { code: 'zh', flag: '🇨🇳', name: 'Chinese' },
-    { code: 'hi', flag: '🇮🇳', name: 'Hindi' },
-    { code: 'ar', flag: '🇸🇦', name: 'Arabic' },
-    { code: 'ru', flag: '🇷🇺', name: 'Russian' }
+    { code: 'en', flag: 'EN', name: 'English' },
+    { code: 'es', flag: 'ES', name: 'Español' },
+    { code: 'fr', flag: 'FR', name: 'Français' },
+    { code: 'ja', flag: 'JA', name: '日本語' },
+    { code: 'de', flag: 'DE', name: 'Deutsch' },
+    { code: 'it', flag: 'IT', name: 'Italiano' },
+    { code: 'pt', flag: 'PT', name: 'Português' },
+    { code: 'ko', flag: 'KO', name: '한국어' },
+    { code: 'zh', flag: 'ZH', name: '中文' },
+    { code: 'hi', flag: 'HI', name: 'हिन्दी' },
+    { code: 'ar', flag: 'AR', name: 'العربية' },
+    { code: 'ru', flag: 'RU', name: 'Русский' }
   ];
 
   // Share platforms

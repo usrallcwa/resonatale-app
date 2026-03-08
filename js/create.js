@@ -8,7 +8,7 @@
     RT.LANGUAGES.forEach(function (l) {
       var opt = document.createElement('option');
       opt.value = l.code;
-      opt.textContent = l.flag + '  ' + l.name;
+      opt.textContent = l.name + ' ' + l.flag;
       if (l.code === RT.language) opt.selected = true;
       langSel.appendChild(opt);
     });

@@ -454,3 +454,36 @@ a:hover { color: #9dd0ff; }
   .hero-title { font-size: 52px; }
   .hero-tagline { font-size: 26px; }
 }
+/* ── Duration Slider ── */
+.dur-display {
+  font-size: 28px;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 12px;
+  color: #f5f5f7;
+}
+.dur-slider {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  height: 6px;
+  background: linear-gradient(90deg, #6eb6ff, #bf5af2);
+  border-radius: 3px;
+  outline: none;
+}
+.dur-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 28px;
+  height: 28px;
+  background: #f5f5f7;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+.dur-cost {
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+  color: #6eb6ff;
+  margin-top: 8px;
+}

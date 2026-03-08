@@ -199,8 +199,14 @@
         <textarea id="brief" class="input textarea" rows="4" maxlength="1000" placeholder="A detective in 1920s Paris discovers a secret message hidden in a painting..."></textarea>
       </div>
       <div class="section">
-        <label class="label">Film Length</label>
-        <div id="tier-cards" class="tier-cards"></div>
+        <label class="label">Film Duration</label>
+        <p class="dur-display" id="dur-label">24 seconds</p>
+        <input type="range" id="dur-slider" class="slider dur-slider" min="0" max="4" step="1" value="0">
+        <div class="slider-labels">
+          <span>24 sec</span>
+          <span>10 min</span>
+        </div>
+        <p class="dur-cost" id="dur-cost">5 credits · $5</p>
       </div>
       <div class="ts-wrap" id="ts-target"></div>
       <div class="gen-area">

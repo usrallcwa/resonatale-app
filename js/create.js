@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  // ── Language Dropdown with Flags ──
+  // ── Language Dropdown ──
 
   var langSel = RT.$('lang-sel');
   if (langSel) {
@@ -19,13 +19,13 @@
 
   var moodChips = RT.$('mood-chips');
   if (moodChips) {
-    var moodIcons = { calm: '🌅', cozy: '☕', adventure: '🔥', romantic: '❤️', suspense: '🌙', motivational: '💪', heartwarming: '💛', dramatic: '🎭' };
+    var icons = { calm: '🌅', cozy: '☕', adventure: '🔥', romantic: '❤️', suspense: '🌙', motivational: '💪', heartwarming: '💛', dramatic: '🎭' };
     RT.MOODS.forEach(function (m) {
       var btn = document.createElement('button');
       btn.className = 'chip';
       btn.type = 'button';
       btn.setAttribute('data-v', m);
-      btn.textContent = (moodIcons[m] || '') + ' ' + m.charAt(0).toUpperCase() + m.slice(1);
+      btn.textContent = (icons[m] || '') + ' ' + m.charAt(0).toUpperCase() + m.slice(1);
       btn.addEventListener('click', function () {
         RT.mood = m;
         var all = moodChips.querySelectorAll('.chip');
@@ -35,35 +35,36 @@
     });
   }
 
-  // ── Tier Cards ──
+  // ── Duration Slider ──
 
-  var tierContainer = RT.$('tier-cards');
+  var durSlider = RT.$('dur-slider');
+  var durLabel = RT.$('dur-label');
+  var durCost = RT.$('dur-cost');
 
-  function renderTiers() {
-    if (!tierContainer) return;
-    tierContainer.innerHTML = '';
-    RT.TIERS.forEach(function (t) {
-      var card = document.createElement('button');
-      card.type = 'button';
-      card.className = 'tier-card' + (RT.tier === t.id ? ' selected' : '');
-      card.innerHTML =
-        '<div class="tier-top">' +
-          '<div class="tier-label">' + t.label + '</div>' +
-          '<div class="tier-price">' + t.price + '</div>' +
-        '</div>' +
-        '<div class="tier-bottom">' +
-          '<div class="tier-duration">' + t.desc + '</div>' +
-        '</div>';
-      card.addEventListener('click', function () {
-        RT.tier = t.id;
-        renderTiers();
-      });
-      tierContainer.appendChild(card);
-    });
+  // Slider stops: maps slider value (0-4) to tier
+  var stops = [
+    { value: 0, id: 'trailer',  label: '24 seconds', scenes: 3,  credits: 5,  price: '$5' },
+    { value: 1, id: 'short',    label: '1 minute',   scenes: 8,  credits: 12, price: '$12' },
+    { value: 2, id: 'standard', label: '3 minutes',  scenes: 18, credits: 30, price: '$30' },
+    { value: 3, id: 'feature',  label: '5 minutes',  scenes: 35, credits: 50, price: '$50' },
+    { value: 4, id: 'epic',     label: '10 minutes',  scenes: 60, credits: 90, price: '$90' }
+  ];
+
+  function updateDuration() {
+    if (!durSlider) return;
+    var idx = parseInt(durSlider.value);
+    var stop = stops[idx];
+    RT.tier = stop.id;
+    if (durLabel) durLabel.textContent = stop.label;
+    if (durCost) durCost.textContent = stop.credits + ' credits · ' + stop.price;
   }
 
-  RT.refreshTiers = renderTiers;
-  renderTiers();
+  if (durSlider) {
+    durSlider.addEventListener('input', updateDuration);
+    // Set default
+    durSlider.value = 0;
+    updateDuration();
+  }
 
   // ── Turnstile ──
 
@@ -138,8 +139,8 @@
 
         var info = RT.$('preview-tier-info');
         if (info) {
-          var t = RT.TIERS.find(function (x) { return x.id === RT.tier; });
-          if (t) info.textContent = t.label + ' · ' + t.desc + ' · ' + t.scenes + ' scenes · ' + t.price;
+          var stop = stops.find(function (s) { return s.id === RT.tier; });
+          if (stop) info.textContent = stop.label + ' · ' + stop.scenes + ' scenes · ' + stop.price;
         }
 
         RT.showScreen('preview');
@@ -167,7 +168,7 @@
       var all = moodChips.querySelectorAll('.chip');
       for (var i = 0; i < all.length; i++) all[i].classList.remove('on');
     }
-    renderTiers();
+    if (durSlider) { durSlider.value = 0; updateDuration(); }
     RT.resetTurnstile();
   };
 

@@ -20,22 +20,21 @@
   // Moods
   RT.MOODS = ['calm', 'cozy', 'adventure', 'romantic', 'suspense', 'motivational', 'heartwarming', 'dramatic', 'thriller', 'action', 'spiritual', 'comedy', 'horror', 'mystery', 'inspirational'];
 
-  // Languages
   RT.LANGUAGES = [
-    { code: 'en', flag: 'EN', name: 'English' },
-    { code: 'es', flag: 'ES', name: 'Español' },
-    { code: 'fr', flag: 'FR', name: 'Français' },
-    { code: 'ja', flag: 'JA', name: '日本語' },
-    { code: 'de', flag: 'DE', name: 'Deutsch' },
-    { code: 'it', flag: 'IT', name: 'Italiano' },
-    { code: 'pt', flag: 'PT', name: 'Português' },
-    { code: 'ko', flag: 'KO', name: '한국어' },
-    { code: 'zh', flag: 'ZH', name: '中文' },
-    { code: 'hi', flag: 'HI', name: 'हिन्दी' },
-    { code: 'ar', flag: 'AR', name: 'العربية' },
-    { code: 'ru', flag: 'RU', name: 'Русский' }
+    { code: 'en', flag: '\u{1F1FA}\u{1F1F8}', name: 'English' },
+    { code: 'es', flag: '\u{1F1EA}\u{1F1F8}', name: 'Español' },
+    { code: 'fr', flag: '\u{1F1EB}\u{1F1F7}', name: 'Français' },
+    { code: 'ja', flag: '\u{1F1EF}\u{1F1F5}', name: '日本語' },
+    { code: 'de', flag: '\u{1F1E9}\u{1F1EA}', name: 'Deutsch' },
+    { code: 'it', flag: '\u{1F1EE}\u{1F1F9}', name: 'Italiano' },
+    { code: 'pt', flag: '\u{1F1F5}\u{1F1F9}', name: 'Português' },
+    { code: 'ko', flag: '\u{1F1F0}\u{1F1F7}', name: '한국어' },
+    { code: 'zh', flag: '\u{1F1E8}\u{1F1F3}', name: '中文' },
+    { code: 'hi', flag: '\u{1F1EE}\u{1F1F3}', name: 'हिन्दी' },
+    { code: 'ar', flag: '\u{1F1F8}\u{1F1E6}', name: 'العربية' },
+    { code: 'ru', flag: '\u{1F1F7}\u{1F1FA}', name: 'Русский' }
   ];
-
+  
   // Share platforms
   RT.SHARE = [
     { id: 'youtube',   label: 'YouTube',   icon: '▶',  url: 'https://www.youtube.com/upload' },

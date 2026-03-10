@@ -684,3 +684,18 @@ select option {
   justify-content: center;
 }
 #s-rendering:not(.active) { display: none !important; }
+/* ── Language Row ── */
+.lang-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.lang-flag {
+  font-size: 32px;
+  line-height: 1;
+  min-width: 40px;
+  text-align: center;
+}
+.lang-row .select-input {
+  flex: 1;
+}

@@ -12,7 +12,12 @@
       if (l.code === RT.language) opt.selected = true;
       langSel.appendChild(opt);
     });
-    langSel.addEventListener('change', function () { RT.setLanguage(langSel.value); });
+    langSel.addEventListener('change', function () {
+      RT.setLanguage(langSel.value);
+      var sel = RT.LANGUAGES.find(function (l) { return l.code === langSel.value; });
+      var flagEl = RT.$('lang-flag');
+      if (flagEl && sel) flagEl.textContent = sel.flag;
+    });
   }
 
   // ── Mood Chips ──

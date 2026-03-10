@@ -17,6 +17,7 @@
       var sel = RT.LANGUAGES.find(function (l) { return l.code === langSel.value; });
       var flagEl = RT.$('lang-flag');
       if (flagEl && sel) flagEl.textContent = sel.flag;
+      if (RT.applyLanguage) RT.applyLanguage();
     });
   }
 
@@ -24,7 +25,7 @@
 
   var moodChips = RT.$('mood-chips');
   if (moodChips) {
-    var moodIcons = { calm: '🌅', cozy: '☕', adventure: '🔥', romantic: '❤️', suspense: '🌙', motivational: '💪', heartwarming: '💛', dramatic: '🎭' };
+    var moodIcons = { calm: '🌅', cozy: '☕', adventure: '🔥', romantic: '❤️', suspense: '🌙', motivational: '💪', heartwarming: '💛', dramatic: '🎭', thriller: '🔪', action: '💥', spiritual: '🕊', comedy: '😂', horror: '👻', mystery: '🔍', inspirational: '⭐' };
     RT.MOODS.forEach(function (m) {
       var btn = document.createElement('button');
       btn.className = 'chip';
@@ -55,13 +56,15 @@
 
     if (durationLabel) {
       if (tier.minutes < 1) {
-        durationLabel.textContent = Math.round(tier.minutes * 60) + ' seconds';
+        durationLabel.textContent = Math.round(tier.minutes * 60) + ' ' + RT.t('seconds');
+      } else if (tier.minutes === 1) {
+        durationLabel.textContent = '1 ' + RT.t('minute');
       } else {
-        durationLabel.textContent = tier.minutes + (tier.minutes === 1 ? ' minute' : ' minutes');
+        durationLabel.textContent = tier.minutes + ' ' + RT.t('minutes');
       }
     }
     if (durationPrice) durationPrice.textContent = tier.price;
-    if (durationScenes) durationScenes.textContent = tier.scenes + ' scenes';
+    if (durationScenes) durationScenes.textContent = tier.scenes + ' ' + RT.t('scenes');
   }
 
   if (durationSlider) {
@@ -167,7 +170,7 @@
     RT.currentScenes = null;
     RT.currentFilmId = null;
     if (RT.$('brief')) RT.$('brief').value = '';
-    if (durationSlider) { durationSlider.value = 0.5; updateDuration(); }
+    if (durationSlider) { durationSlider.value = 0; updateDuration(); }
     if (moodChips) {
       var all = moodChips.querySelectorAll('.chip');
       for (var i = 0; i < all.length; i++) all[i].classList.remove('on');

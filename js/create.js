@@ -8,7 +8,7 @@
     RT.LANGUAGES.forEach(function (l) {
       var opt = document.createElement('option');
       opt.value = l.code;
-      opt.textContent = l.name + ' ' + l.flag;
+      opt.textContent = l.flag + '  ' + l.name;
       if (l.code === RT.language) opt.selected = true;
       langSel.appendChild(opt);
     });
@@ -19,13 +19,13 @@
 
   var moodChips = RT.$('mood-chips');
   if (moodChips) {
-    var icons = { calm: '🌅', cozy: '☕', adventure: '🔥', romantic: '❤️', suspense: '🌙', motivational: '💪', heartwarming: '💛', dramatic: '🎭' };
+    var moodIcons = { calm: '🌅', cozy: '☕', adventure: '🔥', romantic: '❤️', suspense: '🌙', motivational: '💪', heartwarming: '💛', dramatic: '🎭' };
     RT.MOODS.forEach(function (m) {
       var btn = document.createElement('button');
       btn.className = 'chip';
       btn.type = 'button';
       btn.setAttribute('data-v', m);
-      btn.textContent = (icons[m] || '') + ' ' + m.charAt(0).toUpperCase() + m.slice(1);
+      btn.textContent = (moodIcons[m] || '') + ' ' + m.charAt(0).toUpperCase() + m.slice(1);
       btn.addEventListener('click', function () {
         RT.mood = m;
         var all = moodChips.querySelectorAll('.chip');
@@ -37,32 +37,30 @@
 
   // ── Duration Slider ──
 
-  var durSlider = RT.$('dur-slider');
-  var durLabel = RT.$('dur-label');
-  var durCost = RT.$('dur-cost');
-
-  // Slider stops: maps slider value (0-4) to tier
-  var stops = [
-    { value: 0, id: 'trailer',  label: '24 seconds', scenes: 3,   credits: 5,   price: '$5' },
-    { value: 1, id: 'short',    label: '1 minute',   scenes: 8,   credits: 12,  price: '$12' },
-    { value: 2, id: 'standard', label: '3 minutes',  scenes: 18,  credits: 30,  price: '$30' },
-    { value: 3, id: 'feature',  label: '5 minutes',  scenes: 35,  credits: 50,  price: '$50' },
-    { value: 4, id: 'epic',     label: '10 minutes',  scenes: 60,  credits: 90,  price: '$90' },
-  ];
+  var durationSlider = RT.$('duration-slider');
+  var durationLabel = RT.$('duration-label');
+  var durationPrice = RT.$('duration-price');
+  var durationScenes = RT.$('duration-scenes');
 
   function updateDuration() {
-    if (!durSlider) return;
-    var idx = parseInt(durSlider.value);
-    var stop = stops[idx];
-    RT.tier = stop.id;
-    if (durLabel) durLabel.textContent = stop.label;
-    if (durCost) durCost.textContent = stop.credits + ' credits · ' + stop.price;
+    if (!durationSlider) return;
+    var idx = parseInt(durationSlider.value);
+    var tier = RT.TIERS[idx] || RT.TIERS[0];
+    RT.tier = tier.id;
+
+    if (durationLabel) {
+      if (tier.minutes < 1) {
+        durationLabel.textContent = Math.round(tier.minutes * 60) + ' seconds';
+      } else {
+        durationLabel.textContent = tier.minutes + (tier.minutes === 1 ? ' minute' : ' minutes');
+      }
+    }
+    if (durationPrice) durationPrice.textContent = tier.price;
+    if (durationScenes) durationScenes.textContent = tier.scenes + ' scenes';
   }
 
-  if (durSlider) {
-    durSlider.addEventListener('input', updateDuration);
-    // Set default
-    durSlider.value = 0;
+  if (durationSlider) {
+    durationSlider.addEventListener('input', updateDuration);
     updateDuration();
   }
 
@@ -139,8 +137,8 @@
 
         var info = RT.$('preview-tier-info');
         if (info) {
-          var stop = stops.find(function (s) { return s.id === RT.tier; });
-          if (stop) info.textContent = stop.label + ' · ' + stop.scenes + ' scenes · ' + stop.price;
+          var t = RT.TIERS.find(function (x) { return x.id === RT.tier; });
+          if (t) info.textContent = t.label + ' · ' + t.desc + ' · ' + t.scenes + ' scenes · ' + t.price;
         }
 
         RT.showScreen('preview');
@@ -164,11 +162,11 @@
     RT.currentScenes = null;
     RT.currentFilmId = null;
     if (RT.$('brief')) RT.$('brief').value = '';
+    if (durationSlider) { durationSlider.value = 0.5; updateDuration(); }
     if (moodChips) {
       var all = moodChips.querySelectorAll('.chip');
       for (var i = 0; i < all.length; i++) all[i].classList.remove('on');
     }
-    if (durSlider) { durSlider.value = 0; updateDuration(); }
     RT.resetTurnstile();
   };
 

@@ -40,8 +40,7 @@
       moodChips.appendChild(btn);
     });
   }
-
-  // ── Duration Slider ──
+// ── Duration Slider ──
 
   var durationSlider = RT.$('duration-slider');
   var durationLabel = RT.$('duration-label');
@@ -54,17 +53,9 @@
     var tier = RT.TIERS[idx] || RT.TIERS[0];
     RT.tier = tier.id;
 
-    if (durationLabel) {
-      if (tier.minutes < 1) {
-        durationLabel.textContent = Math.round(tier.minutes * 60) + ' ' + RT.t('seconds');
-      } else if (tier.minutes === 1) {
-        durationLabel.textContent = '1 ' + RT.t('minute');
-      } else {
-        durationLabel.textContent = tier.minutes + ' ' + RT.t('minutes');
-      }
-    }
+    if (durationLabel) durationLabel.textContent = tier.desc;
     if (durationPrice) durationPrice.textContent = tier.price;
-    if (durationScenes) durationScenes.textContent = tier.scenes + ' ' + RT.t('scenes');
+    if (durationScenes) durationScenes.textContent = tier.scenes + ' scenes';
   }
 
   if (durationSlider) {

@@ -1,13 +1,39 @@
 (function () {
   'use strict';
 
+  RT.photos = RT.photos || [];
+  RT.createMode = 'text'; // 'text' or 'photo'
+
+  // ── Mode Toggle ──
+
+  var modeText = RT.$('mode-text');
+  var modePhoto = RT.$('mode-photo');
+  var textSection = RT.$('text-section');
+  var photoSection = RT.$('photo-section');
+  var narrationSection = RT.$('narration-section');
+
+  function setMode(mode) {
+    RT.createMode = mode;
+    if (modeText) modeText.classList.toggle('active', mode === 'text');
+    if (modePhoto) modePhoto.classList.toggle('active', mode === 'photo');
+    if (textSection) textSection.classList.toggle('hide', mode === 'photo');
+    if (photoSection) photoSection.classList.toggle('hide', mode === 'text');
+    if (narrationSection) narrationSection.classList.toggle('hide', mode === 'text');
+  }
+
+  if (modeText) modeText.addEventListener('click', function () { setMode('text'); });
+  if (modePhoto) modePhoto.addEventListener('click', function () { setMode('photo'); });
+
+  // ── Photo Upload ──
+
   var grid = RT.$('photo-grid');
   var input = RT.$('photo-input');
-  var zone = RT.$('photo-zone');
+  var addBtn = RT.$('photo-add-btn');
 
-  if (zone) {
-    zone.addEventListener('click', function () {
-      if (RT.photos.length < 10) input.click();
+  if (addBtn) {
+    addBtn.addEventListener('click', function () {
+      if (RT.photos.length >= 10) { RT.toast('Maximum 10 photos.'); return; }
+      input.click();
     });
   }
 
@@ -16,7 +42,7 @@
       var files = input.files;
       if (!files || !files.length) return;
       var count = Math.min(files.length, 10 - RT.photos.length);
-      var done = 0;
+      var loaded = 0;
 
       for (var i = 0; i < count; i++) {
         var f = files[i];
@@ -25,9 +51,9 @@
         (function (file) {
           var r = new FileReader();
           r.onload = function (e) {
-            RT.photos.push(e.target.result);
-            done++;
-            if (done >= count) RT.refreshPhotos();
+            RT.photos.push({ data: e.target.result, name: file.name });
+            loaded++;
+            if (loaded >= count) renderPhotos();
           };
           r.readAsDataURL(file);
         })(f);
@@ -36,26 +62,57 @@
     });
   }
 
-  RT.refreshPhotos = function () {
-    if (RT.photos.length > 0) {
-      if (zone) zone.style.display = 'none';
-      if (grid) grid.style.display = 'flex';
-    } else {
-      if (zone) zone.style.display = '';
-      if (grid) grid.style.display = 'none';
-    }
+  function renderPhotos() {
+    if (!grid) return;
+    // Remove old thumbs but keep the add button
+    var old = grid.querySelectorAll('.photo-item');
+    for (var i = 0; i < old.length; i++) old[i].remove();
 
-    RT.renderPhotoGrid(grid, RT.photos, function (i) {
-      RT.photos.splice(i, 1);
-      RT.refreshPhotos();
+    RT.photos.forEach(function (photo, idx) {
+      var item = document.createElement('div');
+      item.className = 'photo-item';
+      var img = document.createElement('img');
+      img.className = 'photo-thumb';
+      img.src = photo.data;
+      var btn = document.createElement('button');
+      btn.className = 'photo-remove';
+      btn.textContent = '✕';
+      btn.addEventListener('click', function () {
+        RT.photos.splice(idx, 1);
+        renderPhotos();
+      });
+      item.appendChild(img);
+      item.appendChild(btn);
+      grid.insertBefore(item, addBtn);
     });
 
-    var c = RT.$('photo-count');
-    if (c) c.textContent = RT.photos.length + '/10 photos';
+    var countEl = RT.$('photo-count');
+    if (countEl) countEl.textContent = RT.photos.length + ' of 10 photos';
 
-    RT.checkSetup();
+    // Hide add button if max reached
+    if (addBtn) addBtn.style.display = RT.photos.length >= 10 ? 'none' : '';
+  }
+
+  RT.refreshPhotos = renderPhotos;
+
+  // ── Upload Photos to R2 ──
+
+  RT.uploadPhotos = function () {
+    if (!RT.photos.length) return Promise.reject(new Error('No photos'));
+
+    RT.loading(true, 'Uploading photos...');
+    var uploads = RT.photos.map(function (photo, i) {
+      return RT.uploadPhoto(photo.data, i);
+    });
+
+    return Promise.all(uploads).then(function (keys) {
+      RT.loading(false);
+      RT.photoKeys = keys;
+      return keys;
+    }).catch(function (err) {
+      RT.loading(false);
+      throw err;
+    });
   };
-
-  RT.refreshPhotos();
 
 })();

@@ -94,5 +94,21 @@
   RT.getFilms = function () {
     return apiFetch('GET', '/films');
   };
+  RT.uploadPhoto = function (base64Data, index) {
+    return apiFetch('POST', '/upload/photo', { photo: base64Data, index: index }).then(function (data) {
+      return data.key;
+    });
+  };
+
+  RT.createPhotoFilm = function (photoKeys, mood, language, tier, narrationHint) {
+    return apiFetch('POST', '/film/create', {
+      mode: 'photo',
+      photoKeys: photoKeys,
+      mood: mood,
+      language: language,
+      tier: tier,
+      narrationHint: narrationHint || ''
+    });
+  };
 
 })();

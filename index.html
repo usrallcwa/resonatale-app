@@ -187,9 +187,38 @@
   </div>
 
   <!-- ════ CREATE ════ -->
-  <div id="s-create" class="screen">
+ <div id="s-create" class="screen">
     <div class="screen-inner">
+      <button type="button" class="btn-back" onclick="RT.showScreen('landing')">← Back</button>
       <h2 class="screen-title">Create Your Film</h2>
+
+      <!-- Mode Toggle -->
+      <div class="mode-toggle">
+        <button type="button" class="mode-btn active" id="mode-text">✍️ Text Story</button>
+        <button type="button" class="mode-btn" id="mode-photo">📷 Photo Story</button>
+      </div>
+
+      <!-- Photo Upload (hidden by default) -->
+      <div id="photo-section" class="section hide">
+        <label class="label">Upload Photos (3-10)</label>
+        <p class="photo-hint">Upload photos and AI will animate them into a cinematic film narrated in your voice.</p>
+        <div class="photo-grid" id="photo-grid">
+          <label class="photo-add" id="photo-add-btn">
+            <input type="file" id="photo-input" accept="image/*" multiple hidden>
+            <span class="photo-add-icon">+</span>
+            <span class="photo-add-text">Add Photos</span>
+          </label>
+        </div>
+        <p class="photo-count" id="photo-count">0 photos selected</p>
+      </div>
+
+      <!-- Text Story (shown by default) -->
+      <div id="text-section" class="section">
+        <label class="label">Your Story</label>
+        <textarea id="brief" class="input textarea" rows="4" maxlength="1000" placeholder="A detective in 1920s Paris discovers a secret message hidden in a painting..."></textarea>
+      </div>
+
+      <!-- Shared: Language, Mood, Duration -->
       <div class="section">
         <label class="label">Language</label>
         <div class="lang-row">
@@ -201,10 +230,13 @@
         <label class="label">Mood</label>
         <div class="chips" id="mood-chips"></div>
       </div>
-      <div class="section">
-        <label class="label">Your Story</label>
-        <textarea id="brief" class="input textarea" rows="4" maxlength="1000" placeholder="A detective in 1920s Paris discovers a secret message hidden in a painting..."></textarea>
+
+      <!-- Optional narration hint for photo mode -->
+      <div id="narration-section" class="section hide">
+        <label class="label">Narration Hint (Optional)</label>
+        <textarea id="narration-hint" class="input textarea" rows="3" maxlength="500" placeholder="Tell AI what to say... e.g. 'This was our trip to Italy last summer' or leave blank for AI to decide."></textarea>
       </div>
+
       <div class="section">
         <label class="label">Film Duration</label>
         <p class="dur-display" id="duration-label">24 seconds</p>
@@ -218,7 +250,7 @@
       <div class="ts-wrap" id="ts-target"></div>
       <div class="gen-area">
         <button type="button" class="btn-primary" id="btn-generate">Preview Script — Free</button>
-        <p class="hint">Preview your screenplay before spending credits.</p>
+        <p class="gen-hint">Preview your screenplay before spending credits.</p>
       </div>
     </div>
   </div>
@@ -403,7 +435,6 @@
 <script src="js/voice.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/create.js"></script>
-<script src="js/i18n.js"></script>
 <script src="js/film.js"></script>
 <script src="js/credits.js"></script>
 <script src="js/dash.js"></script>
@@ -411,6 +442,7 @@
 <script src="js/menu.js"></script>
 <script src="js/profile.js"></script>
 <script src="js/invite.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/app.js"></script>
 
 </body>

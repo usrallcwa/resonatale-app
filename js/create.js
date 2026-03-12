@@ -112,11 +112,55 @@
   if (genBtn) {
     genBtn.addEventListener('click', function () {
       if (RT.generating) return;
-
-      var brief = RT.$('brief') ? RT.$('brief').value.trim() : '';
       if (!RT.mood) { RT.toast('Select a mood.'); return; }
-      if (!brief || brief.length < 10) { RT.toast('Describe your story in more detail.'); return; }
       if (!RT.tsToken) { RT.toast('Complete the verification.'); return; }
+
+      // Photo mode
+      if (RT.createMode === 'photo') {
+        if (!RT.photos || RT.photos.length < 3) { RT.toast('Upload at least 3 photos.'); return; }
+
+        RT.generating = true;
+        RT.loading(true, 'Uploading photos...');
+
+        RT.uploadPhotos().then(function (keys) {
+          RT.loading(true, 'Writing your screenplay...');
+          var hint = RT.$('narration-hint') ? RT.$('narration-hint').value.trim() : '';
+          var brief = 'Photo story with ' + keys.length + ' photos. ' + (hint || 'AI decides the narration.');
+          return RT.generatePreview(brief, RT.mood, RT.language, RT.tier);
+        }).then(function (data) {
+          RT.generating = false;
+          RT.loading(false);
+
+          if (!data.scenes || !data.scenes.length) {
+            RT.toast('No scenes returned. Try again.');
+            RT.resetTurnstile();
+            return;
+          }
+
+          RT.currentScenes = data.scenes;
+          RT.renderScenes(data.scenes);
+
+          var info = RT.$('preview-tier-info');
+          if (info) {
+            var t = RT.TIERS.find(function (x) { return x.id === RT.tier; });
+            if (t) info.textContent = t.label + ' · ' + t.desc + ' · ' + t.scenes + ' scenes · ' + t.price;
+          }
+
+          RT.showScreen('preview');
+          RT.toast('Script ready!', true);
+          RT.resetTurnstile();
+        }).catch(function (err) {
+          RT.generating = false;
+          RT.loading(false);
+          RT.toast(err.message || 'Generation failed.');
+          RT.resetTurnstile();
+        });
+        return;
+      }
+
+      // Text mode
+      var brief = RT.$('brief') ? RT.$('brief').value.trim() : '';
+      if (!brief || brief.length < 10) { RT.toast('Describe your story in more detail.'); return; }
 
       RT.generating = true;
       RT.loading(true, 'Writing your screenplay...');
@@ -152,7 +196,6 @@
       });
     });
   }
-
   // ── Reset Form ──
 
   RT.resetForm = function () {

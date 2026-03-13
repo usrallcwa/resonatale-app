@@ -138,6 +138,7 @@
           }
 
           RT.currentScenes = data.scenes;
+          RT.currentBrief = 'Photo story with ' + RT.photoKeys.length + ' photos.';
           localStorage.setItem('rt_preview', JSON.stringify({ scenes: data.scenes, tier: RT.tier, mood: RT.mood, mode: RT.createMode }));
           RT.renderScenes(data.scenes);
 
@@ -177,6 +178,7 @@
         }
 
         RT.currentScenes = data.scenes;
+        RT.currentBrief = brief;
         localStorage.setItem('rt_preview', JSON.stringify({ scenes: data.scenes, tier: RT.tier, mood: RT.mood, mode: RT.createMode }));
         RT.renderScenes(data.scenes);
 

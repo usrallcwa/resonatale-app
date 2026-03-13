@@ -31,9 +31,12 @@
   var addBtn = RT.$('photo-add-btn');
 
   if (addBtn) {
-    addBtn.addEventListener('click', function () {
-      if (RT.photos.length >= 10) { RT.toast('Maximum 10 photos.'); return; }
-      input.click();
+    addBtn.addEventListener('click', function (e) {
+      if (RT.photos.length >= 10) { 
+        e.preventDefault();
+        RT.toast('Maximum 10 photos.'); 
+        return; 
+      }
     });
   }
 

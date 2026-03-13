@@ -34,7 +34,9 @@
 
   function startFilm() {
     var brief = RT.$('brief') ? RT.$('brief').value.trim() : '';
-    if (!brief || !RT.mood) { RT.toast('Missing story details.'); return; }
+    if (!RT.mood) { RT.toast('Select a mood.'); return; }
+    if (RT.createMode !== 'photo' && (!brief || brief.length < 10)) { RT.toast('Describe your story in more detail.'); return; }
+    if (RT.createMode === 'photo' && (!RT.photos || RT.photos.length < 3)) { RT.toast('Upload at least 3 photos.'); return; }
 
     RT.loading(true, 'Starting your film...');
 

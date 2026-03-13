@@ -138,6 +138,7 @@
           }
 
           RT.currentScenes = data.scenes;
+          localStorage.setItem('rt_preview', JSON.stringify({ scenes: data.scenes, tier: RT.tier, mood: RT.mood, mode: RT.createMode }));
           RT.renderScenes(data.scenes);
 
           var info = RT.$('preview-tier-info');
@@ -176,6 +177,7 @@
         }
 
         RT.currentScenes = data.scenes;
+        localStorage.setItem('rt_preview', JSON.stringify({ scenes: data.scenes, tier: RT.tier, mood: RT.mood, mode: RT.createMode }));
         RT.renderScenes(data.scenes);
 
         var info = RT.$('preview-tier-info');

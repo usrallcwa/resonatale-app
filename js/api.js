@@ -1,6 +1,22 @@
 (function () {
   'use strict';
 
+  // ── Restore Preview on Refresh ──
+  (function () {
+    var saved = localStorage.getItem('rt_preview');
+    if (saved && RT.isLoggedIn()) {
+      try {
+        var data = JSON.parse(saved);
+        if (data.scenes && data.scenes.length) {
+          RT.currentScenes = data.scenes;
+          RT.tier = data.tier || 'trailer';
+          RT.mood = data.mood || '';
+          RT.createMode = data.mode || 'text';
+        }
+      } catch (e) {}
+    }
+  })();
+
   function authHeaders() {
     var h = { 'Content-Type': 'application/json' };
     if (RT.token) h['Authorization'] = 'Bearer ' + RT.token;

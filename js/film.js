@@ -34,9 +34,34 @@
 
   function startFilm() {
     var brief = RT.$('brief') ? RT.$('brief').value.trim() : '';
+    var hint = RT.$('narration-hint') ? RT.$('narration-hint').value.trim() : '';
     if (!RT.mood) { RT.toast('Select a mood.'); return; }
     if (RT.createMode !== 'photo' && (!brief || brief.length < 10)) { RT.toast('Describe your story in more detail.'); return; }
     if (RT.createMode === 'photo' && (!RT.photos || RT.photos.length < 3)) { RT.toast('Upload at least 3 photos.'); return; }
+
+    if (RT.createMode === 'photo') {
+      RT.loading(true, 'Uploading photos...');
+      RT.uploadPhotos().then(function (keys) {
+        RT.loading(true, 'Starting your film...');
+        var photoBrief = 'Photo story with ' + keys.length + ' photos. ' + (hint || 'AI decides the narration.');
+        return RT.createPhotoFilm(keys, RT.mood, RT.language, RT.tier, hint);
+      }).then(function (data) {
+        RT.loading(false);
+        RT.currentFilmId = data.filmId;
+        RT.showScreen('rendering');
+        RT.toast('Film started! We\'ll email you when ready.', true);
+        pollFilm(data.filmId);
+      }).catch(function (err) {
+        RT.loading(false);
+        if (err.message.indexOf('Not enough credits') !== -1) {
+          RT.showScreen('credits');
+          RT.renderCredits();
+        } else {
+          RT.toast(err.message || 'Failed to start film.');
+        }
+      });
+      return;
+    }
 
     RT.loading(true, 'Starting your film...');
 
@@ -44,7 +69,7 @@
       RT.loading(false);
       RT.currentFilmId = data.filmId;
       RT.showScreen('rendering');
-      RT.toast('Film started! You can navigate away — we\'ll keep working.', true);
+      RT.toast('Film started! We\'ll email you when ready.', true);
       pollFilm(data.filmId);
     }).catch(function (err) {
       RT.loading(false);

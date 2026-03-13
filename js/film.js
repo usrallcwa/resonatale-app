@@ -33,7 +33,7 @@
   // ── Start Film Pipeline ──
 
   function startFilm() {
-    var brief = RT.currentBrief || (RT.$('brief') ? RT.$('brief').value.trim() : '');
+    var brief = var brief = RT.currentBrief || (RT.$('brief') ? RT.$('brief').value.trim() : '') || 'AI generated story';RT.currentBrief || (RT.$('brief') ? RT.$('brief').value.trim() : '');
     var hint = RT.$('narration-hint') ? RT.$('narration-hint').value.trim() : '';
     if (!RT.mood) { RT.toast('Select a mood.'); return; }
     if (RT.createMode !== 'photo' && (!brief || brief.length < 10)) { RT.toast('Describe your story in more detail.'); return; }

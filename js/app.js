@@ -1,5 +1,7 @@
 (function () {
   'use strict';
+  // Reset loading on page load
+  RT.loading(false);
 
   // ── Clock ──
 

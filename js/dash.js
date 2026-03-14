@@ -47,7 +47,7 @@
 
       if (empty) empty.classList.add('hide');
 
-      films.forEach(function (film) {
+      films.filter(function (f) { return f.status !== 'failed'; }).forEach(function (film) {
         var card = RT.renderFilmCard(film);
 
         card.addEventListener('click', function () {

@@ -59,7 +59,12 @@
             RT.renderShareButtons(RT.$('share-buttons'), film.video_url);
             RT.showScreen('player');
           } else if (film.status === 'failed') {
-            RT.toast('This film failed. Credits were refunded.');
+            if (confirm('This film failed. Credits were refunded.\n\nRetry with the same story?')) {
+              RT.mood = film.mood || '';
+              RT.tier = film.tier || 'trailer';
+              RT.showScreen('create');
+              RT.mountTurnstile();
+            }
           } else {
             RT.currentFilmId = film.id;
             RT.showScreen('rendering');

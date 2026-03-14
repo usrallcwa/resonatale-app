@@ -117,7 +117,7 @@
 
       // Photo mode
       if (RT.createMode === 'photo') {
-        if (!RT.photos || RT.photos.length < 3) { RT.toast('Upload at least 3 photos.'); return; }
+        if (!RT.photos || RT.photos.length < 1) { RT.toast('Upload at least 1 photo.'); return; }
 
         RT.generating = true;
         RT.loading(true, 'Uploading photos...');

@@ -37,7 +37,7 @@
     var hint = RT.$('narration-hint') ? RT.$('narration-hint').value.trim() : '';
     if (!RT.mood) { RT.toast('Select a mood.'); return; }
     if (RT.createMode !== 'photo' && (!brief || brief.length < 10)) { RT.toast('Describe your story in more detail.'); return; }
-    if (RT.createMode === 'photo' && (!RT.photos || RT.photos.length < 3)) { RT.toast('Upload at least 3 photos.'); return; }
+    if (RT.createMode === 'photo' && (!RT.photos || RT.photos.length < 1)) { RT.toast('Upload at least 1 photo.'); return; }
 
     if (RT.createMode === 'photo') {
       RT.loading(true, 'Uploading photos...');

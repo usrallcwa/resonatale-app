@@ -15,7 +15,7 @@
 
     card.innerHTML =
       '<div class="dash-card-top">' +
-        '<div class="dash-card-title">' + (film.brief || 'Untitled').slice(0, 40) + '</div>' +
+        '<div class="dash-card-title">' + (film.title || film.brief || 'Untitled').slice(0, 40) + '</div>' +
         '<div class="dash-card-status ' + statusClass + '">' + film.status + '</div>' +
       '</div>' +
       '<div class="dash-card-meta">' +

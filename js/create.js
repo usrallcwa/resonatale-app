@@ -40,6 +40,36 @@
       moodChips.appendChild(btn);
     });
   }
+  // ── Style Chips ──
+
+  RT.style = 'cinematic';
+  var styleChips = RT.$('style-chips');
+  if (styleChips) {
+    var styles = [
+      { id: 'cinematic', icon: '🎬', label: 'Cinematic' },
+      { id: 'anime', icon: '🌸', label: 'Anime' },
+      { id: 'cartoon', icon: '🎨', label: 'Cartoon' },
+      { id: 'comic', icon: '💥', label: 'Comic Book' },
+      { id: 'noir', icon: '🖤', label: 'Film Noir' },
+      { id: 'watercolor', icon: '🎭', label: 'Watercolor' },
+      { id: 'retro', icon: '📼', label: 'Retro VHS' },
+      { id: 'fantasy', icon: '🐉', label: 'Fantasy' },
+    ];
+    styles.forEach(function (s) {
+      var btn = document.createElement('button');
+      btn.className = 'chip' + (s.id === 'cinematic' ? ' on' : '');
+      btn.type = 'button';
+      btn.setAttribute('data-v', s.id);
+      btn.textContent = s.icon + ' ' + s.label;
+      btn.addEventListener('click', function () {
+        RT.style = s.id;
+        var all = styleChips.querySelectorAll('.chip');
+        for (var i = 0; i < all.length; i++) all[i].classList.toggle('on', all[i].getAttribute('data-v') === s.id);
+      });
+      styleChips.appendChild(btn);
+    });
+  }
+  
 // ── Duration Slider ──
 
   var durationSlider = RT.$('duration-slider');

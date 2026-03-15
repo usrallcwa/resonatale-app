@@ -234,6 +234,10 @@
         <label class="label">Mood</label>
         <div class="chips" id="mood-chips"></div>
       </div>
+      <div class="section">
+        <label class="label">Visual Style</label>
+        <div class="chips" id="style-chips"></div>
+      </div>
 
       <!-- Optional narration hint for photo mode -->
       <div id="narration-section" class="section hide">
@@ -306,6 +310,10 @@
 
         <div class="spin render-spin"></div>
         <p class="render-patience">This may take several minutes.<br>You can navigate away — we'll keep working.</p>
+        <div id="render-retry" class="hide" style="margin-top:20px;text-align:center;">
+          <p style="color:#ff453a;font-size:14px;margin-bottom:12px;">Your credits have been refunded.</p>
+          <button type="button" class="btn-primary" onclick="RT.showScreen('create'); RT.mountTurnstile();">Try Again</button>
+        </div>
       </div>
     </div>
   </div>

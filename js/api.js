@@ -99,7 +99,7 @@
   };
 
   // Films
-  RT.createFilm = fuRT.createFilm = function (brief, mood, language, tier, title) {
+  RT.createFilm = function (brief, mood, language, tier, title) {
     return apiFetch('POST', '/film/create', { brief: brief, mood: mood, language: language, tier: tier, title: title || '', style: RT.style || 'cinematic' });
   };nction (brief, mood, language, tier, title) {
     return apiFetch('POST', '/film/create', { brief: brief, mood: mood, language: language, tier: tier, title: title || '' });

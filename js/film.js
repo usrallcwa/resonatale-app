@@ -120,7 +120,13 @@
         if (data.status === 'failed') {
           clearInterval(pollTimer);
           pollTimer = null;
-          RT.toast(data.error || 'Failed. Credits refunded.');
+          var statusEl = RT.$('render-status');
+          if (statusEl) statusEl.textContent = 'Something went wrong.';
+          var errorMsg = data.error || 'Film generation failed.';
+          RT.toast(errorMsg + ' Credits refunded.');
+          // Show retry button
+          var retryArea = RT.$('render-retry');
+          if (retryArea) retryArea.classList.remove('hide');
         }
 
       }).catch(function () {});

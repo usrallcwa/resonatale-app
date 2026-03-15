@@ -96,12 +96,27 @@
     container.innerHTML = '';
     scenes.forEach(function (s, i) {
       var div = document.createElement('div');
-      div.className = 'scene-card';
+      div.className = 'scene-card scene-editable';
       div.innerHTML =
         '<div class="scene-num">Scene ' + (i + 1) + '</div>' +
-        '<h3 class="scene-title">' + (s.title || '') + '</h3>' +
-        '<p class="scene-direction">' + (s.direction || '') + '</p>' +
-        '<p class="scene-voiceover">"' + (s.voiceover || '') + '"</p>';
+        '<input type="text" class="scene-title-input" data-scene="' + i + '" data-field="title" value="' + (s.title || '').replace(/"/g, '&quot;') + '">' +
+        '<label class="scene-label">Visual Direction</label>' +
+        '<textarea class="scene-direction-input" data-scene="' + i + '" data-field="direction" rows="3">' + (s.direction || '') + '</textarea>' +
+        '<label class="scene-label">Voiceover</label>' +
+        '<textarea class="scene-voiceover-input" data-scene="' + i + '" data-field="voiceover" rows="2">' + (s.voiceover || '') + '</textarea>';
+
+      // Update RT.currentScenes when user edits
+      var inputs = div.querySelectorAll('input, textarea');
+      for (var j = 0; j < inputs.length; j++) {
+        inputs[j].addEventListener('input', function () {
+          var idx = parseInt(this.getAttribute('data-scene'));
+          var field = this.getAttribute('data-field');
+          if (RT.currentScenes && RT.currentScenes[idx]) {
+            RT.currentScenes[idx][field] = this.value;
+          }
+        });
+      }
+
       container.appendChild(div);
     });
   };

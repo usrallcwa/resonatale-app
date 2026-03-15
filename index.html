@@ -320,13 +320,20 @@
   <!-- ════ PLAYER ════ -->
   <div id="s-player" class="screen">
     <div class="screen-inner">
-      <h2 class="screen-title">Your Film Is Ready</h2>
+      <h2 class="screen-title" id="player-title">Your Film Is Ready</h2>
       <div class="player-wrap">
         <video id="film-video" class="film-video" controls playsinline></video>
       </div>
       <div class="player-actions">
         <a href="#" download="resonatale-film.mp4" class="btn-primary" id="btn-download">⬇ Download</a>
-        <div class="share-buttons" id="share-buttons"></div>
+        <div class="share-row">
+          <button type="button" class="share-btn" id="share-youtube" title="Upload to YouTube">▶ YouTube</button>
+          <button type="button" class="share-btn" id="share-tiktok" title="Upload to TikTok">♪ TikTok</button>
+          <button type="button" class="share-btn" id="share-x" title="Share on X">𝕏 Post</button>
+          <button type="button" class="share-btn" id="share-facebook" title="Share on Facebook">f Facebook</button>
+          <button type="button" class="share-btn" id="share-whatsapp" title="Share on WhatsApp">💬 WhatsApp</button>
+          <button type="button" class="share-btn" id="share-copy" title="Copy link">📋 Copy Link</button>
+        </div>
         <button type="button" class="btn-text" id="btn-new-film">Create Another Film</button>
       </div>
     </div>

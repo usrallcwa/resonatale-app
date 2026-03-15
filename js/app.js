@@ -199,5 +199,39 @@
       RT.clearAuth();
     });
   }
+  
+// ── Share Buttons ──
 
+  function getFilmUrl() {
+    var v = RT.$('film-video');
+    return v ? v.src : '';
+  }
+
+  var shareHandlers = {
+    'share-youtube': function () { window.open('https://www.youtube.com/upload', '_blank'); },
+    'share-tiktok': function () { window.open('https://www.tiktok.com/upload', '_blank'); },
+    'share-x': function () {
+      var url = encodeURIComponent(getFilmUrl());
+      window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent('Check out my AI film! Made with ResonaTale') + '&url=' + url, '_blank');
+    },
+    'share-facebook': function () {
+      window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(getFilmUrl()), '_blank');
+    },
+    'share-whatsapp': function () {
+      window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent('Check out my AI film! ' + getFilmUrl()), '_blank');
+    },
+    'share-copy': function () {
+      var url = getFilmUrl();
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(function () { RT.toast('Link copied!', true); });
+      } else {
+        RT.toast('Copy: ' + url);
+      }
+    }
+  };
+
+  Object.keys(shareHandlers).forEach(function (id) {
+    var btn = RT.$(id);
+    if (btn) btn.addEventListener('click', shareHandlers[id]);
+  });
 })();

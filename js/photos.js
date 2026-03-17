@@ -8,6 +8,7 @@
 
   var modeText = RT.$('mode-text');
   var modePhoto = RT.$('mode-photo');
+  var modeSeries = RT.$('mode-series');
   var textSection = RT.$('text-section');
   var photoSection = RT.$('photo-section');
   var narrationSection = RT.$('narration-section');
@@ -16,14 +17,20 @@
     RT.createMode = mode;
     if (modeText) modeText.classList.toggle('active', mode === 'text');
     if (modePhoto) modePhoto.classList.toggle('active', mode === 'photo');
-    if (textSection) textSection.classList.toggle('hide', mode === 'photo');
-    if (photoSection) photoSection.classList.toggle('hide', mode === 'text');
-    if (narrationSection) narrationSection.classList.toggle('hide', mode === 'text');
+    if (modeSeries) modeSeries.classList.toggle('active', mode === 'series');
+    if (textSection) textSection.classList.toggle('hide', mode !== 'text');
+    if (photoSection) photoSection.classList.toggle('hide', mode !== 'photo');
+    if (narrationSection) narrationSection.classList.toggle('hide', mode !== 'photo');
+
+    if (mode === 'series') {
+      RT.showScreen('series');
+      RT.loadSeries();
+    }
   }
 
   if (modeText) modeText.addEventListener('click', function () { setMode('text'); });
   if (modePhoto) modePhoto.addEventListener('click', function () { setMode('photo'); });
-
+  if (modeSeries) modeSeries.addEventListener('click', function () { setMode('series'); });
   // ── Photo Upload ──
 
   var grid = RT.$('photo-grid');

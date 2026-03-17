@@ -83,20 +83,48 @@
   }
 
   // ── Poll Film Status ──
-
-  var pollTimer = null;
-
+  
+   var pollTimer = null;
   function pollFilm(filmId) {
     setStep('writing');
     if (pollTimer) clearInterval(pollTimer);
 
+    var startTime = Date.now();
+    var factIndex = 0;
+
     var msgs = {
       writing: 'Writing your screenplay...',
       filming: 'Filming cinematic scenes...',
-      stitching: 'Assembling your final film...',
+      voiceover: 'Recording your voice narration...',
+      stitching: 'Assembling your masterpiece...',
       done: 'Your film is ready!',
       failed: 'Something went wrong.'
     };
+
+    var funFacts = [
+      'Your film uses the same AI technology as Hollywood studios.',
+      'Each scene is generated with cinematic 8K quality.',
+      'Your unique voice makes this film one of a kind.',
+      'Over 50 AI models work together to create your film.',
+      'The average Hollywood film takes 2 years. Yours takes minutes.',
+      'Your film is being rendered in real-time, just for you.',
+      'AI cinematographers are framing every shot perfectly.',
+      'Sound engineers are mixing your voice with cinematic audio.',
+      'Color grading is being applied to match your chosen mood.',
+      'Final touches are being added to make your film shine.'
+    ];
+
+    var factEl = RT.$('render-fact');
+    var factTimer = setInterval(function () {
+      if (factEl) {
+        factEl.style.opacity = '0';
+        setTimeout(function () {
+          factEl.textContent = funFacts[factIndex % funFacts.length];
+          factEl.style.opacity = '1';
+          factIndex++;
+        }, 300);
+      }
+    }, 5000);
 
     pollTimer = setInterval(function () {
       RT.getFilmStatus(filmId).then(function (data) {
@@ -105,32 +133,45 @@
         var el = RT.$('render-status');
         if (el) el.textContent = msgs[data.status] || data.status;
 
+        var timeEl = RT.$('render-time');
+        if (timeEl) {
+          var elapsed = Math.round((Date.now() - startTime) / 1000);
+          var mins = Math.floor(elapsed / 60);
+          var secs = elapsed % 60;
+          var estimate = '';
+          if (data.status === 'writing') estimate = 'Estimated: ~4 minutes remaining';
+          else if (data.status === 'filming') estimate = 'Estimated: ~3 minutes remaining';
+          else if (data.status === 'voiceover') estimate = 'Estimated: ~1 minute remaining';
+          else if (data.status === 'stitching') estimate = 'Almost done...';
+          timeEl.textContent = estimate + ' (' + mins + ':' + (secs < 10 ? '0' : '') + secs + ' elapsed)';
+        }
+
         if (data.status === 'done') {
           clearInterval(pollTimer);
+          clearInterval(factTimer);
           pollTimer = null;
           var v = RT.$('film-video');
           if (v && data.videoUrl) v.src = data.videoUrl;
           var dl = RT.$('btn-download');
           if (dl && data.videoUrl) dl.href = data.videoUrl;
-          RT.renderShareButtons(RT.$('share-buttons'), data.videoUrl);
           RT.showScreen('player');
           RT.toast('Your film is ready!', true);
         }
 
         if (data.status === 'failed') {
           clearInterval(pollTimer);
+          clearInterval(factTimer);
           pollTimer = null;
           var statusEl = RT.$('render-status');
           if (statusEl) statusEl.textContent = 'Something went wrong.';
           var errorMsg = data.error || 'Film generation failed.';
           RT.toast(errorMsg + ' Credits refunded.');
-          // Show retry button
           var retryArea = RT.$('render-retry');
           if (retryArea) retryArea.classList.remove('hide');
         }
 
       }).catch(function () {});
-    }, 15000);
+    }, 10000);
   }
 
   // ── Render Step Indicator ──

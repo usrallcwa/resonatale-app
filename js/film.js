@@ -65,7 +65,8 @@
 
     RT.loading(true, 'Starting your film...');
 
-    RT.createFilm(brief, RT.mood, RT.language, RT.tier).then(function (data) {
+    var title = RT.$('film-title') ? RT.$('film-title').value.trim() : '';
+    RT.createFilm(brief, RT.mood, RT.language, RT.tier, title).then(function (data) {
       RT.loading(false);
       RT.currentFilmId = data.filmId;
       RT.showScreen('rendering');
@@ -83,7 +84,7 @@
   }
 
   // ── Poll Film Status ──
-  
+
    var pollTimer = null;
   function pollFilm(filmId) {
     setStep('writing');

@@ -100,7 +100,11 @@
 
   // Films
   RT.createFilm = function (brief, mood, language, tier, title) {
-    return apiFetch('POST', '/film/create', { brief: brief, mood: mood, language: language, tier: tier, title: title || '', style: RT.style || 'cinematic' });
+    var payload = { brief: brief, mood: mood, language: language, tier: tier, title: title || '', style: RT.style || 'cinematic' };
+    if (RT.currentScenes && RT.currentScenes.length > 0) {
+      payload.scenes = RT.currentScenes;
+    }
+    return apiFetch('POST', '/film/create', payload);
   };
 
   RT.getFilmStatus = function (filmId) {

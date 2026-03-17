@@ -126,5 +126,7 @@
       narrationHint: narrationHint || ''
     });
   };
-
+RT.uploadIntroOutro = function (type, base64) {
+    return apiFetch('POST', '/profile/' + type, { video: base64 });
+  };
 })();

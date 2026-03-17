@@ -56,3 +56,41 @@
   }
 
 })();
+
+// ── Intro/Outro Upload ──
+
+  function uploadVideo(type) {
+    var inputId = type + '-upload';
+    var input = RT.$(inputId);
+    if (!input) return;
+    input.click();
+    input.onchange = function () {
+      var file = input.files[0];
+      if (!file) return;
+      if (file.size > 20 * 1024 * 1024) { RT.toast('Video must be under 20MB.'); return; }
+      if (!file.type.includes('mp4')) { RT.toast('Only MP4 files allowed.'); return; }
+
+      RT.loading(true, 'Uploading ' + type + '...');
+
+      var reader = new FileReader();
+      reader.onload = function () {
+        var base64 = reader.result.split(',')[1];
+        RT.uploadIntroOutro(type, base64).then(function () {
+          RT.loading(false);
+          var status = RT.$(('profile-' + type + '-status'));
+          if (status) status.textContent = 'Uploaded ✓';
+          RT.toast(type.charAt(0).toUpperCase() + type.slice(1) + ' uploaded!', true);
+        }).catch(function (err) {
+          RT.loading(false);
+          RT.toast(err.message || 'Upload failed.');
+        });
+      };
+      reader.readAsDataURL(file);
+    };
+  }
+
+  var introBtn = RT.$('btn-upload-intro');
+  if (introBtn) introBtn.addEventListener('click', function () { uploadVideo('intro'); });
+
+  var outroBtn = RT.$('btn-upload-outro');
+  if (outroBtn) outroBtn.addEventListener('click', function () { uploadVideo('outro'); });

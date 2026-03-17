@@ -401,7 +401,80 @@
       </div>
     </div>
   </div>
+<!-- ════ SERIES ════ -->
+  <div id="s-series" class="screen">
+    <div class="screen-inner">
+      <button type="button" class="btn-back" onclick="RT.showScreen('dash')">← Back</button>
+      <h2 class="screen-title">My Series</h2>
+      <p class="screen-sub">Create ongoing series with recurring characters</p>
+      <button type="button" class="btn-primary" id="btn-new-series" style="margin-bottom:20px;">+ Create New Series</button>
+      <div id="series-list"></div>
+    </div>
+  </div>
 
+  <!-- ════ CREATE SERIES ════ -->
+  <div id="s-create-series" class="screen">
+    <div class="screen-inner">
+      <button type="button" class="btn-back" onclick="RT.showScreen('series')">← Back</button>
+      <h2 class="screen-title">New Series</h2>
+      <div class="section">
+        <label class="label">Series Title</label>
+        <input type="text" id="series-title" class="input" maxlength="60" placeholder="Tom & Jerry Adventures">
+      </div>
+      <div class="section">
+        <label class="label">Character Descriptions</label>
+        <textarea id="series-characters" class="input textarea" rows="4" placeholder="Tom: A large grey cat with a mischievous grin, always scheming&#10;Jerry: A small brown mouse, clever and quick, always outsmarting Tom"></textarea>
+      </div>
+      <div class="section">
+        <label class="label">Visual Style</label>
+        <div class="chips" id="series-style-chips"></div>
+      </div>
+      <div class="section">
+        <label class="label">Default Mood</label>
+        <div class="chips" id="series-mood-chips"></div>
+      </div>
+      <div class="section">
+        <label class="label">Series Description (Optional)</label>
+        <textarea id="series-desc" class="input textarea" rows="2" placeholder="A classic cat and mouse rivalry with hilarious adventures"></textarea>
+      </div>
+      <button type="button" class="btn-primary" id="btn-save-series">Create Series</button>
+    </div>
+  </div>
+
+  <!-- ════ SERIES DETAIL ════ -->
+  <div id="s-series-detail" class="screen">
+    <div class="screen-inner">
+      <button type="button" class="btn-back" onclick="RT.showScreen('series')">← Back</button>
+      <h2 class="screen-title" id="series-detail-title"></h2>
+      <p class="screen-sub" id="series-detail-desc"></p>
+      <p style="color:#636366;font-size:13px;margin-bottom:16px;" id="series-detail-chars"></p>
+      <button type="button" class="btn-primary" id="btn-new-episode" style="margin-bottom:20px;">+ New Episode</button>
+      <div id="episode-list"></div>
+    </div>
+  </div>
+
+  <!-- ════ NEW EPISODE ════ -->
+  <div id="s-new-episode" class="screen">
+    <div class="screen-inner">
+      <button type="button" class="btn-back" onclick="RT.showScreen('series-detail')">← Back</button>
+      <h2 class="screen-title">New Episode</h2>
+      <p class="screen-sub" id="episode-series-title"></p>
+      <div class="section">
+        <label class="label">Episode Title</label>
+        <input type="text" id="episode-title" class="input" maxlength="60" placeholder="The Kitchen Chase">
+      </div>
+      <div class="section">
+        <label class="label">What happens in this episode?</label>
+        <textarea id="episode-brief" class="input textarea" rows="4" placeholder="Tom chases Jerry through the kitchen, knocking over pots and pans..."></textarea>
+      </div>
+      <div class="section">
+        <label class="label">Duration</label>
+        <input type="range" id="episode-duration" class="slider" min="0" max="6" value="0">
+        <p class="duration-info" id="episode-duration-label">Trailer · 24 sec · 3 scenes</p>
+      </div>
+      <button type="button" class="btn-primary btn-gold" id="btn-create-episode">🎬 Create Episode</button>
+    </div>
+  </div>
   <!-- ════ INVITE ════ -->
   <div id="s-invite" class="screen">
     <div class="screen-inner">
@@ -457,6 +530,7 @@
   <div id="s-dash" class="screen">
     <div class="screen-inner">
       <h2 class="screen-title">My Films</h2>
+      <button type="button" class="btn-outline" style="margin-bottom:16px;" onclick="RT.showScreen('series'); RT.loadSeries();">📺 My Series</button>
       <div id="dash-films" class="dash-films"></div>
       <div id="dash-empty" class="dash-empty hide">
         <p>No films yet.</p>
@@ -483,6 +557,7 @@
 <script src="js/menu.js"></script>
 <script src="js/profile.js"></script>
 <script src="js/invite.js"></script>
+<script src="js/series.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/app.js"></script>
 

@@ -383,7 +383,7 @@ a:hover { color: #9dd0ff; }
 .profile-email { font-size: 15px; font-weight: 600; }
 .profile-member { font-size: 12px; color: #48484a; margin-top: 4px; }
 .profile-section { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 16px 0; }
-.profile-row { display: flex; justify-content: space-between; align-items: center; }
+.profile-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.06); gap: 12px; }
 .profile-row-left { flex: 1; }
 .profile-label { font-size: 13px; color: #8e8e93; margin-bottom: 2px; }
 .profile-value { font-size: 18px; font-weight: 700; color: #6eb6ff; }
@@ -842,3 +842,14 @@ select option {
 .scene-direction-input:focus,
 .scene-voiceover-input:focus { border-color: #6eb6ff; outline: none; }
 .scene-voiceover-input { color: #8e8e93; font-style: italic; }
+/* ── Intro/Outro Upload ── */
+.profile-row .btn-sm {
+  margin-left: auto;
+}
+.profile-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}

@@ -34,6 +34,23 @@
 
   function startFilm() {
     var brief = RT.currentBrief || (RT.$('brief') ? RT.$('brief').value.trim() : '') || 'AI generated story';
+    // Read edited scenes from DOM
+    var editedScenes = [];
+    var sceneCards = document.querySelectorAll('.scene-editable');
+    if (sceneCards.length > 0 && RT.currentScenes) {
+      for (var s = 0; s < sceneCards.length; s++) {
+        var card = sceneCards[s];
+        var titleInput = card.querySelector('.scene-title-input');
+        var dirInput = card.querySelector('.scene-direction-input');
+        var voInput = card.querySelector('.scene-voiceover-input');
+        editedScenes.push({
+          title: titleInput ? titleInput.value : (RT.currentScenes[s] ? RT.currentScenes[s].title : ''),
+          direction: dirInput ? dirInput.value : (RT.currentScenes[s] ? RT.currentScenes[s].direction : ''),
+          voiceover: voInput ? voInput.value : (RT.currentScenes[s] ? RT.currentScenes[s].voiceover : ''),
+        });
+      }
+      RT.currentScenes = editedScenes;
+    }
     var hint = RT.$('narration-hint') ? RT.$('narration-hint').value.trim() : '';
     if (!RT.mood) { RT.toast('Select a mood.'); return; }
     if (RT.createMode !== 'photo' && (!brief || brief.length < 10)) { RT.toast('Describe your story in more detail.'); return; }

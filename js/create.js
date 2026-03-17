@@ -138,13 +138,15 @@
       // Update RT.currentScenes when user edits
       var inputs = div.querySelectorAll('input, textarea');
       for (var j = 0; j < inputs.length; j++) {
-        inputs[j].addEventListener('input', function () {
-          var idx = parseInt(this.getAttribute('data-scene'));
-          var field = this.getAttribute('data-field');
-          if (RT.currentScenes && RT.currentScenes[idx]) {
-            RT.currentScenes[idx][field] = this.value;
-          }
-        });
+        (function (el) {
+          el.addEventListener('input', function () {
+            var idx = parseInt(el.getAttribute('data-scene'));
+            var field = el.getAttribute('data-field');
+            if (RT.currentScenes && RT.currentScenes[idx]) {
+              RT.currentScenes[idx][field] = el.value;
+            }
+          });
+        })(inputs[j]);
       }
 
       container.appendChild(div);

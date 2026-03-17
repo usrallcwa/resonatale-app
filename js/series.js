@@ -1,9 +1,107 @@
 (function () {
   'use strict';
 
+  // ── Dashboard Tabs ──
+  RT.showDashTab = function (tab) {
+    var films = RT.$('dash-films');
+    var series = RT.$('dash-series');
+    var tabFilms = RT.$('tab-films');
+    var tabSeries = RT.$('tab-series');
+    
+    if (tab === 'films') {
+      if (films) films.classList.remove('hide');
+      if (series) series.classList.add('hide');
+      if (tabFilms) tabFilms.classList.add('active');
+      if (tabSeries) tabSeries.classList.remove('active');
+    } else {
+      if (films) films.classList.add('hide');
+      if (series) series.classList.remove('hide');
+      if (tabFilms) tabFilms.classList.remove('active');
+      if (tabSeries) tabSeries.classList.add('active');
+      RT.loadSeriesList();
+    }
+  };
+
+  RT.loadSeriesList = function () {
+    var container = RT.$('dash-series');
+    if (!container) return;
+    container.innerHTML = '<p style="color:#636366;text-align:center;">Loading...</p>';
+    
+    RT.getSeries().then(function (data) {
+      container.innerHTML = '';
+      var list = data.series || [];
+      if (list.length === 0) {
+        container.innerHTML = '<div class="dash-empty"><p>No series yet.</p><button type="button" class="btn-primary" onclick="RT.showScreen(\'create\'); RT.createMode=\'series\';">Create Series</button></div>';
+        return;
+      }
+      list.forEach(function (s) {
+        var card = document.createElement('div');
+        card.className = 'dash-card';
+        card.innerHTML = '<div class="dash-card-title">📺 ' + (s.title || 'Untitled') + '</div>' +
+          '<div class="dash-card-meta">' + (s.style || 'cinematic') + ' · ' + (s.episode_count || 0) + ' episodes</div>';
+        card.addEventListener('click', function () {
+          RT.currentSeriesId = s.id;
+          RT.showScreen('series-detail');
+          RT.loadSeriesDetail(s.id);
+        });
+        container.appendChild(card);
+      });
+    }).catch(function () {
+      container.innerHTML = '<p style="color:#ff453a;">Failed to load series.</p>';
+    });
+  };
+
   var currentSeriesId = null;
   var currentSeries = null;
   var seriesStyle = 'cartoon';
+  var seriesMood = 'comedy';
+
+  // ── Render Style Chips for Series ──
+  var ssChips = RT.$('series-style-chips');
+  if (ssChips) {
+    var styles = [
+      { id: 'cinematic', icon: '🎬', label: 'Cinematic' },
+      { id: 'anime', icon: '🌸', label: 'Anime' },
+      { id: 'cartoon', icon: '🎨', label: 'Cartoon' },
+      { id: 'comic', icon: '💥', label: 'Comic Book' },
+      { id: 'noir', icon: '🖤', label: 'Film Noir' },
+      { id: 'watercolor', icon: '🎭', label: 'Watercolor' },
+      { id: 'retro', icon: '📼', label: 'Retro VHS' },
+      { id: 'fantasy', icon: '🐉', label: 'Fantasy' },
+    ];
+    styles.forEach(function (s) {
+      var btn = document.createElement('button');
+      btn.className = 'chip' + (s.id === 'cartoon' ? ' on' : '');
+      btn.type = 'button';
+      btn.setAttribute('data-v', s.id);
+      btn.textContent = s.icon + ' ' + s.label;
+      btn.addEventListener('click', function () {
+        seriesStyle = s.id;
+        var all = ssChips.querySelectorAll('.chip');
+        for (var i = 0; i < all.length; i++) all[i].classList.toggle('on', all[i].getAttribute('data-v') === s.id);
+      });
+      ssChips.appendChild(btn);
+    });
+  }
+
+  // ── Render Mood Chips for Series ──
+  var smChips = RT.$('series-mood-chips');
+  if (smChips) {
+    var moodIcons = { calm: '🌊', cozy: '☕', adventure: '🔥', romantic: '❤️', suspense: '🌑', motivational: '💪', heartwarming: '💖', dramatic: '🎭', thriller: '🔪', action: '💥', spiritual: '🕊', comedy: '😂', horror: '👻', mystery: '🔍', inspirational: '⭐' };
+    RT.MOODS.forEach(function (m) {
+      var btn = document.createElement('button');
+      btn.className = 'chip' + (m === 'comedy' ? ' on' : '');
+      btn.type = 'button';
+      btn.setAttribute('data-v', m);
+      btn.textContent = (moodIcons[m] || '') + ' ' + m.charAt(0).toUpperCase() + m.slice(1);
+      btn.addEventListener('click', function () {
+        seriesMood = m;
+        var all = smChips.querySelectorAll('.chip');
+        for (var i = 0; i < all.length; i++) all[i].classList.toggle('on', all[i].getAttribute('data-v') === m);
+      });
+      smChips.appendChild(btn);
+    });
+  }
   var seriesMood = 'comedy';
 
   // ── API Functions ──

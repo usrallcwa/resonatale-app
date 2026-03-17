@@ -193,9 +193,9 @@
       <h2 class="screen-title">Create Your Film</h2>
 
       <!-- Mode Toggle -->
-      <div class="mode-toggle hide">
-        <button type="button" class="mode-btn active" id="mode-text">✍️ Text Story</button>
-        <button type="button" class="mode-btn" id="mode-photo">📷 Photo Story</button>
+      <div class="mode-toggle">
+        <button type="button" class="mode-btn active" id="mode-text">🎬 Create Film</button>
+        <button type="button" class="mode-btn" id="mode-series">📺 Create Series</button>
       </div>
 
       <!-- Photo Upload (hidden by default) -->
@@ -529,15 +529,18 @@
   <!-- ════ DASHBOARD ════ -->
   <div id="s-dash" class="screen">
     <div class="screen-inner">
-      <h2 class="screen-title">My Films</h2>
-      <button type="button" class="btn-outline" style="margin-bottom:16px;" onclick="RT.showScreen('series'); RT.loadSeries();">📺 My Series</button>
+      <h2 class="screen-title">My Library</h2>
+      <div class="dash-tabs" style="display:flex;gap:8px;margin-bottom:16px;">
+        <button type="button" class="btn-outline dash-tab active" id="tab-films" onclick="RT.showDashTab('films')">🎬 Films</button>
+        <button type="button" class="btn-outline dash-tab" id="tab-series" onclick="RT.showDashTab('series')">📺 Series</button>
+      </div>
       <div id="dash-films" class="dash-films"></div>
+      <div id="dash-series" class="dash-films hide"></div>
       <div id="dash-empty" class="dash-empty hide">
         <p>No films yet.</p>
         <button type="button" class="btn-primary" onclick="RT.showScreen('create'); RT.mountTurnstile();">Create Film</button>
       </div>
     </div>
-  </div>
 
 </div>
 

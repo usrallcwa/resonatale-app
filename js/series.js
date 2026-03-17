@@ -31,7 +31,7 @@
       container.innerHTML = '';
       var list = data.series || [];
       if (list.length === 0) {
-        container.innerHTML = '<div class="dash-empty"><p>No series yet.</p><button type="button" class="btn-primary" onclick="RT.showScreen(\'create\'); RT.createMode=\'series\';">Create Series</button></div>';
+        container.innerHTML = '<div class="dash-empty"><p>No series yet.</p></div>';
         return;
       }
       list.forEach(function (s) {

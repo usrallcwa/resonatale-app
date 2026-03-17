@@ -70,14 +70,14 @@
     navLogo.addEventListener('click', function () { RT.showScreen('landing'); });
   }
 
-  var originalShowScreen = RT.showScreen;
+ var originalShowScreen = RT.showScreen;
   RT.showScreen = function (id) {
     originalShowScreen(id);
     var nav = RT.$('nav-bar');
     if (nav) {
-      if (id === 'landing') { nav.classList.add('hide'); }
-      else { nav.classList.remove('hide'); RT.updateMenuCredits(); }
+      nav.classList.remove('hide');
+      RT.updateMenuCredits();
     }
   };
-updateAuthButton();
+  updateAuthButton();
 })();

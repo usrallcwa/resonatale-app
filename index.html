@@ -48,6 +48,7 @@
       </div>
       <button type="button" class="menu-item" id="menu-home">🏠 Home</button>
       <button type="button" class="menu-item" id="menu-create">✨ Create Film</button>
+      <button type="button" class="menu-item" id="menu-feed">🌍 Explore</button>
       <button type="button" class="menu-item" id="menu-films">🎬 My Library</button>
       <button type="button" class="menu-item menu-item-primary" id="menu-credits">💎 Add Credits</button>
       <div class="menu-divider"></div>
@@ -337,6 +338,7 @@
           <button type="button" class="share-btn" id="share-facebook" title="Share on Facebook">f Facebook</button>
           <button type="button" class="share-btn" id="share-whatsapp" title="Share on WhatsApp">💬 WhatsApp</button>
           <button type="button" class="share-btn" id="share-copy" title="Copy link">📋 Copy Link</button>
+          <button type="button" class="share-btn" id="btn-publish" title="Share to community" style="background:linear-gradient(135deg,#6eb6ff,#bf5af2);color:#fff;">🌍 Publish</button>
         </div>
         <button type="button" class="btn-text" id="btn-new-film">Create Another Film</button>
       </div>
@@ -547,6 +549,17 @@
 </div>
 
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
+
+<!-- ════ EXPLORE FEED ════ -->
+  <div id="s-feed" class="screen">
+    <div class="screen-inner">
+      <h2 class="screen-title">Explore</h2>
+      <p class="screen-sub">Discover films created by the community</p>
+      <div id="feed-list" class="feed-list"></div>
+      <button type="button" class="btn-text" id="btn-feed-more" style="display:none;">Load More</button>
+    </div>
+  </div>
+
 <script src="js/config.js"></script>
 <script src="js/state.js"></script>
 <script src="js/ui.js"></script>
@@ -563,6 +576,7 @@
 <script src="js/profile.js"></script>
 <script src="js/invite.js"></script>
 <script src="js/series.js"></script>
+<script src="js/feed.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/app.js"></script>
 

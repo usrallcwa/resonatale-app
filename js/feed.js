@@ -159,18 +159,53 @@
 
     fetch(RT.API + '/film/' + filmId + '/comments').then(function (r) { return r.json(); }).then(function (data) {
       var comments = data.comments || [];
-      if (comments.length === 0) {
-        container.innerHTML = '';
-        return;
-      }
-      container.innerHTML = comments.map(function (c) {
+      container.innerHTML = '';
+      if (comments.length === 0) return;
+
+      comments.forEach(function (c) {
+        var div = document.createElement('div');
+        div.className = 'feed-comment';
         var isOwner = RT.isLoggedIn() && c.author === (RT.email || '').split('@')[0];
-        return '<div class="feed-comment">' +
-          '<span class="feed-comment-author">@' + c.author + '</span> ' +
+        div.innerHTML = '<span class="feed-comment-author">@' + c.author + '</span> ' +
           '<span class="feed-comment-text">' + c.comment + '</span>' +
-          (isOwner ? ' <button class="feed-comment-delete" data-film="' + filmId + '" data-comment="' + (c.id || '') + '">✕</button>' : '') +
-        '</div>';
-      }).join('');
+          (isOwner ? ' <button class="feed-comment-delete">✕</button>' : '');
+
+        if (isOwner) {
+          var delBtn = div.querySelector('.feed-comment-delete');
+          if (delBtn) {
+            delBtn.addEventListener('click', function () {
+              fetch(RT.API + '/film/comment/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + RT.token },
+                body: JSON.stringify({ commentId: c.id })
+              }).then(function (r) { return r.json(); }).then(function (d) {
+                if (d.success) {
+                  div.remove();
+                  RT.toast('Comment deleted.', true);
+                }
+              });
+            });
+          }
+        }
+        container.appendChild(div);
+      });
+    }).catch(function () {});
+  }
+          div.querySelector('.feed-comment-delete').addEventListener('click', function () {
+            fetch(RT.API + '/film/comment/delete', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + RT.token },
+              body: JSON.stringify({ commentId: c.id })
+            }).then(function (r) { return r.json(); }).then(function (d) {
+              if (d.success) {
+                div.remove();
+                RT.toast('Comment deleted.', true);
+              }
+            });
+          });
+        }
+        container.appendChild(div);
+      });
     }).catch(function () {});
   }
 

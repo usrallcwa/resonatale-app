@@ -40,7 +40,7 @@
         card.innerHTML = '<div class="dash-card-title">📺 ' + (s.title || 'Untitled') + '</div>' +
           '<div class="dash-card-meta">' + (s.style || 'cinematic') + ' · ' + (s.episode_count || 0) + ' episodes</div>';
         card.addEventListener('click', function () {
-          RT.currentSeriesId = s.id;
+          currentSeries = s;
           RT.showScreen('series-detail');
           RT.loadSeriesDetail(s.id);
         });

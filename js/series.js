@@ -307,35 +307,6 @@
       }).catch(function () {
         RT.toast('Could not verify credits. Try again.');
       });
-
-      RT.loading(true, 'Creating episode...');
-
-      fetch(RT.API + '/film/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + RT.token },
-        body: JSON.stringify({
-          title: title,
-          brief: brief,
-          mood: currentSeries ? currentSeries.mood : 'comedy',
-          language: RT.language,
-          tier: tier.id,
-          style: currentSeries ? currentSeries.style : 'cartoon',
-          series_id: currentSeriesId
-        })
-      }).then(function (r) { return r.json(); }).then(function (data) {
-        RT.loading(false);
-        if (data.filmId) {
-          RT.currentFilmId = data.filmId;
-          RT.showScreen('rendering');
-          RT.pollFilmStatus(data.filmId);
-          RT.toast('Episode started!', true);
-        } else {
-          RT.toast(data.error || 'Failed to create episode.');
-        }
-      }).catch(function (err) {
-        RT.loading(false);
-        RT.toast(err.message || 'Failed.');
-      });
     });
   }
 

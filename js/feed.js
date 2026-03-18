@@ -47,16 +47,27 @@
             '<div class="feed-actions">' +
               '<button class="feed-like-btn" data-film="' + f.filmId + '">❤️ ' + (f.likes || 0) + '</button>' +
               '<button class="feed-comment-btn" data-film="' + f.filmId + '">💬 Comment</button>' +
+              '<button class="feed-delete-btn hide" data-film="' + f.filmId + '" data-pub="' + f.id + '">🗑</button>' +
               '<span class="feed-views">👁 ' + (f.views || 0) + '</span>' +
+            '</div>' +
+            '<div class="feed-comments" id="comments-' + f.filmId + '"></div>' +
+            '<div class="feed-comment-form hide" id="form-' + f.filmId + '">' +
+              '<input type="text" class="feed-comment-input" placeholder="Write a comment..." maxlength="500">' +
+              '<button class="feed-send-btn">Send</button>' +
             '</div>' +
           '</div>';
 
-        // Play/pause video on click
+        // Show delete button if user owns this film
+        if (RT.isLoggedIn() && f.author === (RT.email || '').split('@')[0]) {
+          var delBtn = card.querySelector('.feed-delete-btn');
+          if (delBtn) delBtn.classList.remove('hide');
+        }
+
+        // Play/pause video
         var video = card.querySelector('.feed-video');
         var playBtn = card.querySelector('.feed-play-btn');
         card.querySelector('.feed-video-wrap').addEventListener('click', function () {
           if (video.paused) {
-            // Pause all other videos
             document.querySelectorAll('.feed-video').forEach(function (v) { v.pause(); });
             document.querySelectorAll('.feed-play-btn').forEach(function (b) { b.style.display = 'flex'; });
             video.play();
@@ -81,17 +92,53 @@
           });
         });
 
-        // Comment button
+        // Comment button — toggle form and load comments
         card.querySelector('.feed-comment-btn').addEventListener('click', function () {
           if (!RT.isLoggedIn()) { RT.toast('Login to comment.'); return; }
-          var comment = prompt('Write a comment:');
-          if (!comment || !comment.trim()) return;
+          var form = card.querySelector('.feed-comment-form');
+          form.classList.toggle('hide');
+          loadComments(f.filmId, card);
+        });
+
+        // Send comment
+        var sendBtn = card.querySelector('.feed-send-btn');
+        var input = card.querySelector('.feed-comment-input');
+        sendBtn.addEventListener('click', function () {
+          var text = input.value.trim();
+          if (!text) return;
           fetch(RT.API + '/film/comment', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + RT.token },
-            body: JSON.stringify({ filmId: f.filmId, comment: comment.trim() })
-          }).then(function () { RT.toast('Comment posted!', true); });
+            body: JSON.stringify({ filmId: f.filmId, comment: text })
+          }).then(function (r) { return r.json(); }).then(function () {
+            input.value = '';
+            loadComments(f.filmId, card);
+            RT.toast('Comment posted!', true);
+          });
         });
+
+        // Delete button
+        var deleteBtn = card.querySelector('.feed-delete-btn');
+        if (deleteBtn) {
+          deleteBtn.addEventListener('click', function () {
+            if (!confirm('Remove this film from the community feed?')) return;
+            fetch(RT.API + '/film/unpublish', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + RT.token },
+              body: JSON.stringify({ filmId: f.filmId })
+            }).then(function (r) { return r.json(); }).then(function (d) {
+              if (d.success) {
+                card.remove();
+                RT.toast('Removed from feed.', true);
+              } else {
+                RT.toast(d.error || 'Failed.');
+              }
+            });
+          });
+        }
+
+        // Load comments on render
+        loadComments(f.filmId, card);
 
         list.appendChild(card);
       });
@@ -103,6 +150,28 @@
     }).catch(function () {
       if (page === 1) list.innerHTML = '<p style="color:#ff453a;text-align:center;">Failed to load feed.</p>';
     });
+  }
+
+  // ── Load Comments ──
+  function loadComments(filmId, card) {
+    var container = card.querySelector('#comments-' + filmId);
+    if (!container) return;
+
+    fetch(RT.API + '/film/' + filmId + '/comments').then(function (r) { return r.json(); }).then(function (data) {
+      var comments = data.comments || [];
+      if (comments.length === 0) {
+        container.innerHTML = '';
+        return;
+      }
+      container.innerHTML = comments.map(function (c) {
+        var isOwner = RT.isLoggedIn() && c.author === (RT.email || '').split('@')[0];
+        return '<div class="feed-comment">' +
+          '<span class="feed-comment-author">@' + c.author + '</span> ' +
+          '<span class="feed-comment-text">' + c.comment + '</span>' +
+          (isOwner ? ' <button class="feed-comment-delete" data-film="' + filmId + '" data-comment="' + (c.id || '') + '">✕</button>' : '') +
+        '</div>';
+      }).join('');
+    }).catch(function () {});
   }
 
   // Load more

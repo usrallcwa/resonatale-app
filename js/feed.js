@@ -3,7 +3,6 @@
 
   var feedPage = 1;
 
-  // ── Menu handler ──
   var menuFeed = RT.$('menu-feed');
   if (menuFeed) {
     menuFeed.addEventListener('click', function () {
@@ -14,7 +13,6 @@
     });
   }
 
-  // ── Load Feed ──
   function loadFeed(page) {
     feedPage = page;
     var list = RT.$('feed-list');
@@ -45,9 +43,9 @@
               '<span class="feed-badges">' + (f.style || '') + ' · ' + (f.mood || '') + '</span>' +
             '</div>' +
             '<div class="feed-actions">' +
-              '<button class="feed-like-btn" data-film="' + f.filmId + '">❤️ ' + (f.likes || 0) + '</button>' +
-              '<button class="feed-comment-btn" data-film="' + f.filmId + '">💬 Comment</button>' +
-              '<button class="feed-delete-btn hide" data-film="' + f.filmId + '" data-pub="' + f.id + '">🗑</button>' +
+              '<button class="feed-like-btn">❤️ ' + (f.likes || 0) + '</button>' +
+              '<button class="feed-comment-btn">💬 Comment</button>' +
+              '<button class="feed-delete-btn hide">🗑</button>' +
               '<span class="feed-views">👁 ' + (f.views || 0) + '</span>' +
             '</div>' +
             '<div class="feed-comments" id="comments-' + f.filmId + '"></div>' +
@@ -57,13 +55,11 @@
             '</div>' +
           '</div>';
 
-        // Show delete button if user owns this film
         if (RT.isLoggedIn() && f.author === (RT.email || '').split('@')[0]) {
-          var delBtn = card.querySelector('.feed-delete-btn');
-          if (delBtn) delBtn.classList.remove('hide');
+          var del = card.querySelector('.feed-delete-btn');
+          if (del) del.classList.remove('hide');
         }
 
-        // Play/pause video
         var video = card.querySelector('.feed-video');
         var playBtn = card.querySelector('.feed-play-btn');
         card.querySelector('.feed-video-wrap').addEventListener('click', function () {
@@ -78,10 +74,9 @@
           }
         });
 
-        // Like button
         card.querySelector('.feed-like-btn').addEventListener('click', function () {
           var btn = this;
-          if (!RT.isLoggedIn()) { RT.toast('Login to like films.'); return; }
+          if (!RT.isLoggedIn()) { RT.toast('Login to like.'); return; }
           fetch(RT.API + '/film/like', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + RT.token },
@@ -92,7 +87,6 @@
           });
         });
 
-        // Comment button — toggle form and load comments
         card.querySelector('.feed-comment-btn').addEventListener('click', function () {
           if (!RT.isLoggedIn()) { RT.toast('Login to comment.'); return; }
           var form = card.querySelector('.feed-comment-form');
@@ -100,10 +94,8 @@
           loadComments(f.filmId, card);
         });
 
-        // Send comment
-        var sendBtn = card.querySelector('.feed-send-btn');
-        var input = card.querySelector('.feed-comment-input');
-        sendBtn.addEventListener('click', function () {
+        card.querySelector('.feed-send-btn').addEventListener('click', function () {
+          var input = card.querySelector('.feed-comment-input');
           var text = input.value.trim();
           if (!text) return;
           fetch(RT.API + '/film/comment', {
@@ -117,42 +109,28 @@
           });
         });
 
-        // Delete button
-        var deleteBtn = card.querySelector('.feed-delete-btn');
-        if (deleteBtn) {
-          deleteBtn.addEventListener('click', function () {
-            if (!confirm('Remove this film from the community feed?')) return;
-            fetch(RT.API + '/film/unpublish', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + RT.token },
-              body: JSON.stringify({ filmId: f.filmId })
-            }).then(function (r) { return r.json(); }).then(function (d) {
-              if (d.success) {
-                card.remove();
-                RT.toast('Removed from feed.', true);
-              } else {
-                RT.toast(d.error || 'Failed.');
-              }
-            });
+        card.querySelector('.feed-delete-btn').addEventListener('click', function () {
+          if (!confirm('Remove from community feed?')) return;
+          fetch(RT.API + '/film/unpublish', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + RT.token },
+            body: JSON.stringify({ filmId: f.filmId })
+          }).then(function (r) { return r.json(); }).then(function (d) {
+            if (d.success) { card.remove(); RT.toast('Removed.', true); }
           });
-        }
+        });
 
-        // Load comments on render
         loadComments(f.filmId, card);
-
         list.appendChild(card);
       });
 
       var moreBtn = RT.$('btn-feed-more');
-      if (moreBtn) {
-        moreBtn.style.display = films.length >= 20 ? 'block' : 'none';
-      }
+      if (moreBtn) moreBtn.style.display = films.length >= 20 ? 'block' : 'none';
     }).catch(function () {
-      if (page === 1) list.innerHTML = '<p style="color:#ff453a;text-align:center;">Failed to load feed.</p>';
+      if (page === 1) list.innerHTML = '<p style="color:#ff453a;text-align:center;">Failed to load.</p>';
     });
   }
 
-  // ── Load Comments ──
   function loadComments(filmId, card) {
     var container = card.querySelector('#comments-' + filmId);
     if (!container) return;
@@ -179,10 +157,7 @@
                 headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + RT.token },
                 body: JSON.stringify({ commentId: c.id })
               }).then(function (r) { return r.json(); }).then(function (d) {
-                if (d.success) {
-                  div.remove();
-                  RT.toast('Comment deleted.', true);
-                }
+                if (d.success) { div.remove(); RT.toast('Deleted.', true); }
               });
             });
           }
@@ -191,39 +166,17 @@
       });
     }).catch(function () {});
   }
-          div.querySelector('.feed-comment-delete').addEventListener('click', function () {
-            fetch(RT.API + '/film/comment/delete', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + RT.token },
-              body: JSON.stringify({ commentId: c.id })
-            }).then(function (r) { return r.json(); }).then(function (d) {
-              if (d.success) {
-                div.remove();
-                RT.toast('Comment deleted.', true);
-              }
-            });
-          });
-        }
-        container.appendChild(div);
-      });
-    }).catch(function () {});
-  }
 
-  // Load more
   var moreBtn = RT.$('btn-feed-more');
   if (moreBtn) {
-    moreBtn.addEventListener('click', function () {
-      loadFeed(feedPage + 1);
-    });
+    moreBtn.addEventListener('click', function () { loadFeed(feedPage + 1); });
   }
 
-  // ── Publish Button ──
   var publishBtn = RT.$('btn-publish');
   if (publishBtn) {
     publishBtn.addEventListener('click', function () {
       if (!RT.isLoggedIn()) { RT.toast('Login to publish.'); return; }
       if (!RT.currentFilmId) { RT.toast('No film to publish.'); return; }
-
       RT.loading(true, 'Publishing...');
       fetch(RT.API + '/film/publish', {
         method: 'POST',
@@ -232,11 +185,11 @@
       }).then(function (r) { return r.json(); }).then(function (d) {
         RT.loading(false);
         if (d.success) {
-          RT.toast('Published to community! 🎉', true);
+          RT.toast('Published! 🎉', true);
           publishBtn.textContent = '✅ Published';
           publishBtn.disabled = true;
         } else {
-          RT.toast(d.error || 'Failed to publish.');
+          RT.toast(d.error || 'Failed.');
         }
       }).catch(function (e) {
         RT.loading(false);

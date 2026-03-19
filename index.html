@@ -253,7 +253,7 @@
 
       <div class="section">
         <label class="label">Film Duration</label>
-        <p class="dur-display" id="duration-label">24 seconds</p>
+        <input type="range" id="duration-slider" class="slider dur-slider" min="0" max="3" step="1" value="0">
         <input type="range" id="duration-slider" class="slider dur-slider" min="0" max="6" step="1" value="0">
         <div class="slider-labels">
           <span>24 sec</span>
@@ -476,7 +476,7 @@
       </div>
       <div class="section">
         <label class="label">Duration</label>
-        <input type="range" id="episode-duration" class="slider" min="0" max="6" value="0">
+        <input type="range" id="episode-duration" class="slider" min="0" max="3" value="0">
         <p class="duration-info" id="episode-duration-label">Trailer · 24 sec · 3 scenes</p>
       </div>
       <button type="button" class="btn-primary btn-gold" id="btn-create-episode">🎬 Create Episode</button>

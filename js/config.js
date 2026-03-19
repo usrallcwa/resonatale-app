@@ -8,13 +8,10 @@
   RT.TURNSTILE_KEY = '0x4AAAAAACLI9vyJZYGLg9lS';
 
  RT.TIERS = [
-    { id: 'trailer',     label: 'Trailer',     minutes: 0.5, scenes: 3,   credits: 5,   price: '$5',   desc: '24 seconds' },
-    { id: 'short',       label: 'Short',       minutes: 1,   scenes: 8,   credits: 12,  price: '$12',  desc: '1 minute' },
-    { id: 'standard',    label: 'Standard',    minutes: 3,   scenes: 18,  credits: 30,  price: '$30',  desc: '3 minutes' },
-    { id: 'feature',     label: 'Feature',     minutes: 5,   scenes: 35,  credits: 50,  price: '$50',  desc: '5 minutes' },
-    { id: 'epic',        label: 'Epic',        minutes: 10,  scenes: 60,  credits: 90,  price: '$90',  desc: '10 minutes' },
-    { id: 'cinema',      label: 'Cinema',      minutes: 20,  scenes: 150, credits: 170, price: '$170', desc: '20 minutes' },
-    { id: 'documentary', label: 'Documentary', minutes: 45,  scenes: 338, credits: 350, price: '$350', desc: '45 minutes' }
+    { id: 'shorts',      label: 'Shorts',       minutes: 0.5, scenes: 3,   credits: 3,   price: '$3',   desc: '30 seconds' },
+    { id: 'short',       label: 'Short Film',   minutes: 1,   scenes: 6,   credits: 5,   price: '$5',   desc: '1 minute' },
+    { id: 'standard',    label: 'Standard',      minutes: 2,   scenes: 12,  credits: 10,  price: '$10',  desc: '2 minutes' },
+    { id: 'feature',     label: 'Feature Film',  minutes: 3,   scenes: 18,  credits: 15,  price: '$15',  desc: '3 minutes' }
   ];
 
   // Moods

@@ -9,7 +9,7 @@
         var data = JSON.parse(saved);
         if (data.scenes && data.scenes.length) {
           RT.currentScenes = data.scenes;
-          RT.tier = data.tier || 'trailer';
+          RT.tier = data.tier || 'shorts';
           RT.mood = data.mood || '';
           RT.createMode = data.mode || 'text';
         }
@@ -100,11 +100,7 @@
 
   // Films
   RT.createFilm = function (brief, mood, language, tier, title) {
-    var payload = { brief: brief, mood: mood, language: language, tier: tier, title: title || '', style: RT.style || 'cinematic' };
-    if (RT.currentScenes && RT.currentScenes.length > 0) {
-      payload.scenes = RT.currentScenes;
-    }
-    return apiFetch('POST', '/film/create', payload);
+    return apiFetch('POST', '/film/create', { brief: brief, mood: mood, language: language, tier: tier, title: title || '', style: RT.style || 'cinematic', voice: RT.selectedVoice || 'clone' });
   };
 
   RT.getFilmStatus = function (filmId) {
@@ -113,11 +109,6 @@
 
   RT.getFilms = function () {
     return apiFetch('GET', '/films');
-  };
-  RT.uploadPhoto = function (base64Data, index) {
-    return apiFetch('POST', '/upload/photo', { photo: base64Data, index: index }).then(function (data) {
-      return data.key;
-    });
   };
 
   RT.createPhotoFilm = function (photoKeys, mood, language, tier, narrationHint) {
@@ -130,7 +121,15 @@
       narrationHint: narrationHint || ''
     });
   };
-RT.uploadIntroOutro = function (type, base64) {
+
+  RT.uploadPhoto = function (base64Data, index) {
+    return apiFetch('POST', '/upload/photo', { photo: base64Data, index: index }).then(function (data) {
+      return data.key;
+    });
+  };
+
+  RT.uploadIntroOutro = function (type, base64) {
     return apiFetch('POST', '/profile/' + type, { video: base64 });
   };
+
 })();

@@ -69,6 +69,25 @@
       styleChips.appendChild(btn);
     });
   }
+  // ── Voice Chips ──
+  RT.selectedVoice = 'clone';
+  var voiceChips = RT.$('voice-chips');
+  if (voiceChips && RT.VOICES) {
+    RT.VOICES.forEach(function (v) {
+      var btn = document.createElement('button');
+      btn.className = 'chip' + (v.id === 'clone' ? ' on' : '');
+      btn.type = 'button';
+      btn.setAttribute('data-v', v.id);
+      btn.textContent = v.icon + ' ' + v.name;
+      btn.title = v.desc;
+      btn.addEventListener('click', function () {
+        RT.selectedVoice = v.id;
+        var all = voiceChips.querySelectorAll('.chip');
+        for (var i = 0; i < all.length; i++) all[i].classList.toggle('on', all[i].getAttribute('data-v') === v.id);
+      });
+      voiceChips.appendChild(btn);
+    });
+  }
   
 // ── Duration Slider ──
 

@@ -16,7 +16,19 @@
 
   // Moods
   RT.MOODS = ['calm', 'cozy', 'adventure', 'romantic', 'suspense', 'motivational', 'heartwarming', 'dramatic', 'thriller', 'action', 'spiritual', 'comedy', 'horror', 'mystery', 'inspirational'];
-
+RT.VOICES = [
+    { id: 'clone', name: 'My Voice', desc: 'Your cloned voice', icon: '🎤' },
+    { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam', desc: 'Deep male narrator', icon: '🎙️' },
+    { id: 'ErXwobaYiN019PkySvjV', name: 'Antoni', desc: 'Warm male voice', icon: '🎙️' },
+    { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel', desc: 'Calm female narrator', icon: '👩' },
+    { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Bella', desc: 'Soft female voice', icon: '👩' },
+    { id: 'MF3mGyEYCl7XYWbV9V6O', name: 'Elli', desc: 'Young female voice', icon: '👧' },
+    { id: 'TxGEqnHWrfWFTfGW9XjX', name: 'Josh', desc: 'Deep authoritative male', icon: '🎙️' },
+    { id: 'VR6AewLTigWG4xSOukaG', name: 'Arnold', desc: 'Strong male voice', icon: '💪' },
+    { id: 'pqHfZKP75CvOlQylNhV4', name: 'Bill', desc: 'Wise older male', icon: '👴' },
+    { id: 'onwK4e9ZLuTAKqWW03F9', name: 'Daniel', desc: 'British male narrator', icon: '🇬🇧' },
+    { id: 'XB0fDUnXU5powFXDhCwa', name: 'Charlotte', desc: 'Elegant female', icon: '👸' },
+  ];
   RT.LANGUAGES = [
     { code: 'en', flag: '\u{1F1FA}\u{1F1F8}', name: 'English' },
     { code: 'es', flag: '\u{1F1EA}\u{1F1F8}', name: 'Español' },

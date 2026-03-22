@@ -21,23 +21,12 @@
     });
   }
 
-  // ── Mood Chips ──
-
-  var moodChips = RT.$('mood-chips');
-  if (moodChips) {
-    var moodIcons = { calm: '🌅', cozy: '☕', adventure: '🔥', romantic: '❤️', suspense: '🌙', motivational: '💪', heartwarming: '💛', dramatic: '🎭', thriller: '🔪', action: '💥', spiritual: '🕊', comedy: '😂', horror: '👻', mystery: '🔍', inspirational: '⭐' };
-    RT.MOODS.forEach(function (m) {
-      var btn = document.createElement('button');
-      btn.className = 'chip';
-      btn.type = 'button';
-      btn.setAttribute('data-v', m);
-      btn.textContent = (moodIcons[m] || '') + ' ' + m.charAt(0).toUpperCase() + m.slice(1);
-      btn.addEventListener('click', function () {
-        RT.mood = m;
-        var all = moodChips.querySelectorAll('.chip');
-        for (var i = 0; i < all.length; i++) all[i].classList.toggle('on', all[i].getAttribute('data-v') === m);
-      });
-      moodChips.appendChild(btn);
+  // ── Mood Dropdown ──
+  RT.mood = 'dramatic';
+  var moodSelect = RT.$('mood-select');
+  if (moodSelect) {
+    moodSelect.addEventListener('change', function () {
+      RT.mood = moodSelect.value;
     });
   }
   // ── Style Dropdown ──

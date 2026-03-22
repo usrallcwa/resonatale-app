@@ -6,7 +6,7 @@
     var c = document.getElementById('clock');
     if (!c) return;
     var ctx = c.getContext('2d');
-    var w = c.width, h = c.height, cx = w / 2, cy = h / 2, r = 70;
+    var w = c.width, h = c.height, cx = w / 2, cy = h / 2, r = 62;
     var animId = null;
 
     function frame() {
@@ -51,11 +51,24 @@
         ctx.stroke();
       }
 
+      // 12, 3, 6, 9 labels
+      var labels = { 0: '12', 3: '3', 6: '6', 9: '9' };
+      ctx.font      = '600 10px -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      for (var idx in labels) {
+        var angle = (parseInt(idx) * Math.PI) / 6 - Math.PI / 2;
+        var lx = cx + Math.cos(angle) * (r - 18);
+        var ly = cy + Math.sin(angle) * (r - 18);
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        ctx.fillText(labels[idx], lx, ly);
+      }
+
       // Hour hand
       var ha = (hr * Math.PI / 6) - Math.PI / 2;
       ctx.beginPath();
       ctx.moveTo(cx, cy);
-      ctx.lineTo(cx + Math.cos(ha) * 36, cy + Math.sin(ha) * 36);
+      ctx.lineTo(cx + Math.cos(ha) * 30, cy + Math.sin(ha) * 30);
       ctx.strokeStyle = '#f5f5f7';
       ctx.lineWidth   = 3;
       ctx.lineCap     = 'round';
@@ -65,7 +78,7 @@
       var ma = (min * Math.PI / 30) - Math.PI / 2;
       ctx.beginPath();
       ctx.moveTo(cx, cy);
-      ctx.lineTo(cx + Math.cos(ma) * 50, cy + Math.sin(ma) * 50);
+      ctx.lineTo(cx + Math.cos(ma) * 44, cy + Math.sin(ma) * 44);
       ctx.strokeStyle = '#f5f5f7';
       ctx.lineWidth   = 2;
       ctx.lineCap     = 'round';
@@ -74,8 +87,8 @@
       // Second hand
       var sa = (sec * Math.PI / 30) - Math.PI / 2;
       ctx.beginPath();
-      ctx.moveTo(cx - Math.cos(sa) * 12, cy - Math.sin(sa) * 12);
-      ctx.lineTo(cx + Math.cos(sa) * 55, cy + Math.sin(sa) * 55);
+      ctx.moveTo(cx - Math.cos(sa) * 10, cy - Math.sin(sa) * 10);
+      ctx.lineTo(cx + Math.cos(sa) * 48, cy + Math.sin(sa) * 48);
       ctx.strokeStyle = '#6eb6ff';
       ctx.lineWidth   = 1;
       ctx.lineCap     = 'round';
@@ -91,7 +104,8 @@
       ctx.fillStyle = 'rgba(255,255,255,0.4)';
       ctx.font      = '600 11px -apple-system, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('R T', cx, cy + 24);
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText('R T', cx, cy + 20);
 
       animId = requestAnimationFrame(frame);
     }
@@ -107,6 +121,7 @@
       }
     });
   }
+
 
   // ── Everything else after DOM is ready ──
   document.addEventListener('DOMContentLoaded', function () {

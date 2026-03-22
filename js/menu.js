@@ -30,6 +30,7 @@
     'menu-credits': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('signup'); return; } RT.showScreen('credits'); RT.renderCredits(); },
     'menu-profile': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('login'); return; } RT.showScreen('profile'); RT.loadProfile(); },
     'menu-invite': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('login'); return; } RT.showScreen('invite'); RT.loadInvite(); },
+    'menu-series': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('login'); return; } RT.showScreen('series'); RT.loadSeries(); },
     'menu-how': function () { RT.closeMenu(); RT.showScreen('how'); },
     'menu-auth': function () { RT.closeMenu(); RT.showScreen('auth'); RT.showAuthForm('login'); },
     'menu-logout': function () { RT.closeMenu(); RT.clearAuth(); RT.toast('Logged out.', true); updateAuthButton(); RT.showScreen('landing'); }

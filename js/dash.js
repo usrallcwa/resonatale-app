@@ -31,9 +31,9 @@
     return card;
   };
 
-  // ── Load Dashboard ──
+  // ── Load Films for Dashboard ──
 
-  RT.loadDash = function () {
+  RT.loadDashFilms = function () {
     RT.getCredits().catch(function () {});
 
     var list  = RT.$('dash-films');
@@ -92,12 +92,77 @@
     }
   }
 
+  // ── Tabs: Films vs Series in My Library ──
+
+  function setupDashTabs() {
+    var tabFilms   = RT.$('tab-films');
+    var tabSeries  = RT.$('tab-series');
+    var panelFilms = RT.$('dash-films');
+    var panelSeries= RT.$('dash-series');
+    var empty      = RT.$('dash-empty');
+
+    if (!tabFilms || !tabSeries || !panelFilms || !panelSeries) return;
+
+    function activateFilms() {
+      tabFilms.classList.add('active');
+      tabSeries.classList.remove('active');
+      tabFilms.setAttribute('aria-selected', 'true');
+      tabSeries.setAttribute('aria-selected', 'false');
+
+      panelFilms.classList.remove('hide');
+      panelSeries.classList.add('hide');
+
+      if (empty) empty.classList.add('hide');
+
+      RT.loadDashFilms();
+    }
+
+    function activateSeries() {
+      tabSeries.classList.add('active');
+      tabFilms.classList.remove('active');
+      tabSeries.setAttribute('aria-selected', 'true');
+      tabFilms.setAttribute('aria-selected', 'false');
+
+      panelSeries.classList.remove('hide');
+      panelFilms.classList.add('hide');
+
+      if (empty) empty.classList.add('hide');
+
+      // series.js should populate #dash-series
+      if (typeof RT.loadSeriesDash === 'function') {
+        RT.loadSeriesDash();
+      }
+    }
+
+    tabFilms.addEventListener('click', function () {
+      activateFilms();
+    });
+
+    tabSeries.addEventListener('click', function () {
+      activateSeries();
+    });
+
+    // Default when opening My Library: Films tab
+    RT._activateDashFilms = activateFilms;
+    RT._activateDashSeries = activateSeries;
+  }
+
   // ── Wrap showScreen once to auto-load dash ──
 
   var _showScreen = RT.showScreen;
   RT.showScreen = function (id) {
     _showScreen(id);
-    if (id === 'dash' && RT.isLoggedIn()) RT.loadDash();
+    if (id === 'dash' && RT.isLoggedIn()) {
+      if (!RT._dashTabsSetup) {
+        setupDashTabs();
+        RT._dashTabsSetup = true;
+      }
+      if (typeof RT._activateDashFilms === 'function') {
+        RT._activateDashFilms();
+      } else {
+        RT.loadDashFilms();
+      }
+    }
   };
 
 })();

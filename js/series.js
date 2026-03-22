@@ -25,13 +25,16 @@
     }
   };
 
-  // Back button from "My Series" screen
+    // Back button from "My Series" screen
   var backSeries = RT.$('btn-back-series');
+  console.log('backSeries element:', backSeries);
   if (backSeries) {
     backSeries.addEventListener('click', function () {
-      RT.showScreen('dash'); // or 'landing' if you prefer
+      console.log('Back Series button clicked');
+      RT.showScreen('dash'); // or 'landing'
     });
   }
+
 
   RT.loadSeriesList = function () {
     var container = RT.$('dash-series');

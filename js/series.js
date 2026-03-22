@@ -33,9 +33,6 @@
     });
   }
 
-  // ...rest of series.js...
-})();
-
   RT.loadSeriesList = function () {
     var container = RT.$('dash-series');
     if (!container) return;

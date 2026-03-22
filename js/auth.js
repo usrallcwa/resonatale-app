@@ -36,10 +36,10 @@ document.addEventListener('DOMContentLoaded', function () {
     // ── Form Switcher Links ──
 
     var links = {
-      'show-signup':  'signup',
-      'show-login':   'login',
-      'show-forgot':  'forgot',
-      'show-login2':  'login',
+      'show-signup': 'signup',
+      'show-login':  'login',
+      'show-forgot': 'forgot',
+      'show-login2': 'login',
     };
 
     Object.keys(links).forEach(function (id) {
@@ -56,9 +56,9 @@ document.addEventListener('DOMContentLoaded', function () {
       var email = getValue('signup-email').trim();
       var pass  = getValue('signup-pass');
 
-      if (!email || !pass)          { RT.toast('Fill in all fields.');                        return; }
-      if (!isValidEmail(email))     { RT.toast('Enter a valid email address.');               return; }
-      if (pass.length < 8)          { RT.toast('Password must be at least 8 characters.');    return; }
+      if (!email || !pass)        { RT.toast('Fill in all fields.');                  return; }
+      if (!isValidEmail(email))   { RT.toast('Enter a valid email address.');         return; }
+      if (pass.length < 8)        { RT.toast('Password must be at least 8 characters.'); return; }
 
       var btn = RT.$('btn-signup');
       RT.loading(true, 'Creating account...');
@@ -69,6 +69,7 @@ document.addEventListener('DOMContentLoaded', function () {
           RT.loading(false);
           disable(btn, false);
           RT.toast('Account created! ✓', true);
+          if (typeof RT.updateAuthButton === 'function') RT.updateAuthButton();
           RT.afterAuth();
         })
         .catch(function (err) {
@@ -88,8 +89,8 @@ document.addEventListener('DOMContentLoaded', function () {
       var email = getValue('login-email').trim();
       var pass  = getValue('login-pass');
 
-      if (!email || !pass)      { RT.toast('Fill in all fields.');           return; }
-      if (!isValidEmail(email)) { RT.toast('Enter a valid email address.');  return; }
+      if (!email || !pass)      { RT.toast('Fill in all fields.');          return; }
+      if (!isValidEmail(email)) { RT.toast('Enter a valid email address.'); return; }
 
       var btn = RT.$('btn-login');
       RT.loading(true, 'Logging in...');
@@ -100,6 +101,7 @@ document.addEventListener('DOMContentLoaded', function () {
           RT.loading(false);
           disable(btn, false);
           RT.toast('Welcome back! ✓', true);
+          if (typeof RT.updateAuthButton === 'function') RT.updateAuthButton();
           RT.afterAuth();
         })
         .catch(function (err) {
@@ -130,7 +132,6 @@ document.addEventListener('DOMContentLoaded', function () {
           RT.loading(false);
           disable(btn, false);
           RT.toast('Code sent — check your email. ✓', true);
-          // Pre-fill email in reset form so user doesn't have to retype
           var resetEmail = RT.$('reset-email');
           if (resetEmail) resetEmail.value = email;
           showForm('reset');
@@ -153,7 +154,7 @@ document.addEventListener('DOMContentLoaded', function () {
       var code  = getValue('reset-code').trim();
       var pass  = getValue('reset-pass');
 
-      if (!email || !isValidEmail(email)) { RT.toast('Enter a valid email address.');          return; }
+      if (!email || !isValidEmail(email)) { RT.toast('Enter a valid email address.');           return; }
       if (!code)                          { RT.toast('Enter the code from your email.');       return; }
       if (!pass)                          { RT.toast('Enter a new password.');                 return; }
       if (pass.length < 8)                { RT.toast('Password must be at least 8 characters.'); return; }

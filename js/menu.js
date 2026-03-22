@@ -35,17 +35,17 @@
     'menu-auth': function () { RT.closeMenu(); RT.showScreen('auth'); RT.showAuthForm('login'); },
     'menu-logout': function () { RT.closeMenu(); RT.clearAuth(); RT.toast('Logged out.', true); updateAuthButton(); RT.showScreen('landing'); }
   };
-  function updateAuthButton() {
+    RT.updateAuthButton = function () {
     var logoutBtn = RT.$('menu-logout');
-    var authBtn = RT.$('menu-auth');
+    var authBtn   = RT.$('menu-auth');
     if (RT.isLoggedIn()) {
       if (logoutBtn) logoutBtn.style.display = 'block';
-      if (authBtn) authBtn.style.display = 'none';
+      if (authBtn)   authBtn.style.display = 'none';
     } else {
       if (logoutBtn) logoutBtn.style.display = 'none';
-      if (authBtn) authBtn.style.display = 'block';
+      if (authBtn)   authBtn.style.display = 'block';
     }
-  }
+  };
 
   Object.keys(items).forEach(function (id) {
     var el = RT.$(id);
@@ -71,7 +71,7 @@
     navLogo.addEventListener('click', function () { RT.showScreen('landing'); });
   }
 
- var screenHistory = ['landing'];
+  var screenHistory = ['landing'];
   var originalShowScreen = RT.showScreen;
   RT.showScreen = function (id) {
     var prev = screenHistory[screenHistory.length - 1];
@@ -103,5 +103,6 @@
       }
     });
   }
-  updateAuthButton();
+
+  RT.updateAuthButton();
 })();

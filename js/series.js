@@ -2,28 +2,39 @@
   'use strict';
 
   var currentSeriesId = null;
-  var currentSeries = null;
-  var seriesStyle = 'cartoon';
-  var seriesMood = 'comedy';
+  var currentSeries   = null;
+  var seriesStyle     = 'cartoon';
+  var seriesMood      = 'comedy';
 
   RT.showDashTab = function (tab) {
-    var films = RT.$('dash-films');
-    var series = RT.$('dash-series');
+    var films    = RT.$('dash-films');
+    var series   = RT.$('dash-series');
     var tabFilms = RT.$('tab-films');
-    var tabSeries = RT.$('tab-series');
+    var tabSeries= RT.$('tab-series');
     if (tab === 'films') {
-      if (films) films.classList.remove('hide');
+      if (films)  films.classList.remove('hide');
       if (series) series.classList.add('hide');
-      if (tabFilms) tabFilms.classList.add('active');
+      if (tabFilms)  tabFilms.classList.add('active');
       if (tabSeries) tabSeries.classList.remove('active');
     } else {
-      if (films) films.classList.add('hide');
+      if (films)  films.classList.add('hide');
       if (series) series.classList.remove('hide');
-      if (tabFilms) tabFilms.classList.remove('active');
+      if (tabFilms)  tabFilms.classList.remove('active');
       if (tabSeries) tabSeries.classList.add('active');
       RT.loadSeriesList();
     }
   };
+
+  // Back button from "My Series" screen
+  var backSeries = RT.$('btn-back-series');
+  if (backSeries) {
+    backSeries.addEventListener('click', function () {
+      RT.showScreen('dash'); // or 'landing' if you prefer
+    });
+  }
+
+  // ...rest of series.js...
+})();
 
   RT.loadSeriesList = function () {
     var container = RT.$('dash-series');

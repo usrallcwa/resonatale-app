@@ -1,6 +1,8 @@
 (function () {
   'use strict';
 
+  // ── Profile ──
+
   RT.loadProfile = function () {
     if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('login'); return; }
 
@@ -10,12 +12,6 @@
 
       var credits = RT.$('profile-credits');
       if (credits) credits.textContent = d.credits;
-
-      var photoStatus = RT.$('profile-photo-status');
-      if (photoStatus) {
-        photoStatus.textContent = d.hasPhotos ? d.photoCount + ' photos uploaded' : 'No photos yet';
-        photoStatus.className = d.hasPhotos ? 'profile-status ok' : 'profile-status';
-      }
 
       var voiceStatus = RT.$('profile-voice-status');
       if (voiceStatus) {
@@ -31,22 +27,17 @@
 
       var since = RT.$('profile-since');
       if (since && d.createdAt) since.textContent = d.createdAt.split('T')[0];
+
+      var refCode = RT.$('profile-ref-code');
+      if (refCode) refCode.textContent = d.refCode || '—';
+
     }).catch(function (err) {
-      RT.toast(err.message);
+      RT.toast(err.message || 'Failed to load profile.');
     });
   };
 
-  // Update photos button
-  var updatePhotos = RT.$('btn-update-photos');
-  if (updatePhotos) {
-    updatePhotos.addEventListener('click', function () {
-      RT.photos = [];
-      RT.refreshPhotos();
-      RT.showScreen('setup');
-    });
-  }
+  // ── Re-record voice ──
 
-  // Re-record voice button
   var updateVoice = RT.$('btn-update-voice');
   if (updateVoice) {
     updateVoice.addEventListener('click', function () {
@@ -55,20 +46,23 @@
     });
   }
 
-})();
-
-// ── Intro/Outro Upload ──
+  // ── Intro / Outro Upload ──
 
   function uploadVideo(type) {
     var inputId = type + '-upload';
     var input = RT.$(inputId);
     if (!input) return;
-    input.click();
-    input.onchange = function () {
-      var file = input.files[0];
+
+    // Replace node to prevent stacked listeners on repeat clicks
+    var fresh = input.cloneNode(true);
+    input.parentNode.replaceChild(fresh, input);
+
+    fresh.click();
+    fresh.addEventListener('change', function () {
+      var file = fresh.files[0];
       if (!file) return;
       if (file.size > 20 * 1024 * 1024) { RT.toast('Video must be under 20MB.'); return; }
-      if (!file.type.includes('mp4')) { RT.toast('Only MP4 files allowed.'); return; }
+      if (!file.type.includes('mp4'))    { RT.toast('Only MP4 files allowed.'); return; }
 
       RT.loading(true, 'Uploading ' + type + '...');
 
@@ -77,16 +71,23 @@
         var base64 = reader.result.split(',')[1];
         RT.uploadIntroOutro(type, base64).then(function () {
           RT.loading(false);
-          var status = RT.$(('profile-' + type + '-status'));
-          if (status) status.textContent = 'Uploaded ✓';
+          var status = RT.$('profile-' + type + '-status');
+          if (status) {
+            status.textContent = type.charAt(0).toUpperCase() + type.slice(1) + ' uploaded ✓';
+            status.className = 'profile-status ok';
+          }
           RT.toast(type.charAt(0).toUpperCase() + type.slice(1) + ' uploaded!', true);
-        }).catch(function (err) {
+        }).catch(function (e) {
           RT.loading(false);
-          RT.toast(err.message || 'Upload failed.');
+          RT.toast(e.message || 'Upload failed.');
         });
       };
+      reader.onerror = function () {
+        RT.loading(false);
+        RT.toast('Failed to read file.');
+      };
       reader.readAsDataURL(file);
-    };
+    });
   }
 
   var introBtn = RT.$('btn-upload-intro');
@@ -94,3 +95,5 @@
 
   var outroBtn = RT.$('btn-upload-outro');
   if (outroBtn) outroBtn.addEventListener('click', function () { uploadVideo('outro'); });
+
+})();

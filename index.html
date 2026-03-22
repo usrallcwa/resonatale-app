@@ -49,7 +49,7 @@
         <button type="button" class="menu-item" id="menu-home">🏠 Home</button>
         <button type="button" class="menu-item" id="menu-create">✨ Create Film</button>
         <button type="button" class="menu-item" id="menu-feed">🌍 Explore</button>
-        <button type="button" class="menu-item" id="menu-films">🎬 My Library</button>
+        <button type="button" class="menu-item" id="menu-films">🎬 My Films</button>
         <button type="button" class="menu-item menu-item-primary" id="menu-credits">💎 Add Credits</button>
         <div class="menu-divider" role="separator"></div>
         <button type="button" class="menu-item" id="menu-profile">👤 Profile</button>
@@ -587,24 +587,19 @@
       </div>
     </div>
 
-    <!-- ════ DASHBOARD ════ -->
-    <div id="s-dash" class="screen">
-      <div class="screen-inner">
-        <h2 class="screen-title">My Library</h2>
-        <div class="dash-tabs" role="tablist">
-          <button type="button" class="btn-outline dash-tab active" id="tab-films"
-            role="tab" aria-selected="true" aria-controls="dash-films">🎬 Films</button>
-          <button type="button" class="btn-outline dash-tab" id="tab-series"
-            role="tab" aria-selected="false" aria-controls="dash-series">📺 Series</button>
-        </div>
-        <div id="dash-films" class="dash-films" role="tabpanel"></div>
-        <div id="dash-series" class="dash-films hide" role="tabpanel"></div>
-        <div id="dash-empty" class="dash-empty hide">
-          <p>No films yet — create your first one!</p>
-          <button type="button" class="btn-primary" id="btn-dash-create">Create Film</button>
-        </div>
-      </div>
+   <!-- ════ MY FILMS ════ -->
+<div id="s-dash" class="screen">
+  <div class="screen-inner">
+    <h2 class="screen-title">My Films</h2>
+
+    <div id="dash-films" class="dash-films" role="tabpanel"></div>
+
+    <div id="dash-empty" class="dash-empty hide">
+      <p>No films yet — create your first one!</p>
+      <button type="button" class="btn-primary" id="btn-dash-create">Create Film</button>
     </div>
+  </div>
+</div>
 
     <!-- ════ EXPLORE FEED ════ -->
     <div id="s-feed" class="screen">

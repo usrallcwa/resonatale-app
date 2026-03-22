@@ -1,6 +1,9 @@
 (function () {
   'use strict';
 
+ (function () {
+  'use strict';
+
   // ── Render Film Card ──
 
   RT.renderFilmCard = function (film) {
@@ -31,9 +34,9 @@
     return card;
   };
 
-  // ── Load Films for Dashboard ──
+  // ── Load Films for "My Films" screen ──
 
-  RT.loadDashFilms = function () {
+  RT.loadDash = function () {
     RT.getCredits().catch(function () {});
 
     var list  = RT.$('dash-films');
@@ -64,6 +67,45 @@
         RT.toast(err.message || 'Failed to load films.');
       });
   };
+
+  // ── Film click handler ──
+
+  function handleFilmClick(film) {
+    if (film.status === 'done' && film.video_url) {
+      var v  = RT.$('film-video');
+      var dl = RT.$('btn-download');
+      if (v)  { v.src = film.video_url; v.load(); }
+      if (dl) dl.href = film.video_url;
+      RT.currentFilmId = film.id;
+      RT.renderShareButtons(RT.$('share-buttons'), film.video_url);
+      RT.showScreen('player');
+
+    } else if (film.status === 'processing' || film.status === 'pending') {
+      RT.currentFilmId = film.id;
+      RT.showScreen('rendering');
+      RT.pollFilmStatus(film.id);
+
+    } else if (film.status === 'failed') {
+      if (confirm('This film failed. Credits were refunded.\n\nRetry with the same story?')) {
+        RT.mood = film.mood || '';
+        RT.tier = film.tier || (RT.TIERS[0] ? RT.TIERS[0].id : 'shorts');
+        RT.showScreen('create');
+        RT.mountTurnstile();
+      }
+    }
+  }
+
+  // ── Wrap showScreen to auto-load films ──
+
+  var _showScreen = RT.showScreen;
+  RT.showScreen = function (id) {
+    _showScreen(id);
+    if (id === 'dash' && RT.isLoggedIn()) {
+      RT.loadDash();
+    }
+  };
+
+})();
 
   // ── Film click handler ──
 

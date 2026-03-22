@@ -122,6 +122,14 @@
   RT.loadSeries = function () {
     var list = RT.$('series-list');
     if (!list) return;
+
+    var newSeriesBtn = RT.$('btn-new-series');
+    if (newSeriesBtn) {
+      newSeriesBtn.onclick = function () {
+        RT.showScreen('create-series');
+      };
+    }
+
     list.innerHTML = '<p style="color:#636366;">Loading...</p>';
     RT.getSeries().then(function (data) {
       var series = data.series || [];
@@ -186,43 +194,28 @@
     });
   };
 
-  RT.loadSeries = function () {
-  var list = RT.$('series-list');
-  if (!list) return;
-
-  // Wire up create button here, not at page load
-  var newSeriesBtn = RT.$('btn-new-series');
-  if (newSeriesBtn) {
-    newSeriesBtn.onclick = function () {
-      RT.showScreen('create-series');
-    };
-  }
-
-  list.innerHTML = '<p style="color:#636366;">Loading...</p>';
-  RT.getSeries().then(function (data) {
-    var series = data.series || [];
-    if (series.length === 0) {
-      list.innerHTML = '<p style="color:#636366;">No series yet. Create your first one!</p>';
-      return;
-    }
-    list.innerHTML = '';
-    series.forEach(function (s) {
-      var card = document.createElement('div');
-      card.className = 'dash-card';
-      card.innerHTML = '<div class="dash-card-title">' + s.title + '</div>' +
-        '<div class="dash-card-meta">' + (s.episode_count || 0) + ' episodes · ' + (s.style || 'cinematic') + '</div>';
-      card.addEventListener('click', function () {
-        currentSeriesId = s.id;
-        currentSeries = s;
-        RT.loadSeriesDetail(s.id);
+  var saveSeriesBtn = RT.$('btn-save-series');
+  if (saveSeriesBtn) {
+    saveSeriesBtn.addEventListener('click', function () {
+      var title = RT.$('series-title') ? RT.$('series-title').value.trim() : '';
+      var characters = RT.$('series-characters') ? RT.$('series-characters').value.trim() : '';
+      var desc = RT.$('series-desc') ? RT.$('series-desc').value.trim() : '';
+      if (!title) { RT.toast('Enter a series title.'); return; }
+      if (!characters) { RT.toast('Describe your characters.'); return; }
+      RT.loading(true, 'Creating series...');
+      RT.createSeries({ title: title, characters: characters, style: seriesStyle, mood: seriesMood, description: desc }).then(function (data) {
+        RT.loading(false);
+        if (data.error) { RT.toast(data.error); return; }
+        RT.toast('Series created!', true);
+        currentSeriesId = data.seriesId;
+        RT.showScreen('series');
+        RT.loadSeries();
+      }).catch(function (err) {
+        RT.loading(false);
+        RT.toast(err.message || 'Failed to create series.');
       });
-      list.appendChild(card);
     });
-  }).catch(function () {
-    list.innerHTML = '<p style="color:#ff453a;">Failed to load series.</p>';
-  });
-};
-
+  }
 
   var newEpBtn = RT.$('btn-new-episode');
   if (newEpBtn) {

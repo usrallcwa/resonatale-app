@@ -1,11 +1,7 @@
 (function () {
   'use strict';
 
- (function () {
-  'use strict';
-
   // ── Render Film Card ──
-
   RT.renderFilmCard = function (film) {
     var card       = document.createElement('div');
     card.className = 'dash-card';
@@ -34,9 +30,8 @@
     return card;
   };
 
-  // ── Load Films for "My Films" screen ──
-
-  RT.loadDash = function () {
+  // ── Load Films ──
+  RT.loadDashFilms = function () {
     RT.getCredits().catch(function () {});
 
     var list  = RT.$('dash-films');
@@ -68,8 +63,10 @@
       });
   };
 
-  // ── Film click handler ──
+  // Keep loadDash as alias for compatibility
+  RT.loadDash = RT.loadDashFilms;
 
+  // ── Film Click Handler ──
   function handleFilmClick(film) {
     if (film.status === 'done' && film.video_url) {
       var v  = RT.$('film-video');
@@ -95,53 +92,13 @@
     }
   }
 
-  // ── Wrap showScreen to auto-load films ──
-
-  var _showScreen = RT.showScreen;
-  RT.showScreen = function (id) {
-    _showScreen(id);
-    if (id === 'dash' && RT.isLoggedIn()) {
-      RT.loadDash();
-    }
-  };
-
-})();
-
-  // ── Film click handler ──
-
-  function handleFilmClick(film) {
-    if (film.status === 'done' && film.video_url) {
-      var v  = RT.$('film-video');
-      var dl = RT.$('btn-download');
-      if (v)  { v.src = film.video_url; v.load(); }
-      if (dl) dl.href = film.video_url;
-      RT.currentFilmId = film.id;
-      RT.renderShareButtons(RT.$('share-buttons'), film.video_url);
-      RT.showScreen('player');
-
-    } else if (film.status === 'processing' || film.status === 'pending') {
-      RT.currentFilmId = film.id;
-      RT.showScreen('rendering');
-      RT.pollFilmStatus(film.id);
-
-    } else if (film.status === 'failed') {
-      if (confirm('This film failed. Credits were refunded.\n\nRetry with the same story?')) {
-        RT.mood = film.mood || '';
-        RT.tier = film.tier || (RT.TIERS[0] ? RT.TIERS[0].id : 'shorts');
-        RT.showScreen('create');
-        RT.mountTurnstile();
-      }
-    }
-  }
-
-  // ── Tabs: Films vs Series in My Library ──
-
+  // ── Tabs Setup ──
   function setupDashTabs() {
-    var tabFilms   = RT.$('tab-films');
-    var tabSeries  = RT.$('tab-series');
-    var panelFilms = RT.$('dash-films');
-    var panelSeries= RT.$('dash-series');
-    var empty      = RT.$('dash-empty');
+    var tabFilms    = RT.$('tab-films');
+    var tabSeries   = RT.$('tab-series');
+    var panelFilms  = RT.$('dash-films');
+    var panelSeries = RT.$('dash-series');
+    var empty       = RT.$('dash-empty');
 
     if (!tabFilms || !tabSeries || !panelFilms || !panelSeries) return;
 
@@ -150,12 +107,9 @@
       tabSeries.classList.remove('active');
       tabFilms.setAttribute('aria-selected', 'true');
       tabSeries.setAttribute('aria-selected', 'false');
-
       panelFilms.classList.remove('hide');
       panelSeries.classList.add('hide');
-
       if (empty) empty.classList.add('hide');
-
       RT.loadDashFilms();
     }
 
@@ -164,33 +118,20 @@
       tabFilms.classList.remove('active');
       tabSeries.setAttribute('aria-selected', 'true');
       tabFilms.setAttribute('aria-selected', 'false');
-
       panelSeries.classList.remove('hide');
       panelFilms.classList.add('hide');
-
       if (empty) empty.classList.add('hide');
-
-      // series.js should populate #dash-series
-      if (typeof RT.loadSeriesDash === 'function') {
-        RT.loadSeriesDash();
-      }
+      if (typeof RT.loadSeriesDash === 'function') RT.loadSeriesDash();
     }
 
-    tabFilms.addEventListener('click', function () {
-      activateFilms();
-    });
+    tabFilms.addEventListener('click', activateFilms);
+    tabSeries.addEventListener('click', activateSeries);
 
-    tabSeries.addEventListener('click', function () {
-      activateSeries();
-    });
-
-    // Default when opening My Library: Films tab
-    RT._activateDashFilms = activateFilms;
+    RT._activateDashFilms  = activateFilms;
     RT._activateDashSeries = activateSeries;
   }
 
-  // ── Wrap showScreen once to auto-load dash ──
-
+  // ── Wrap showScreen ONCE ──
   var _showScreen = RT.showScreen;
   RT.showScreen = function (id) {
     _showScreen(id);

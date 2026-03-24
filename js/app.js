@@ -213,13 +213,22 @@
     });
 
     // ── New Film Button ──
-    var newFilmBtn = RT.$('btn-new-film');
-    if (newFilmBtn) {
-      newFilmBtn.addEventListener('click', function () {
-        RT.showScreen('create');
-        RT.mountTurnstile();
-      });
-    }
+var newFilmBtn = RT.$('btn-new-film');
+if (newFilmBtn) {
+  newFilmBtn.addEventListener('click', function () {
+    RT.showScreen('create');
+    RT.mountTurnstile();
+  });
+}
+
+// ── Nav Back Button ──
+var navBack = RT.$('nav-back');
+if (navBack) {
+  navBack.addEventListener('click', function () {
+    RT.showScreen('dash');
+  });
+}
+
 
     // ── Auto-load Profile ──
     if (RT.isLoggedIn()) {

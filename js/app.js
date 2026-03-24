@@ -229,6 +229,38 @@ if (navBack) {
   });
 }
 
+// ── All Back Buttons ──
+var backMap = {
+  'btn-back-create':        'dash',
+  'btn-back-invite':        'dash',
+  'btn-back-create-series': 'dash',
+  'btn-back-series-detail': 'dash',
+  'btn-back-new-episode':   'dash'
+};
+Object.keys(backMap).forEach(function(id) {
+  var btn = RT.$(id);
+  if (btn) btn.addEventListener('click', function() {
+    RT.showScreen(backMap[id]);
+  });
+});
+
+
+// ── Create Screen Back Button ──
+var backCreate = RT.$('btn-back-create');
+if (backCreate) {
+  backCreate.addEventListener('click', function () {
+    RT.showScreen('dash');
+  });
+}
+
+// ── Invite Screen Back Button ──
+var backInvite = RT.$('btn-back-invite');
+if (backInvite) {
+  backInvite.addEventListener('click', function () {
+    RT.showScreen('dash');
+  });
+}
+
 
     // ── Auto-load Profile ──
     if (RT.isLoggedIn()) {

@@ -7,34 +7,52 @@
   var seriesMood      = 'comedy';
 
   RT.showDashTab = function (tab) {
-    var films    = RT.$('dash-films');
-    var series   = RT.$('dash-series');
-    var tabFilms = RT.$('tab-films');
-    var tabSeries= RT.$('tab-series');
+    var films     = RT.$('dash-films');
+    var series    = RT.$('dash-series');
+    var tabFilms  = RT.$('tab-films');
+    var tabSeries = RT.$('tab-series');
     if (tab === 'films') {
-      if (films)  films.classList.remove('hide');
-      if (series) series.classList.add('hide');
+      if (films)     films.classList.remove('hide');
+      if (series)    series.classList.add('hide');
       if (tabFilms)  tabFilms.classList.add('active');
       if (tabSeries) tabSeries.classList.remove('active');
     } else {
-      if (films)  films.classList.add('hide');
-      if (series) series.classList.remove('hide');
+      if (films)     films.classList.add('hide');
+      if (series)    series.classList.remove('hide');
       if (tabFilms)  tabFilms.classList.remove('active');
       if (tabSeries) tabSeries.classList.add('active');
       RT.loadSeriesList();
     }
   };
 
-    // Back button from "My Series" screen
+  // ── All Series Back Buttons ──
   var backSeries = RT.$('btn-back-series');
-  console.log('backSeries element:', backSeries);
   if (backSeries) {
     backSeries.addEventListener('click', function () {
-      console.log('Back Series button clicked');
-      RT.showScreen('dash'); // or 'landing'
+      RT.showScreen('dash');
     });
   }
 
+  var backSeriesDetail = RT.$('btn-back-series-detail');
+  if (backSeriesDetail) {
+    backSeriesDetail.addEventListener('click', function () {
+      RT.showScreen('dash');
+    });
+  }
+
+  var backCreateSeries = RT.$('btn-back-create-series');
+  if (backCreateSeries) {
+    backCreateSeries.addEventListener('click', function () {
+      RT.showScreen('dash');
+    });
+  }
+
+  var backNewEpisode = RT.$('btn-back-new-episode');
+  if (backNewEpisode) {
+    backNewEpisode.addEventListener('click', function () {
+      RT.showScreen('series-detail');  // goes back to series detail, not dash
+    });
+  }
 
   RT.loadSeriesList = function () {
     var container = RT.$('dash-series');
@@ -54,7 +72,7 @@
           '<div class="dash-card-meta">' + (s.style || 'cinematic') + ' · ' + (s.episode_count || 0) + ' episodes</div>';
         card.addEventListener('click', function () {
           currentSeriesId = s.id;
-          currentSeries = s;
+          currentSeries   = s;
           RT.showScreen('series-detail');
           RT.loadSeriesDetail(s.id);
         });
@@ -68,14 +86,14 @@
   var ssChips = RT.$('series-style-chips');
   if (ssChips) {
     var styles = [
-      { id: 'cinematic', icon: '🎬', label: 'Cinematic' },
-      { id: 'anime', icon: '🌸', label: 'Anime' },
-      { id: 'cartoon', icon: '🎨', label: 'Cartoon' },
-      { id: 'comic', icon: '💥', label: 'Comic Book' },
-      { id: 'noir', icon: '🖤', label: 'Film Noir' },
+      { id: 'cinematic',  icon: '🎬', label: 'Cinematic'  },
+      { id: 'anime',      icon: '🌸', label: 'Anime'      },
+      { id: 'cartoon',    icon: '🎨', label: 'Cartoon'    },
+      { id: 'comic',      icon: '💥', label: 'Comic Book' },
+      { id: 'noir',       icon: '🖤', label: 'Film Noir'  },
       { id: 'watercolor', icon: '🎭', label: 'Watercolor' },
-      { id: 'retro', icon: '📼', label: 'Retro VHS' },
-      { id: 'fantasy', icon: '🐉', label: 'Fantasy' }
+      { id: 'retro',      icon: '📼', label: 'Retro VHS'  },
+      { id: 'fantasy',    icon: '🐉', label: 'Fantasy'    }
     ];
     styles.forEach(function (s) {
       var btn = document.createElement('button');
@@ -86,7 +104,9 @@
       btn.addEventListener('click', function () {
         seriesStyle = s.id;
         var all = ssChips.querySelectorAll('.chip');
-        for (var i = 0; i < all.length; i++) all[i].classList.toggle('on', all[i].getAttribute('data-v') === s.id);
+        for (var i = 0; i < all.length; i++) {
+          all[i].classList.toggle('on', all[i].getAttribute('data-v') === s.id);
+        }
       });
       ssChips.appendChild(btn);
     });
@@ -104,7 +124,9 @@
       btn.addEventListener('click', function () {
         seriesMood = m;
         var all = smChips.querySelectorAll('.chip');
-        for (var i = 0; i < all.length; i++) all[i].classList.toggle('on', all[i].getAttribute('data-v') === m);
+        for (var i = 0; i < all.length; i++) {
+          all[i].classList.toggle('on', all[i].getAttribute('data-v') === m);
+        }
       });
       smChips.appendChild(btn);
     });
@@ -156,7 +178,7 @@
           '<div class="dash-card-meta">' + (s.episode_count || 0) + ' episodes · ' + (s.style || 'cinematic') + '</div>';
         card.addEventListener('click', function () {
           currentSeriesId = s.id;
-          currentSeries = s;
+          currentSeries   = s;
           RT.loadSeriesDetail(s.id);
         });
         list.appendChild(card);
@@ -168,14 +190,15 @@
 
   RT.loadSeriesDetail = function (seriesId) {
     RT.showScreen('series-detail');
-    var titleEl = RT.$('series-detail-title');
-    var descEl = RT.$('series-detail-desc');
-    var charsEl = RT.$('series-detail-chars');
+    var titleEl     = RT.$('series-detail-title');
+    var descEl      = RT.$('series-detail-desc');
+    var charsEl     = RT.$('series-detail-chars');
     var episodeList = RT.$('episode-list');
-    if (titleEl) titleEl.textContent = currentSeries ? currentSeries.title : 'Series';
-    if (descEl) descEl.textContent = currentSeries ? currentSeries.description : '';
-    if (charsEl) charsEl.textContent = currentSeries ? 'Characters: ' + currentSeries.characters : '';
+    if (titleEl)  titleEl.textContent  = currentSeries ? currentSeries.title : 'Series';
+    if (descEl)   descEl.textContent   = currentSeries ? currentSeries.description : '';
+    if (charsEl)  charsEl.textContent  = currentSeries ? 'Characters: ' + currentSeries.characters : '';
     if (episodeList) episodeList.innerHTML = '<p style="color:#636366;">Loading episodes...</p>';
+
     RT.getSeriesEpisodes(seriesId).then(function (data) {
       var episodes = data.episodes || [];
       if (episodes.length === 0) {
@@ -186,14 +209,15 @@
       episodes.forEach(function (ep) {
         var card = document.createElement('div');
         card.className = 'dash-card';
-        card.innerHTML = '<div class="dash-card-num">Episode ' + ep.episode_number + '</div>' +
+        card.innerHTML =
+          '<div class="dash-card-num">Episode ' + ep.episode_number + '</div>' +
           '<div class="dash-card-title">' + (ep.title || ep.brief || 'Untitled').slice(0, 40) + '</div>' +
           '<div class="dash-card-meta">' + ep.status + '</div>';
         card.addEventListener('click', function () {
           if (ep.status === 'done' && ep.video_url) {
-            var v = RT.$('film-video');
-            if (v) v.src = ep.video_url;
+            var v  = RT.$('film-video');
             var dl = RT.$('btn-download');
+            if (v)  v.src  = ep.video_url;
             if (dl) dl.href = ep.video_url;
             RT.showScreen('player');
           }
@@ -208,23 +232,24 @@
   var saveSeriesBtn = RT.$('btn-save-series');
   if (saveSeriesBtn) {
     saveSeriesBtn.addEventListener('click', function () {
-      var title = RT.$('series-title') ? RT.$('series-title').value.trim() : '';
+      var title      = RT.$('series-title')      ? RT.$('series-title').value.trim()      : '';
       var characters = RT.$('series-characters') ? RT.$('series-characters').value.trim() : '';
-      var desc = RT.$('series-desc') ? RT.$('series-desc').value.trim() : '';
-      if (!title) { RT.toast('Enter a series title.'); return; }
-      if (!characters) { RT.toast('Describe your characters.'); return; }
+      var desc       = RT.$('series-desc')       ? RT.$('series-desc').value.trim()       : '';
+      if (!title)      { RT.toast('Enter a series title.');        return; }
+      if (!characters) { RT.toast('Describe your characters.');    return; }
       RT.loading(true, 'Creating series...');
-      RT.createSeries({ title: title, characters: characters, style: seriesStyle, mood: seriesMood, description: desc }).then(function (data) {
-        RT.loading(false);
-        if (data.error) { RT.toast(data.error); return; }
-        RT.toast('Series created!', true);
-        currentSeriesId = data.seriesId;
-        RT.showScreen('series');
-        RT.loadSeries();
-      }).catch(function (err) {
-        RT.loading(false);
-        RT.toast(err.message || 'Failed to create series.');
-      });
+      RT.createSeries({ title, characters, style: seriesStyle, mood: seriesMood, description: desc })
+        .then(function (data) {
+          RT.loading(false);
+          if (data.error) { RT.toast(data.error); return; }
+          RT.toast('Series created!', true);
+          currentSeriesId = data.seriesId;
+          RT.showScreen('series');
+          RT.loadSeries();
+        }).catch(function (err) {
+          RT.loading(false);
+          RT.toast(err.message || 'Failed to create series.');
+        });
     });
   }
 
@@ -240,11 +265,11 @@
   var createEpBtn = RT.$('btn-create-episode');
   if (createEpBtn) {
     createEpBtn.addEventListener('click', function () {
-      var title = RT.$('episode-title') ? RT.$('episode-title').value.trim() : '';
-      var brief = RT.$('episode-brief') ? RT.$('episode-brief').value.trim() : '';
-      var slider = RT.$('episode-duration');
+      var title   = RT.$('episode-title') ? RT.$('episode-title').value.trim() : '';
+      var brief   = RT.$('episode-brief') ? RT.$('episode-brief').value.trim() : '';
+      var slider  = RT.$('episode-duration');
       var tierIdx = slider ? parseInt(slider.value) : 0;
-      var tier = RT.TIERS[tierIdx] || RT.TIERS[0];
+      var tier    = RT.TIERS[tierIdx] || RT.TIERS[0];
       if (!brief) { RT.toast('Describe what happens in this episode.'); return; }
       RT.getProfile().then(function () {
         if (RT.credits < tier.credits) {
@@ -257,21 +282,30 @@
         fetch(RT.API + '/film/create', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + RT.token },
-          body: JSON.stringify({ title: title, brief: brief, mood: currentSeries ? currentSeries.mood : 'comedy', language: RT.language, tier: tier.id, style: currentSeries ? currentSeries.style : 'cartoon', series_id: currentSeriesId })
-        }).then(function (r) { return r.json(); }).then(function (data) {
-          RT.loading(false);
-          if (data.filmId) {
-            RT.currentFilmId = data.filmId;
-            RT.showScreen('rendering');
-            RT.pollFilmStatus(data.filmId);
-            RT.toast('Episode started!', true);
-          } else {
-            RT.toast(data.error || 'Failed to create episode.');
-          }
-        }).catch(function (err) {
-          RT.loading(false);
-          RT.toast(err.message || 'Failed.');
-        });
+          body: JSON.stringify({
+            title,
+            brief,
+            mood:      currentSeries ? currentSeries.mood  : 'comedy',
+            language:  RT.language,
+            tier:      tier.id,
+            style:     currentSeries ? currentSeries.style : 'cartoon',
+            series_id: currentSeriesId
+          })
+        }).then(function (r) { return r.json(); })
+          .then(function (data) {
+            RT.loading(false);
+            if (data.filmId) {
+              RT.currentFilmId = data.filmId;
+              RT.showScreen('rendering');
+              RT.pollFilmStatus(data.filmId);
+              RT.toast('Episode started!', true);
+            } else {
+              RT.toast(data.error || 'Failed to create episode.');
+            }
+          }).catch(function (err) {
+            RT.loading(false);
+            RT.toast(err.message || 'Failed.');
+          });
       }).catch(function () {
         RT.toast('Could not verify credits. Try again.');
       });
@@ -281,8 +315,8 @@
   var epSlider = RT.$('episode-duration');
   if (epSlider) {
     epSlider.addEventListener('input', function () {
-      var idx = parseInt(epSlider.value);
-      var tier = RT.TIERS[idx] || RT.TIERS[0];
+      var idx   = parseInt(epSlider.value);
+      var tier  = RT.TIERS[idx] || RT.TIERS[0];
       var label = RT.$('episode-duration-label');
       if (label) label.textContent = tier.label + ' · ' + tier.desc + ' · ' + tier.scenes + ' scenes';
     });

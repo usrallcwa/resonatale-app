@@ -75,11 +75,11 @@
       if (dl) dl.href = film.video_url;
       RT.currentFilmId = film.id;
       RT.renderShareButtons(RT.$('share-buttons'), film.video_url);
-      RT.showScreen('player');
+      RT.showScreen('s-player');
 
     } else if (film.status === 'processing' || film.status === 'pending') {
       RT.currentFilmId = film.id;
-      RT.showScreen('rendering');
+      RT.showScreen('s-rendering');
       RT.pollFilmStatus(film.id);
 
     } else if (film.status === 'failed') {

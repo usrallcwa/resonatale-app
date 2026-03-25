@@ -25,14 +25,14 @@
 
   var items = {
     'menu-home': function () { RT.closeMenu(); RT.showScreen('landing'); },
-    'menu-create': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('signup'); return; } RT.showScreen('s-create'); RT.mountTurnstile(); },
-    'menu-films': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('login'); return; } RT.showScreen('dash'); },
-    'menu-credits': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('signup'); return; } RT.showScreen('credits'); RT.renderCredits(); },
-    'menu-profile': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('login'); return; } RT.showScreen('profile'); RT.loadProfile(); },
-    'menu-invite': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('login'); return; } RT.showScreen('invite'); RT.loadInvite(); },
-    'menu-series': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('login'); return; } RT.showScreen('series'); RT.loadSeries(); },
-    'menu-how': function () { RT.closeMenu(); RT.showScreen('how'); },
-    'menu-auth': function () { RT.closeMenu(); RT.showScreen('auth'); RT.showAuthForm('login'); },
+    'menu-create': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('s-auth'); RT.showAuthForm('signup'); return; } RT.showScreen('s-create'); RT.mountTurnstile(); },
+    'menu-films': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreRT.showScreen('s-auth')en('auth'); RT.showAuthForm('login'); return; } RT.showScreen('s-dash'); },
+    'menu-credits': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('s-auth'); RT.showAuthForm('signup'); return; } RT.showScreen('s-credits'); RT.renderCredits(); },
+    'menu-profile': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('s-auth'); RT.showAuthForm('login'); return; } RT.showScreen('s-profile'); RT.loadProfile(); },
+    'menu-invite': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('s-auth'); RT.showAuthForm('login'); return; } RT.showScreen('s-invite'); RT.loadInvite(); },
+    'menu-series': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('s-auth'); RT.showAuthForm('login'); return; } RT.showScreen('s-series'); RT.loadSeries(); },
+    'menu-how': function () { RT.closeMenu(); RT.showScreen('s-how'); },
+    'menu-auth': function () { RT.closeMenu(); RT.showScreen('s-auth'); RT.showAuthForm('login'); },
     'menu-logout': function () { RT.closeMenu(); RT.clearAuth(); RT.toast('Logged out.', true); updateAuthButton(); RT.showScreen('landing'); }
   };
     RT.updateAuthButton = function () {
@@ -60,8 +60,8 @@
   var navCredits = RT.$('nav-credits');
   if (navCredits) {
     navCredits.addEventListener('click', function () {
-      if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('signup'); return; }
-      RT.showScreen('credits');
+      if (!RT.isLoggedIn()) { RT.showScreen('s-auth'); RT.showAuthForm('signup'); return; }
+      RT.showScreen('s-credits');
       RT.renderCredits();
     });
   }

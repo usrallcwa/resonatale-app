@@ -183,7 +183,7 @@ RT.afterAuth = function () {
     if (setupBtn) {
       setupBtn.addEventListener('click', function () {
         if (!RT.voiceBlob)    { RT.toast('Record your voice first.'); return; }
-        if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('signup'); return; }
+        if (!RT.isLoggedIn()) { RT.showScreen('s-auth'); RT.showAuthForm('signup'); return; }
         uploadVoice();
       });
     }
@@ -197,14 +197,14 @@ RT.afterAuth = function () {
               RT.showScreen('s-create');
               RT.mountTurnstile();
             } else {
-              RT.showScreen('setup');
+              RT.showScreen('s-setup');
             }
           })
           .catch(function () {
-            RT.showScreen('setup');
+            RT.showScrRT.showScreen('s-setup')een('setup');
           });
       } else {
-        RT.showScreen('setup');
+        RT.showScRT.showScreen('s-setup')reen('setup');
       }
     }
 
@@ -226,7 +226,7 @@ if (newFilmBtn) {
 var navBack = RT.$('nav-back');
 if (navBack) {
   navBack.addEventListener('click', function () {
-    RT.showScreen('dash');
+    RT.showScreen('s-dash');
   });
 }
 
@@ -250,7 +250,7 @@ Object.keys(backMap).forEach(function(id) {
 var backCreate = RT.$('btn-back-create');
 if (backCreate) {
   backCreate.addEventListener('click', function () {
-    RT.showScreen('dash');
+    RT.showScreen('s-dash');
   });
 }
 
@@ -258,7 +258,7 @@ if (backCreate) {
 var backInvite = RT.$('btn-back-invite');
 if (backInvite) {
   backInvite.addEventListener('click', function () {
-    RT.showScreen('dash');
+    RT.showScreen('s-dash');
   });
 }
 

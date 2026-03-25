@@ -6,14 +6,14 @@
   var filmBtn = RT.$('btn-get-film');
   if (filmBtn) {
     filmBtn.addEventListener('click', function () {
-      if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('signup'); return; }
+      if (!RT.isLoggedIn()) { RT.showScreen('s-auth'); RT.showAuthForm('signup'); return; }
       var t = RT.TIERS.find(function (x) { return x.id === RT.tier; });
       if (!t) { RT.toast('Select a film tier.'); return; }
 
       if (RT.credits >= t.credits) {
         startFilm();
       } else {
-        RT.showScreen('credits');
+        RT.showScreen('s-credits');
         RT.renderCredits();
         RT.toast('You need ' + t.credits + ' credits to create this film.');
       }
@@ -65,7 +65,7 @@
       .then(function (data) {
         RT.loading(false);
         RT.currentFilmId = data.filmId;
-        RT.showScreen('rendering');
+        RT.showScreen('s-rendering');
         RT.toast('Film started! Hang tight while we create your masterpiece.', true);
         pollFilm(data.filmId);
       })
@@ -73,7 +73,7 @@
         RT.loading(false);
         var msg = err.message || '';
         if (msg.indexOf('Not enough credits') !== -1) {
-          RT.showScreen('credits');
+          RT.showScreen('s-credits');
           RT.renderCredits();
           RT.toast('Not enough credits for this film.');
         } else {
@@ -172,7 +172,7 @@
               RT.api('POST', '/film/' + RT.currentFilmId + '/view', {}).catch(function(){});
             });
           }
-          RT.showScreen('player');
+          RT.showScreen('s-player');
           RT.updateMenuCredits();
           RT.toast('Your film is ready!', true);
         }

@@ -203,7 +203,7 @@
     savePreview(data.scenes);
     RT.renderScenes(data.scenes);
     updateTierInfo();
-    RT.showScreen('preview');
+    RT.showScreen('s-preview');
     RT.toast('Script ready!', true);
     RT.resetTurnstile();
   }

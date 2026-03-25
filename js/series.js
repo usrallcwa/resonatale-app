@@ -29,21 +29,21 @@
   var backSeries = RT.$('btn-back-series');
   if (backSeries) {
     backSeries.addEventListener('click', function () {
-      RT.showScreen('dash');
+      RT.showScreen('s-dash');
     });
   }
 
   var backSeriesDetail = RT.$('btn-back-series-detail');
   if (backSeriesDetail) {
     backSeriesDetail.addEventListener('click', function () {
-      RT.showScreen('dash');
+      RT.showScreen('s-dash');
     });
   }
 
   var backCreateSeries = RT.$('btn-back-create-series');
   if (backCreateSeries) {
     backCreateSeries.addEventListener('click', function () {
-      RT.showScreen('dash');
+      RT.showScreen('s-dash');
     });
   }
 
@@ -219,7 +219,7 @@
             var dl = RT.$('btn-download');
             if (v)  v.src  = ep.video_url;
             if (dl) dl.href = ep.video_url;
-            RT.showScreen('player');
+            RT.showScreen('s-player');
           }
         });
         episodeList.appendChild(card);
@@ -244,7 +244,7 @@
           if (data.error) { RT.toast(data.error); return; }
           RT.toast('Series created!', true);
           currentSeriesId = data.seriesId;
-          RT.showScreen('series');
+          RT.showScreen('s-series');
           RT.loadSeries();
         }).catch(function (err) {
           RT.loading(false);
@@ -273,7 +273,7 @@
       if (!brief) { RT.toast('Describe what happens in this episode.'); return; }
       RT.getProfile().then(function () {
         if (RT.credits < tier.credits) {
-          RT.showScreen('credits');
+          RT.showScreen('s-credits');
           RT.renderCredits();
           RT.toast('You need ' + tier.credits + ' credits. You have ' + RT.credits + '.');
           return;
@@ -296,7 +296,7 @@
             RT.loading(false);
             if (data.filmId) {
               RT.currentFilmId = data.filmId;
-              RT.showScreen('rendering');
+              RT.showScreen('s-rendering');
               RT.pollFilmStatus(data.filmId);
               RT.toast('Episode started!', true);
             } else {

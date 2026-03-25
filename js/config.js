@@ -8,14 +8,13 @@
   RT.API          = 'https://api.resonatale.com';
   RT.TURNSTILE_KEY = '0x4AAAAAACLI9vyJZYGLg9lS';
 
-  // ── Tiers ──
+ RT.TIERS = [
+  { id: 'shorts',   label: 'Shorts',       minutes: 0.5, scenes: 3,  credits: 15, price: '$15', desc: '30 seconds' },
+  { id: 'short',    label: 'Short Film',   minutes: 1,   scenes: 5,  credits: 30, price: '$30', desc: '1 minute'   },
+  { id: 'standard', label: 'Standard',     minutes: 2,   scenes: 8,  credits: 60, price: '$60', desc: '2 minutes'  },
+  { id: 'feature',  label: 'Feature Film', minutes: 3,   scenes: 12, credits: 90, price: '$90', desc: '3 minutes'  },
+];
 
-  RT.TIERS = [
-    { id: 'shorts',   label: 'Shorts',      minutes: 0.5, scenes: 3,  credits: 3,  price: '$3',  desc: '30 seconds' },
-    { id: 'short',    label: 'Short Film',  minutes: 1,   scenes: 5,  credits: 5,  price: '$5',  desc: '1 minute'   },
-    { id: 'standard', label: 'Standard',    minutes: 2,   scenes: 8,  credits: 10, price: '$10', desc: '2 minutes'  },
-    { id: 'feature',  label: 'Feature Film',minutes: 3,   scenes: 12, credits: 15, price: '$15', desc: '3 minutes'  },
-  ];
 
   // ── Moods ──
 

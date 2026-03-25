@@ -153,7 +153,7 @@
     </div>
 
     <!-- ════ SETUP (Voice) ════ -->
-     
+
     <div id="s-setup" class="screen">
       <div class="screen-inner">
         <h2 class="screen-title">Set Up Your Voice</h2>
@@ -494,6 +494,16 @@
           <div class="chips" id="series-mood-chips" role="group" aria-label="Default mood"></div>
         </div>
         <div class="section">
+          <div class="section">
+          <label class="label" for="series-episodes">Total Episodes</label>
+          <select id="series-episodes" class="input">
+            <option value="3">3 Episodes</option>
+            <option value="6" selected>6 Episodes</option>
+            <option value="10">10 Episodes</option>
+            <option value="12">12 Episodes</option>
+            <option value="20">20 Episodes</option>
+          </select>
+        </div>
           <label class="label" for="series-desc">Series Description (Optional)</label>
           <textarea id="series-desc" class="input textarea" rows="2"
             placeholder="A classic rivalry with hilarious adventures"></textarea>

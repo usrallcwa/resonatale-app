@@ -199,31 +199,64 @@
     if (charsEl)  charsEl.textContent  = currentSeries ? 'Characters: ' + currentSeries.characters : '';
     if (episodeList) episodeList.innerHTML = '<p style="color:#636366;">Loading episodes...</p>';
 
+    var totalEps = (currentSeries && currentSeries.total_episodes) ? currentSeries.total_episodes : 6;
+
     RT.getSeriesEpisodes(seriesId).then(function (data) {
       var episodes = data.episodes || [];
-      if (episodes.length === 0) {
-        episodeList.innerHTML = '<p style="color:#636366;">No episodes yet. Create the first one!</p>';
-        return;
-      }
       episodeList.innerHTML = '';
-      episodes.forEach(function (ep) {
+
+      // Show all episode slots
+      for (var i = 1; i <= totalEps; i++) {
+        var ep = null;
+        for (var j = 0; j < episodes.length; j++) {
+          if (episodes[j].episode_number === i) { ep = episodes[j]; break; }
+        }
+
         var card = document.createElement('div');
         card.className = 'dash-card';
-        card.innerHTML =
-          '<div class="dash-card-num">Episode ' + ep.episode_number + '</div>' +
-          '<div class="dash-card-title">' + (ep.title || ep.brief || 'Untitled').slice(0, 40) + '</div>' +
-          '<div class="dash-card-meta">' + ep.status + '</div>';
-        card.addEventListener('click', function () {
-          if (ep.status === 'done' && ep.video_url) {
-            var v  = RT.$('film-video');
-            var dl = RT.$('btn-download');
-            if (v)  v.src  = ep.video_url;
-            if (dl) dl.href = ep.video_url;
-            RT.showScreen('player');
+
+        if (ep) {
+          // Episode exists
+          var statusIcon = ep.status === 'done' ? '✅' : ep.status === 'failed' ? '❌' : '⏳';
+          card.innerHTML =
+            '<div class="dash-card-num">' + statusIcon + ' Episode ' + i + '</div>' +
+            '<div class="dash-card-title">' + (ep.title || ep.brief || 'Untitled').slice(0, 40) + '</div>' +
+            '<div class="dash-card-meta">' + ep.status + '</div>';
+          card.style.opacity = '1';
+
+          (function (episode) {
+            card.addEventListener('click', function () {
+              if (episode.status === 'done' && episode.video_url) {
+                var v  = RT.$('film-video');
+                var dl = RT.$('btn-download');
+                if (v)  v.src  = episode.video_url;
+                if (dl) dl.href = episode.video_url;
+                RT.showScreen('player');
+              }
+            });
+          })(ep);
+        } else {
+          // Episode slot — not created yet
+          var isNext = (i === episodes.length + 1);
+          card.innerHTML =
+            '<div class="dash-card-num">📝 Episode ' + i + '</div>' +
+            '<div class="dash-card-title">' + (isNext ? 'Ready to create' : 'Locked') + '</div>' +
+            '<div class="dash-card-meta">' + (isNext ? 'Tap to create' : 'Create previous episodes first') + '</div>';
+          card.style.opacity = isNext ? '1' : '0.4';
+
+          if (isNext) {
+            (function (epNum) {
+              card.addEventListener('click', function () {
+                var titleEl2 = RT.$('episode-series-title');
+                if (titleEl2 && currentSeries) titleEl2.textContent = currentSeries.title + ' — Episode ' + epNum;
+                RT.showScreen('new-episode');
+              });
+            })(i);
           }
-        });
+        }
+
         episodeList.appendChild(card);
-      });
+      }
     }).catch(function () {
       episodeList.innerHTML = '<p style="color:#ff453a;">Failed to load episodes.</p>';
     });
@@ -238,7 +271,8 @@
       if (!title)      { RT.toast('Enter a series title.');        return; }
       if (!characters) { RT.toast('Describe your characters.');    return; }
       RT.loading(true, 'Creating series...');
-      RT.createSeries({ title, characters, style: seriesStyle, mood: seriesMood, description: desc })
+      var totalEpisodes = RT.$('series-episodes') ? parseInt(RT.$('series-episodes').value) : 6;
+      RT.createSeries({ title: title, characters: characters, style: seriesStyle, mood: seriesMood, description: desc, total_episodes: totalEpisodes })
         .then(function (data) {
           RT.loading(false);
           if (data.error) { RT.toast(data.error); return; }

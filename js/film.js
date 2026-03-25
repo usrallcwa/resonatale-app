@@ -25,7 +25,7 @@
   var retryBtn = RT.$('btn-retry');
   if (retryBtn) {
     retryBtn.addEventListener('click', function () {
-      RT.showScreen('create');
+      RT.showScreen('s-create');
       RT.mountTurnstile();
     });
   }

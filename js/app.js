@@ -157,7 +157,7 @@
         RT.loading(false);
         RT.hasVoice = data.cloned;
         RT.toast(data.cloned ? 'Voice cloned! ✓' : 'Voice saved. Processing...', true);
-        RT.showScreen('create');
+        RT.showScreen('s-create');
         RT.mountTurnstile();
       }).catch(function (err) {
         RT.loading(false);
@@ -165,17 +165,18 @@
       });
     }
 
-    // ── After Auth ──
-    RT.afterAuth = function () {
-      if (RT.voiceBlob) {
-        uploadVoice();
-      } else if (RT.hasVoice) {
-        RT.showScreen('create');
-        RT.mountTurnstile();
-      } else {
-        RT.showScreen('setup');
-      }
-    };
+   // ── After Auth ──
+RT.afterAuth = function () {
+  if (RT.voiceBlob) {
+    uploadVoice();
+  } else if (RT.hasVoice) {
+    RT.showScreen('s-create');
+    RT.mountTurnstile();
+  } else {
+    RT.showScreen('s-setup');
+  }
+};
+
 
     // ── Setup Done Button ──
     var setupBtn = RT.$('btn-setup-done');
@@ -193,7 +194,7 @@
         RT.getProfile()
           .then(function () {
             if (RT.hasVoice) {
-              RT.showScreen('create');
+              RT.showScreen('s-create');
               RT.mountTurnstile();
             } else {
               RT.showScreen('setup');
@@ -216,7 +217,7 @@
 var newFilmBtn = RT.$('btn-new-film');
 if (newFilmBtn) {
   newFilmBtn.addEventListener('click', function () {
-    RT.showScreen('create');
+    RT.showScreen('s-create');
     RT.mountTurnstile();
   });
 }

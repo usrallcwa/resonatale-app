@@ -60,7 +60,7 @@
         RT.getCredits()
           .then(function () {
             RT.toast('Payment successful! Credits added. ✓', true);
-            RT.showScreen('create');
+            RT.showScreen('s-create');
             RT.mountTurnstile();
           })
           .catch(function () {

@@ -86,7 +86,7 @@
       if (confirm('This film failed. Credits were refunded.\n\nRetry with the same story?')) {
         RT.mood = film.mood || '';
         RT.tier = film.tier || (RT.TIERS[0] ? RT.TIERS[0].id : 'shorts');
-        RT.showScreen('create');
+        RT.showScreen('s-create');
         RT.mountTurnstile();
       }
     }

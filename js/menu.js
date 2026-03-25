@@ -25,7 +25,7 @@
 
   var items = {
     'menu-home': function () { RT.closeMenu(); RT.showScreen('landing'); },
-    'menu-create': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('signup'); return; } RT.showScreen('create'); RT.mountTurnstile(); },
+    'menu-create': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('signup'); return; } RT.showScreen('s-create'); RT.mountTurnstile(); },
     'menu-films': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('login'); return; } RT.showScreen('dash'); },
     'menu-credits': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('signup'); return; } RT.showScreen('credits'); RT.renderCredits(); },
     'menu-profile': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('login'); return; } RT.showScreen('profile'); RT.loadProfile(); },

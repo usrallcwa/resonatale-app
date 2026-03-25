@@ -53,11 +53,11 @@
 
       // 12, 3, 6, 9 labels
       var labels = { 0: '12', 3: '3', 6: '6', 9: '9' };
-      ctx.font      = '600 10px -apple-system, sans-serif';
-      ctx.textAlign = 'center';
+      ctx.font       = '600 10px -apple-system, sans-serif';
+      ctx.textAlign  = 'center';
       ctx.textBaseline = 'middle';
       for (var idx in labels) {
-        var angle = (parseInt(idx) * Math.PI) / 6 - Math.PI / 2;
+        var angle = (parseInt(idx, 10) * Math.PI) / 6 - Math.PI / 2;
         var lx = cx + Math.cos(angle) * (r - 18);
         var ly = cy + Math.sin(angle) * (r - 18);
         ctx.fillStyle = 'rgba(255,255,255,0.7)';
@@ -122,7 +122,6 @@
     });
   }
 
-
   // ── Everything else after DOM is ready ──
   document.addEventListener('DOMContentLoaded', function () {
 
@@ -157,7 +156,7 @@
         RT.loading(false);
         RT.hasVoice = data.cloned;
         RT.toast(data.cloned ? 'Voice cloned! ✓' : 'Voice saved. Processing...', true);
-        RT.showScreen('s-create');
+        RT.showScreen('create');
         RT.mountTurnstile();
       }).catch(function (err) {
         RT.loading(false);
@@ -165,17 +164,17 @@
       });
     }
 
-       // ── After Auth ──
+    // ── After Auth ──
     RT.afterAuth = function () {
       if (RT.voiceBlob) {
         uploadVoice().catch(function () {
-          RT.showScreen('s-setup');
+          RT.showScreen('setup');
         });
       } else if (RT.hasVoice) {
-        RT.showScreen('s-create');
+        RT.showScreen('create');
         RT.mountTurnstile();
       } else {
-        RT.showScreen('s-setup');
+        RT.showScreen('setup');
       }
     };
 
@@ -188,7 +187,7 @@
           return;
         }
         if (!RT.isLoggedIn()) {
-          RT.showScreen('s-auth');
+          RT.showScreen('auth');
           RT.showAuthForm('signup');
           return;
         }
@@ -202,23 +201,23 @@
         RT.getProfile()
           .then(function () {
             if (RT.hasVoice) {
-              RT.showScreen('s-create');
+              RT.showScreen('create');
               RT.mountTurnstile();
             } else if (RT.voiceBlob) {
               uploadVoice().catch(function () {
-                RT.showScreen('s-setup');
+                RT.showScreen('setup');
               });
             } else {
-              RT.showScreen('s-setup');
+              RT.showScreen('setup');
             }
           })
           .catch(function () {
             RT.clearAuth();
-            RT.showScreen('s-auth');
+            RT.showScreen('auth');
             RT.showAuthForm('signup');
           });
       } else {
-        RT.showScreen('s-auth');
+        RT.showScreen('auth');
         RT.showAuthForm('signup');
       }
     }
@@ -232,7 +231,7 @@
     var newFilmBtn = RT.$('btn-new-film');
     if (newFilmBtn) {
       newFilmBtn.addEventListener('click', function () {
-        RT.showScreen('s-create');
+        RT.showScreen('create');
         RT.mountTurnstile();
       });
     }
@@ -241,17 +240,17 @@
     var navBack = RT.$('nav-back');
     if (navBack) {
       navBack.addEventListener('click', function () {
-        RT.showScreen('s-dash');
+        RT.showScreen('dash');
       });
     }
 
     // ── All Back Buttons ──
     var backMap = {
-      'btn-back-create':        's-dash',
-      'btn-back-invite':        's-dash',
-      'btn-back-create-series': 's-dash',
-      'btn-back-series-detail': 's-dash',
-      'btn-back-new-episode':   's-dash'
+      'btn-back-create':        'dash',
+      'btn-back-invite':        'dash',
+      'btn-back-create-series': 'dash',
+      'btn-back-series-detail': 'dash',
+      'btn-back-new-episode':   'dash'
     };
     Object.keys(backMap).forEach(function (id) {
       var btn = RT.$(id);
@@ -316,8 +315,12 @@
           ta.style.opacity  = '0';
           document.body.appendChild(ta);
           ta.select();
-          try { document.execCommand('copy'); RT.toast('Link copied! ✓', true); }
-          catch (e) { RT.toast('Copy: ' + url); }
+          try {
+            document.execCommand('copy');
+            RT.toast('Link copied! ✓', true);
+          } catch (e) {
+            RT.toast('Copy: ' + url);
+          }
           document.body.removeChild(ta);
         }
       }
@@ -330,4 +333,4 @@
 
   }); // end DOMContentLoaded
 
-})(); 
+})();

@@ -27,13 +27,20 @@
 
   // ── Screen Nav ──
 
-  RT.showScreen = function (id) {
-    var screens = document.querySelectorAll('.screen');
-    for (var i = 0; i < screens.length; i++) screens[i].classList.remove('active');
-    var s = RT.$('s-' + id);
-    if (s) s.classList.add('active');
-    window.scrollTo(0, 0);
-  };
+ RT.showScreen = function (id) {
+  var screens = document.querySelectorAll('.screen');
+  for (var i = 0; i < screens.length; i++) {
+    screens[i].classList.remove('active');
+  }
+
+  var s = RT.$(id);  // <-- use id directly
+  if (s) {
+    s.classList.add('active');
+  }
+
+  window.scrollTo(0, 0);
+};
+
 
   // ── Update Credits Display ──
 

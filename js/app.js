@@ -165,25 +165,33 @@
       });
     }
 
-   // ── After Auth ──
-RT.afterAuth = function () {
-  if (RT.voiceBlob) {
-    uploadVoice();
-  } else if (RT.hasVoice) {
-    RT.showScreen('s-create');
-    RT.mountTurnstile();
-  } else {
-    RT.showScreen('s-setup');
-  }
-};
-
+       // ── After Auth ──
+    RT.afterAuth = function () {
+      if (RT.voiceBlob) {
+        uploadVoice().catch(function () {
+          RT.showScreen('s-setup');
+        });
+      } else if (RT.hasVoice) {
+        RT.showScreen('s-create');
+        RT.mountTurnstile();
+      } else {
+        RT.showScreen('s-setup');
+      }
+    };
 
     // ── Setup Done Button ──
     var setupBtn = RT.$('btn-setup-done');
     if (setupBtn) {
       setupBtn.addEventListener('click', function () {
-        if (!RT.voiceBlob)    { RT.toast('Record your voice first.'); return; }
-        if (!RT.isLoggedIn()) { RT.showScreen('s-auth'); RT.showAuthForm('signup'); return; }
+        if (!RT.voiceBlob) {
+          RT.toast('Record your voice first.');
+          return;
+        }
+        if (!RT.isLoggedIn()) {
+          RT.showScreen('s-auth');
+          RT.showAuthForm('signup');
+          return;
+        }
         uploadVoice();
       });
     }
@@ -196,15 +204,22 @@ RT.afterAuth = function () {
             if (RT.hasVoice) {
               RT.showScreen('s-create');
               RT.mountTurnstile();
+            } else if (RT.voiceBlob) {
+              uploadVoice().catch(function () {
+                RT.showScreen('s-setup');
+              });
             } else {
               RT.showScreen('s-setup');
             }
           })
           .catch(function () {
-            RT.showScrRT.showScreen('s-setup')een('setup');
+            RT.clearAuth();
+            RT.showScreen('s-auth');
+            RT.showAuthForm('signup');
           });
       } else {
-        RT.showScRT.showScreen('s-setup')reen('setup');
+        RT.showScreen('s-auth');
+        RT.showAuthForm('signup');
       }
     }
 
@@ -214,54 +229,38 @@ RT.afterAuth = function () {
     });
 
     // ── New Film Button ──
-var newFilmBtn = RT.$('btn-new-film');
-if (newFilmBtn) {
-  newFilmBtn.addEventListener('click', function () {
-    RT.showScreen('s-create');
-    RT.mountTurnstile();
-  });
-}
+    var newFilmBtn = RT.$('btn-new-film');
+    if (newFilmBtn) {
+      newFilmBtn.addEventListener('click', function () {
+        RT.showScreen('s-create');
+        RT.mountTurnstile();
+      });
+    }
 
-// ── Nav Back Button ──
-var navBack = RT.$('nav-back');
-if (navBack) {
-  navBack.addEventListener('click', function () {
-    RT.showScreen('s-dash');
-  });
-}
+    // ── Nav Back Button ──
+    var navBack = RT.$('nav-back');
+    if (navBack) {
+      navBack.addEventListener('click', function () {
+        RT.showScreen('s-dash');
+      });
+    }
 
-// ── All Back Buttons ──
-var backMap = {
-  'btn-back-create':        'dash',
-  'btn-back-invite':        'dash',
-  'btn-back-create-series': 'dash',
-  'btn-back-series-detail': 'dash',
-  'btn-back-new-episode':   'dash'
-};
-Object.keys(backMap).forEach(function(id) {
-  var btn = RT.$(id);
-  if (btn) btn.addEventListener('click', function() {
-    RT.showScreen(backMap[id]);
-  });
-});
-
-
-// ── Create Screen Back Button ──
-var backCreate = RT.$('btn-back-create');
-if (backCreate) {
-  backCreate.addEventListener('click', function () {
-    RT.showScreen('s-dash');
-  });
-}
-
-// ── Invite Screen Back Button ──
-var backInvite = RT.$('btn-back-invite');
-if (backInvite) {
-  backInvite.addEventListener('click', function () {
-    RT.showScreen('s-dash');
-  });
-}
-
+    // ── All Back Buttons ──
+    var backMap = {
+      'btn-back-create':        's-dash',
+      'btn-back-invite':        's-dash',
+      'btn-back-create-series': 's-dash',
+      'btn-back-series-detail': 's-dash',
+      'btn-back-new-episode':   's-dash'
+    };
+    Object.keys(backMap).forEach(function (id) {
+      var btn = RT.$(id);
+      if (btn) {
+        btn.addEventListener('click', function () {
+          RT.showScreen(backMap[id]);
+        });
+      }
+    });
 
     // ── Auto-load Profile ──
     if (RT.isLoggedIn()) {
@@ -331,4 +330,4 @@ if (backInvite) {
 
   }); // end DOMContentLoaded
 
-})();
+})(); 

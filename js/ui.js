@@ -3,8 +3,6 @@
 
   var toastTimer = null;
 
-  // ── Toast ──
-
   RT.toast = function (msg, ok) {
     var el = RT.$('toast');
     if (!el) return;
@@ -13,8 +11,6 @@
     el.className = 'toast show' + (ok ? ' ok' : '');
     toastTimer = setTimeout(function () { el.classList.remove('show'); }, 4500);
   };
-
-  // ── Loader ──
 
   RT.loading = function (show, msg) {
     var el = RT.$('loading-overlay');
@@ -25,29 +21,17 @@
     else el.classList.add('hide');
   };
 
-  // ── Screen Nav ──
-
- RT.showScreen = function (id) {
-  var screens = document.querySelectorAll('.screen');
-  for (var i = 0; i < screens.length; i++) {
-    screens[i].classList.remove('active');
-  }
-
- RT.showScreen = function (id) {
+  RT.showScreen = function (id) {
     var screens = document.querySelectorAll('.screen');
     for (var i = 0; i < screens.length; i++) {
       screens[i].classList.remove('active');
     }
-
     var s = document.getElementById('s-' + id) || document.getElementById(id);
     if (s) {
       s.classList.add('active');
     }
-
     window.scrollTo(0, 0);
   };
-
-  // ── Update Credits Display ──
 
   RT.updateCredits = function (n) {
     RT.credits = n || 0;
@@ -55,14 +39,11 @@
     for (var i = 0; i < els.length; i++) els[i].textContent = RT.credits;
   };
 
-  // ── Render Share Buttons ──
-
   RT.renderShareButtons = function (container, videoUrl) {
     if (!container || !videoUrl) return;
     container.innerHTML = '';
     var text = encodeURIComponent('Check out my AI film!');
     var url = encodeURIComponent(videoUrl);
-
     RT.SHARE.forEach(function (s) {
       var link = s.url.replace('{text}', text).replace('{url}', url);
       var a = document.createElement('a');

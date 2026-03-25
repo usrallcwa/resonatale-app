@@ -4,11 +4,17 @@
   var menu = RT.$('menu-overlay');
 
   RT.openMenu = function () {
-    if (menu) { menu.classList.add('open'); document.body.style.overflow = 'hidden'; }
+    if (menu) {
+      menu.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
   };
 
   RT.closeMenu = function () {
-    if (menu) { menu.classList.remove('open'); document.body.style.overflow = ''; }
+    if (menu) {
+      menu.classList.remove('open');
+      document.body.style.overflow = '';
+    }
   };
 
   var menuBtn = RT.$('btn-menu');
@@ -24,26 +30,96 @@
   }
 
   var items = {
-    'menu-home': function () { RT.closeMenu(); RT.showScreen('landing'); },
-    'menu-create': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('s-auth'); RT.showAuthForm('signup'); return; } RT.showScreen('s-create'); RT.mountTurnstile(); },
-    'menu-films': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreRT.showScreen('s-auth')en('auth'); RT.showAuthForm('login'); return; } RT.showScreen('s-dash'); },
-    'menu-credits': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('s-auth'); RT.showAuthForm('signup'); return; } RT.showScreen('s-credits'); RT.renderCredits(); },
-    'menu-profile': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('s-auth'); RT.showAuthForm('login'); return; } RT.showScreen('s-profile'); RT.loadProfile(); },
-    'menu-invite': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('s-auth'); RT.showAuthForm('login'); return; } RT.showScreen('s-invite'); RT.loadInvite(); },
-    'menu-series': function () { RT.closeMenu(); if (!RT.isLoggedIn()) { RT.showScreen('s-auth'); RT.showAuthForm('login'); return; } RT.showScreen('s-series'); RT.loadSeries(); },
-    'menu-how': function () { RT.closeMenu(); RT.showScreen('s-how'); },
-    'menu-auth': function () { RT.closeMenu(); RT.showScreen('s-auth'); RT.showAuthForm('login'); },
-    'menu-logout': function () { RT.closeMenu(); RT.clearAuth(); RT.toast('Logged out.', true); updateAuthButton(); RT.showScreen('landing'); }
+    'menu-home': function () {
+      RT.closeMenu();
+      RT.showScreen('s-landing');
+    },
+    'menu-create': function () {
+      RT.closeMenu();
+      if (!RT.isLoggedIn()) {
+        RT.showScreen('s-auth');
+        RT.showAuthForm('signup');
+        return;
+      }
+      RT.showScreen('s-create');
+      RT.mountTurnstile();
+    },
+    'menu-films': function () {
+      RT.closeMenu();
+      if (!RT.isLoggedIn()) {
+        RT.showScreen('s-auth');
+        RT.showAuthForm('login');
+        return;
+      }
+      RT.showScreen('s-dash');
+    },
+    'menu-credits': function () {
+      RT.closeMenu();
+      if (!RT.isLoggedIn()) {
+        RT.showScreen('s-auth');
+        RT.showAuthForm('signup');
+        return;
+      }
+      RT.showScreen('s-credits');
+      RT.renderCredits();
+    },
+    'menu-profile': function () {
+      RT.closeMenu();
+      if (!RT.isLoggedIn()) {
+        RT.showScreen('s-auth');
+        RT.showAuthForm('login');
+        return;
+      }
+      RT.showScreen('s-profile');
+      RT.loadProfile();
+    },
+    'menu-invite': function () {
+      RT.closeMenu();
+      if (!RT.isLoggedIn()) {
+        RT.showScreen('s-auth');
+        RT.showAuthForm('login');
+        return;
+      }
+      RT.showScreen('s-invite');
+      RT.loadInvite();
+    },
+    'menu-series': function () {
+      RT.closeMenu();
+      if (!RT.isLoggedIn()) {
+        RT.showScreen('s-auth');
+        RT.showAuthForm('login');
+        return;
+      }
+      RT.showScreen('s-series');
+      RT.loadSeries();
+    },
+    'menu-how': function () {
+      RT.closeMenu();
+      RT.showScreen('s-how');
+    },
+    'menu-auth': function () {
+      RT.closeMenu();
+      RT.showScreen('s-auth');
+      RT.showAuthForm('login');
+    },
+    'menu-logout': function () {
+      RT.closeMenu();
+      RT.clearAuth();
+      RT.toast('Logged out.', true);
+      RT.updateAuthButton();
+      RT.showScreen('s-landing');
+    }
   };
-    RT.updateAuthButton = function () {
+
+  RT.updateAuthButton = function () {
     var logoutBtn = RT.$('menu-logout');
     var authBtn   = RT.$('menu-auth');
     if (RT.isLoggedIn()) {
       if (logoutBtn) logoutBtn.style.display = 'block';
-      if (authBtn)   authBtn.style.display = 'none';
+      if (authBtn)   authBtn.style.display   = 'none';
     } else {
       if (logoutBtn) logoutBtn.style.display = 'none';
-      if (authBtn)   authBtn.style.display = 'block';
+      if (authBtn)   authBtn.style.display   = 'block';
     }
   };
 
@@ -54,13 +130,19 @@
 
   RT.updateMenuCredits = function () {
     var els = document.querySelectorAll('.js-credits');
-    els.forEach(function (el) { el.textContent = RT.credits || 0; });
+    els.forEach(function (el) {
+      el.textContent = RT.credits || 0;
+    });
   };
 
   var navCredits = RT.$('nav-credits');
   if (navCredits) {
     navCredits.addEventListener('click', function () {
-      if (!RT.isLoggedIn()) { RT.showScreen('s-auth'); RT.showAuthForm('signup'); return; }
+      if (!RT.isLoggedIn()) {
+        RT.showScreen('s-auth');
+        RT.showAuthForm('signup');
+        return;
+      }
       RT.showScreen('s-credits');
       RT.renderCredits();
     });
@@ -68,39 +150,16 @@
 
   var navLogo = RT.$('nav-logo');
   if (navLogo) {
-    navLogo.addEventListener('click', function () { RT.showScreen('landing'); });
+    navLogo.addEventListener('click', function () {
+      RT.showScreen('s-landing');
+    });
   }
 
-  var screenHistory = ['landing'];
-  var originalShowScreen = RT.showScreen;
-  RT.showScreen = function (id) {
-    var prev = screenHistory[screenHistory.length - 1];
-    if (prev !== id) screenHistory.push(id);
-    originalShowScreen(id);
-    var nav = RT.$('nav-bar');
-    if (nav) {
-      nav.classList.remove('hide');
-      RT.updateMenuCredits();
-    }
-    var back = RT.$('nav-back');
-    if (back) {
-      if (id === 'landing') { back.classList.remove('show'); }
-      else { back.classList.add('show'); }
-    }
-  };
-
+  // Simple nav-back without history wrapper (since RT.showScreen already takes full ids)
   var backBtn = RT.$('nav-back');
   if (backBtn) {
     backBtn.addEventListener('click', function () {
-      if (screenHistory.length > 1) {
-        screenHistory.pop();
-        var prev = screenHistory[screenHistory.length - 1];
-        originalShowScreen(prev);
-        var back = RT.$('nav-back');
-        if (back) {
-          if (prev === 'landing') back.classList.remove('show');
-        }
-      }
+      RT.showScreen('s-dash');
     });
   }
 

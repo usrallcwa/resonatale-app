@@ -32,74 +32,88 @@
   var items = {
     'menu-home': function () {
       RT.closeMenu();
-      RT.showScreen('s-landing');
+      RT.showScreen('landing');
     },
     'menu-create': function () {
       RT.closeMenu();
       if (!RT.isLoggedIn()) {
-        RT.showScreen('s-auth');
+        RT.showScreen('auth')
+
+;
         RT.showAuthForm('signup');
         return;
       }
-      RT.showScreen('s-create');
+      RT.showScreen('create');
       RT.mountTurnstile();
     },
     'menu-films': function () {
       RT.closeMenu();
       if (!RT.isLoggedIn()) {
-        RT.showScreen('s-auth');
+        RT.showScreen('auth')
+
+;
         RT.showAuthForm('login');
         return;
       }
-      RT.showScreen('s-dash');
+      RT.showScreen('dash');
     },
     'menu-credits': function () {
       RT.closeMenu();
       if (!RT.isLoggedIn()) {
-        RT.showScreen('s-auth');
+        RT.showScreen('auth')
+
+;
         RT.showAuthForm('signup');
         return;
       }
-      RT.showScreen('s-credits');
+      RT.showScreen('credits');
       RT.renderCredits();
     },
     'menu-profile': function () {
       RT.closeMenu();
       if (!RT.isLoggedIn()) {
-        RT.showScreen('s-auth');
+        RT.showScreen('auth')
+
+;
         RT.showAuthForm('login');
         return;
       }
-      RT.showScreen('s-profile');
+      RT.showScreen('profile');
       RT.loadProfile();
     },
     'menu-invite': function () {
       RT.closeMenu();
       if (!RT.isLoggedIn()) {
-        RT.showScreen('s-auth');
+        RT.showScreen('auth')
+
+;
         RT.showAuthForm('login');
         return;
       }
-      RT.showScreen('s-invite');
+      RT.showScreen('invite');
       RT.loadInvite();
     },
     'menu-series': function () {
       RT.closeMenu();
       if (!RT.isLoggedIn()) {
-        RT.showScreen('s-auth');
+        RT.showScreen('auth')
+
+;
         RT.showAuthForm('login');
         return;
       }
-      RT.showScreen('s-series');
+      RT.showScreen('series');
       RT.loadSeries();
     },
     'menu-how': function () {
       RT.closeMenu();
-      RT.showScreen('s-how');
+      RT.showScreen('how');
     },
     'menu-auth': function () {
       RT.closeMenu();
-      RT.showScreen('s-auth');
+      RT.showScreen('auth')
+
+;
       RT.showAuthForm('login');
     },
     'menu-logout': function () {
@@ -107,7 +121,7 @@
       RT.clearAuth();
       RT.toast('Logged out.', true);
       RT.updateAuthButton();
-      RT.showScreen('s-landing');
+      RT.showScreen('landing');
     }
   };
 
@@ -139,11 +153,13 @@
   if (navCredits) {
     navCredits.addEventListener('click', function () {
       if (!RT.isLoggedIn()) {
-        RT.showScreen('s-auth');
+        RT.showScreen('auth')
+
+;
         RT.showAuthForm('signup');
         return;
       }
-      RT.showScreen('s-credits');
+      RT.showScreen('credits');
       RT.renderCredits();
     });
   }
@@ -151,7 +167,7 @@
   var navLogo = RT.$('nav-logo');
   if (navLogo) {
     navLogo.addEventListener('click', function () {
-      RT.showScreen('s-landing');
+      RT.showScreen('landing');
     });
   }
 
@@ -159,7 +175,7 @@
   var backBtn = RT.$('nav-back');
   if (backBtn) {
     backBtn.addEventListener('click', function () {
-      RT.showScreen('s-dash');
+      RT.showScreen('dash');
     });
   }
 

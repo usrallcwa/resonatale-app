@@ -7,7 +7,7 @@
   if (newBtn) {
     newBtn.addEventListener('click', function () {
       RT.resetForm();
-      RT.showScreen('s-create');
+      RT.showScreen('create');
       RT.mountTurnstile();
     });
   }

@@ -75,18 +75,18 @@
       if (dl) dl.href = film.video_url;
       RT.currentFilmId = film.id;
       RT.renderShareButtons(RT.$('share-buttons'), film.video_url);
-      RT.showScreen('s-player');
+      RT.showScreen('player');
 
     } else if (film.status === 'processing' || film.status === 'pending') {
       RT.currentFilmId = film.id;
-      RT.showScreen('s-rendering');
+      RT.showScreen('rendering');
       RT.pollFilmStatus(film.id);
 
     } else if (film.status === 'failed') {
       if (confirm('This film failed. Credits were refunded.\n\nRetry with the same story?')) {
         RT.mood = film.mood || '';
         RT.tier = film.tier || (RT.TIERS[0] ? RT.TIERS[0].id : 'shorts');
-        RT.showScreen('s-create');
+        RT.showScreen('create');
         RT.mountTurnstile();
       }
     }

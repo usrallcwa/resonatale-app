@@ -4,7 +4,9 @@
   // ── Profile ──
 
   RT.loadProfile = function () {
-    if (!RT.isLoggedIn()) { RT.showScreen('s-auth'); RT.showAuthForm('login'); return; }
+    if (!RT.isLoggedIn()) { RT.showScreen('auth')
+
+; RT.showAuthForm('login'); return; }
 
     RT.getProfile().then(function (d) {
       var el = RT.$('profile-email');
@@ -42,7 +44,7 @@
   if (updateVoice) {
     updateVoice.addEventListener('click', function () {
       RT.voiceBlob = null;
-      RT.showScreen('s-setup');
+      RT.showScreen('setup');
     });
   }
 

@@ -138,7 +138,9 @@
 
     // Like toggle
     card.querySelector('.feed-like-btn').addEventListener('click', function () {
-      if (!RT.isLoggedIn()) { RT.showScreen('s-auth'); RT.showAuthForm('login'); return; }
+      if (!RT.isLoggedIn()) { RT.showScreen('auth')
+
+; RT.showAuthForm('login'); return; }
       var countEl = card.querySelector('.like-count');
       var current = parseInt(countEl.textContent) || 0;
 
@@ -151,7 +153,9 @@
 
     // Toggle comment form
     card.querySelector('.feed-comment-btn').addEventListener('click', function () {
-      if (!RT.isLoggedIn()) { RT.showScreen('s-auth'); RT.showAuthForm('login'); return; }
+      if (!RT.isLoggedIn()) { RT.showScreen('auth')
+
+; RT.showAuthForm('login'); return; }
       var form = card.querySelector('.feed-comment-form');
       form.classList.toggle('hide');
       if (!form.classList.contains('hide')) {
@@ -267,7 +271,9 @@
   var publishBtn = RT.$('btn-publish');
   if (publishBtn) {
     publishBtn.addEventListener('click', function () {
-      if (!RT.isLoggedIn()) { RT.showScreen('s-auth'); RT.showAuthForm('login'); return; }
+      if (!RT.isLoggedIn()) { RT.showScreen('auth')
+
+; RT.showAuthForm('login'); return; }
       if (!RT.currentFilmId) { RT.toast('No film to publish.'); return; }
 
       RT.loading(true, 'Publishing to community...');

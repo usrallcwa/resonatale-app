@@ -27,7 +27,9 @@
   var addBtn = RT.$('btn-add-credits');
   if (addBtn) {
     addBtn.addEventListener('click', function () {
-      if (!RT.isLoggedIn()) { RT.showScreen('s-auth'); RT.showAuthForm('login'); return; }
+      if (!RT.isLoggedIn()) { RT.showScreen('auth')
+
+; RT.showAuthForm('login'); return; }
       if (RT.creditAmount < MIN_CREDITS) { RT.toast('Minimum $' + MIN_CREDITS + '.'); return; }
       if (RT.creditAmount > MAX_CREDITS) { RT.toast('Maximum $' + MAX_CREDITS + '.'); return; }
 
@@ -60,7 +62,7 @@
         RT.getCredits()
           .then(function () {
             RT.toast('Payment successful! Credits added. ✓', true);
-            RT.showScreen('s-create');
+            RT.showScreen('create');
             RT.mountTurnstile();
           })
           .catch(function () {

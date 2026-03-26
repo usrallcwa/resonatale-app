@@ -151,10 +151,10 @@ a:hover { color: #9dd0ff; }
 
 /* ── Hero Pills ── */
 .hero-pills {
-  list-style: none; padding: 0; margin: 0 0 28px;
-  display: flex; flex-direction: column; gap: 8px;
-  width: 100%; max-width: 320px; text-align: left;
-}
+    list-style: none; padding: 0; margin: 0 auto 28px;
+    display: flex; flex-direction: column; gap: 8px;
+    width: 100%; max-width: 320px; text-align: center;
+  }
 .hero-pills li {
   font-size: 14px; color: #8e8e93;
   display: flex; align-items: center; gap: 10px;

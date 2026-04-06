@@ -97,5 +97,38 @@
 
   var outroBtn = RT.$('btn-upload-outro');
   if (outroBtn) outroBtn.addEventListener('click', function () { uploadVideo('outro'); });
-
+// Selfie upload
+  var selfieBtn = RT.$('btn-upload-selfie');
+  var selfieInput = RT.$('selfie-upload');
+  if (selfieBtn && selfieInput) {
+    selfieBtn.addEventListener('click', function () { selfieInput.click(); });
+    selfieInput.addEventListener('change', function () {
+      var file = selfieInput.files[0];
+      if (!file) return;
+      if (file.size > 10 * 1024 * 1024) { RT.toast('Image too large (max 10MB)'); return; }
+      RT.loading(true, 'Uploading selfie...');
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        var base64 = e.target.result.split(',')[1];
+        fetch(RT.API + '/profile/selfie', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + RT.token },
+          body: JSON.stringify({ image: base64 })
+        }).then(function (r) { return r.json(); }).then(function (d) {
+          RT.loading(false);
+          if (d.success) {
+            RT.toast('Selfie uploaded! Your face will appear in films.', true);
+            var status = RT.$('profile-selfie-status');
+            if (status) status.textContent = 'Uploaded';
+          } else {
+            RT.toast(d.error || 'Upload failed.');
+          }
+        }).catch(function (err) {
+          RT.loading(false);
+          RT.toast(err.message || 'Upload failed.');
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+  }
 })();

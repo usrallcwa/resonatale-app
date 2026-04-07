@@ -129,18 +129,9 @@
       tier:     tier,
       title:    title  || '',
       style:    RT.style || 'cinematic',
-      voice:    RTvoice:    RT.selectedVoice || 'clone',
+      voice:    RT.selectedVoice || 'clone',
       useFaceSwap: RT.useFaceSwap || false,
-    });.selectedVoice || 'clone',
     });
-  };
-
-  RT.getFilmStatus = function (filmId) {
-    return apiFetch('GET', '/film/' + filmId + '/status');
-  };
-
-  RT.getFilms = function () {
-    return apiFetch('GET', '/films');
   };
 
   // ── Social feed ──

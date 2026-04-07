@@ -41,7 +41,20 @@
       });
     });
   }
+// ── Voice Dropdown ──
+  var voiceSelect = RT.$('voice-select');
+  if (voiceSelect) {
+    voiceSelect.addEventListener('change', function () { RT.selectedVoice = voiceSelect.value; });
+  }
 
+  // ── Face Swap Toggle ──
+  RT.useFaceSwap = false;
+  var faceToggle = RT.$('faceswap-toggle');
+  if (faceToggle) {
+    faceToggle.addEventListener('change', function () {
+      RT.useFaceSwap = faceToggle.checked;
+    });
+  }
   // ── Style Dropdown ──
 
   RT.style = RT.style || 'cinematic';

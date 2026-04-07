@@ -129,7 +129,9 @@
       tier:     tier,
       title:    title  || '',
       style:    RT.style || 'cinematic',
-      voice:    RT.selectedVoice || 'clone',
+      voice:    RTvoice:    RT.selectedVoice || 'clone',
+      useFaceSwap: RT.useFaceSwap || false,
+    });.selectedVoice || 'clone',
     });
   };
 

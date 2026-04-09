@@ -4,9 +4,7 @@
   // ── Profile ──
 
   RT.loadProfile = function () {
-    if (!RT.isLoggedIn()) { RT.showScreen('auth')
-
-; RT.showAuthForm('login'); return; }
+    if (!RT.isLoggedIn()) { RT.showScreen('auth'); RT.showAuthForm('login'); return; }
 
     RT.getProfile().then(function (d) {
       var el = RT.$('profile-email');
@@ -33,6 +31,21 @@
       var refCode = RT.$('profile-ref-code');
       if (refCode) refCode.textContent = d.refCode || '—';
 
+      // ── Update selfie status from server ──
+      var selfieStatus = RT.$('profile-selfie-status');
+      if (selfieStatus) {
+        if (d.selfie_url || d.selfieUrl) {
+          selfieStatus.textContent = 'Uploaded ✓';
+          selfieStatus.className = 'profile-status ok';
+          // Sync to local state so create screen knows
+          RT.selfieUrl = d.selfie_url || d.selfieUrl;
+          localStorage.setItem('rt_selfie', RT.selfieUrl);
+        } else {
+          selfieStatus.textContent = 'Not uploaded';
+          selfieStatus.className = 'profile-status';
+        }
+      }
+
     }).catch(function (err) {
       RT.toast(err.message || 'Failed to load profile.');
     });
@@ -55,7 +68,6 @@
     var input = RT.$(inputId);
     if (!input) return;
 
-    // Replace node to prevent stacked listeners on repeat clicks
     var fresh = input.cloneNode(true);
     input.parentNode.replaceChild(fresh, input);
 
@@ -97,33 +109,62 @@
 
   var outroBtn = RT.$('btn-upload-outro');
   if (outroBtn) outroBtn.addEventListener('click', function () { uploadVideo('outro'); });
-// Selfie upload
-  var selfieBtn = RT.$('btn-upload-selfie');
+
+  // ── Selfie Upload (Profile screen button) ──
+
+  var selfieBtn   = RT.$('btn-upload-selfie');
   var selfieInput = RT.$('selfie-upload');
+
   if (selfieBtn && selfieInput) {
-    selfieBtn.addEventListener('click', function () { selfieInput.click(); });
+    selfieBtn.addEventListener('click', function () {
+      // If the selfie modal from create.js is available, use it for consistency
+      if (typeof RT.showSelfieModal === 'function') {
+        RT.showSelfieModal();
+        return;
+      }
+      // Fallback: use the file input directly
+      selfieInput.click();
+    });
+
     selfieInput.addEventListener('change', function () {
       var file = selfieInput.files[0];
       if (!file) return;
-      if (file.size > 10 * 1024 * 1024) { RT.toast('Image too large (max 10MB)'); return; }
+      if (file.size > 5 * 1024 * 1024) { RT.toast('Image too large (max 5MB)'); return; }
+
       RT.loading(true, 'Uploading selfie...');
+
       var reader = new FileReader();
       reader.onload = function (e) {
         var base64 = e.target.result.split(',')[1];
+
         fetch(RT.API + '/profile/selfie', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + RT.token },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + RT.token
+          },
           body: JSON.stringify({ image: base64 })
-        }).then(function (r) { return r.json(); }).then(function (d) {
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
           RT.loading(false);
-          if (d.success) {
+          if (d.success || d.selfie_url) {
+            var url = d.selfie_url || d.url || '';
+            RT.selfieUrl = url;
+            localStorage.setItem('rt_selfie', url);
+
             RT.toast('Selfie uploaded! Your face will appear in films.', true);
+
             var status = RT.$('profile-selfie-status');
-            if (status) status.textContent = 'Uploaded';
+            if (status) {
+              status.textContent = 'Uploaded ✓';
+              status.className = 'profile-status ok';
+            }
           } else {
             RT.toast(d.error || 'Upload failed.');
           }
-        }).catch(function (err) {
+        })
+        .catch(function (err) {
           RT.loading(false);
           RT.toast(err.message || 'Upload failed.');
         });
@@ -131,4 +172,5 @@
       reader.readAsDataURL(file);
     });
   }
+
 })();

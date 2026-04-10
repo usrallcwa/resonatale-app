@@ -193,4 +193,38 @@
     return apiFetch('GET', '/social/scheduled');
   };
 
+  // ── Films List ──
+
+  RT.getFilms = function () {
+    return apiFetch('GET', '/films');
+  };
+
+  // ── Film Status ──
+
+  RT.getFilmStatus = function (filmId) {
+    return apiFetch('GET', '/film/' + filmId + '/status');
+  };
+
+  // ── Create Film with edited scenes ──
+
+  RT.createFilmWithScenes = function (brief, mood, language, tier, title, scenes) {
+    return apiFetch('POST', '/film/create', {
+      brief:       brief,
+      mood:        mood,
+      language:    language || RT.language || 'en',
+      tier:        tier,
+      title:       title || '',
+      style:       RT.style || 'cinematic',
+      voice:       RT.selectedVoice || 'clone',
+      useFaceSwap: RT.useFaceSwap || false,
+      scenes:      scenes,
+    });
+  };
+
+  // ── Update menu credits helper ──
+
+  RT.updateMenuCredits = function () {
+    RT.getCredits().catch(function () {});
+  };
+
 })();

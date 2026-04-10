@@ -21,6 +21,8 @@
   RT.selectedVoice  = 'clone';
   RT.language       = '';
   RT.creditAmount   = 50;
+  RT.selfieUrl      = localStorage.getItem('rt_selfie') || '';
+  RT.useFaceSwap    = false;
 
   // ── DOM helper ──
 
